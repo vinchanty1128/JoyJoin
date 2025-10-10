@@ -8,6 +8,7 @@ import EventsPage from "@/pages/EventsPage";
 import MatchesPage from "@/pages/MatchesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import EventDetailPage from "@/pages/EventDetailPage";
+import OnboardingQuizPage from "@/pages/OnboardingQuizPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/matches" component={MatchesPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/event/:id" component={EventDetailPage} />
+      <Route path="/onboarding/quiz" component={OnboardingQuizPage} />
       <Route component={NotFound} />
     </Switch>
   );
