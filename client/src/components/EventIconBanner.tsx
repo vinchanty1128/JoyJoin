@@ -35,8 +35,8 @@ export default function EventIconBanner({ vibeGradient, iconName = "sparkles" }:
   const Icon = iconMap[iconName] || Sparkles;
   
   return (
-    <div className={`relative h-48 bg-gradient-to-br ${vibeGradient} flex items-center justify-center`}>
-      <Icon className="h-24 w-24 text-white/30" strokeWidth={1.5} />
+    <div className={`relative h-32 bg-gradient-to-br ${vibeGradient} flex items-center justify-center overflow-hidden`}>
+      <Icon className="h-16 w-16 text-white/20 absolute" strokeWidth={1.5} />
     </div>
   );
 }

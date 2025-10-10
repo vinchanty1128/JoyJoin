@@ -37,56 +37,52 @@ export default function JoyEventCard({
 }: JoyEventCardProps) {
   return (
     <Link href={`/event/${id}`}>
-      <a className="block" data-testid={`link-event-${id}`}>
-        <Card className="overflow-hidden hover-elevate active-elevate-2 transition-all border-0" data-testid={`card-event-${title.toLowerCase().replace(/\s+/g, '-')}`}>
-          <div className="relative">
-            <EventIconBanner vibeGradient={vibeGradient} iconName={iconName} />
-            
-            <div className="absolute top-3 left-3 flex gap-1.5">
-              {vibes.slice(0, 3).map((vibe, i) => (
-                <VibeChip key={i} emoji={vibe.emoji} label={vibe.label} gradient={vibe.gradient} />
-              ))}
-            </div>
-            
-            <div className="absolute top-3 right-3">
-              <MatchScoreBadge myFit={myFit} groupSpark={groupSpark} />
-            </div>
+      <Card className="overflow-hidden hover-elevate active-elevate-2 transition-all border-0 cursor-pointer" data-testid={`card-event-${title.toLowerCase().replace(/\s+/g, '-')}`}>
+        <div className="relative">
+          <EventIconBanner vibeGradient={vibeGradient} iconName={iconName} />
+          
+          <div className="absolute top-2 left-2 flex gap-1">
+            {vibes.slice(0, 3).map((vibe, i) => (
+              <VibeChip key={i} emoji={vibe.emoji} label={vibe.label} gradient={vibe.gradient} />
+            ))}
+          </div>
+          
+          <div className="absolute top-2 right-2">
+            <MatchScoreBadge myFit={myFit} groupSpark={groupSpark} />
+          </div>
+        </div>
 
+        <div className="p-4 space-y-2.5">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="font-display font-bold text-lg leading-tight flex-1">{title}</h3>
+            <span className="text-base font-semibold text-primary whitespace-nowrap">{price}</span>
+          </div>
+          
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{time}</span>
+            </div>
+            <span>•</span>
+            <div className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" />
+              <span>{area}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-1.5 text-xs">
+              <Users className="h-4 w-4 text-primary" />
+              <span className="font-medium">剩余 {spotsLeft} 位</span>
+            </div>
             {socialProof && (
-              <div className="absolute bottom-3 left-3">
-                <Badge className="bg-background/90 backdrop-blur-sm text-foreground border-0 text-xs">
-                  {socialProof}
-                </Badge>
-              </div>
+              <Badge variant="secondary" className="text-xs">
+                {socialProof}
+              </Badge>
             )}
           </div>
-
-          <div className="p-3 space-y-2">
-            <h3 className="font-display font-bold text-lg leading-tight">{title}</h3>
-            
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{time}</span>
-              </div>
-              <span>•</span>
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                <span>{area}</span>
-              </div>
-              <span>•</span>
-              <span className="font-medium text-foreground">{price}</span>
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-1 text-xs">
-                <Users className="h-3.5 w-3.5 text-primary" />
-                <span className="font-medium">剩余 {spotsLeft} 位</span>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </a>
+        </div>
+      </Card>
     </Link>
   );
 }

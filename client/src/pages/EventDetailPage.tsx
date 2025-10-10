@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, MapPin, DollarSign, Users, ChevronDown } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import VibeChip from "@/components/VibeChip";
 import GroupSparkMeter from "@/components/GroupSparkMeter";
 import EventIconBanner from "@/components/EventIconBanner";
@@ -11,35 +11,40 @@ import { useState } from "react";
 
 export default function EventDetailPage() {
   const [showSafety, setShowSafety] = useState(false);
+  const [, setLocation] = useLocation();
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b">
         <div className="flex items-center h-14 px-4">
-          <Link href="/">
-            <a>
-              <Button variant="ghost" size="icon" data-testid="button-back">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </a>
-          </Link>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setLocation("/")}
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <h1 className="ml-2 font-semibold">活动详情</h1>
         </div>
       </div>
 
       <div className="relative">
         <EventIconBanner vibeGradient="from-orange-400 via-red-400 to-pink-500" iconName="pizza" />
-        <div className="absolute top-4 left-4 flex gap-1.5">
+        <div className="absolute top-3 left-3 flex gap-1">
           <VibeChip emoji="⚡" label="活力" gradient="from-orange-400 to-red-500" />
           <VibeChip emoji="🎈" label="玩乐" gradient="from-pink-400 to-rose-400" />
           <VibeChip emoji="🤝" label="社交" gradient="from-violet-400 to-purple-400" />
         </div>
       </div>
 
-      <div className="px-4 -mt-6 relative z-10 space-y-4">
+      <div className="px-4 -mt-4 relative z-10 space-y-4">
         <Card className="border-0 shadow-lg">
           <CardContent className="p-4 space-y-3">
-            <h2 className="text-2xl font-display font-bold">墨西哥卷挑战赛</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-2xl font-display font-bold flex-1">墨西哥卷挑战赛</h2>
+              <span className="text-xl font-bold text-primary">¥88</span>
+            </div>
             
             <p className="text-sm text-muted-foreground">
               快节奏游戏+精酿啤酒。期待欢笑、团队轮换和友好的主持人。
