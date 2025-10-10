@@ -1,10 +1,10 @@
-import { Compass, Calendar, Users, User } from "lucide-react";
+import { Compass, Calendar, MessageSquare, User } from "lucide-react";
 import { useLocation } from "wouter";
 
 const navItems = [
   { icon: Compass, label: "发现", path: "/", testId: "nav-discover" },
   { icon: Calendar, label: "活动", path: "/events", testId: "nav-events" },
-  { icon: Users, label: "匹配", path: "/matches", testId: "nav-matches" },
+  { icon: MessageSquare, label: "聊天", path: "/chats", testId: "nav-chats" },
   { icon: User, label: "我的", path: "/profile", testId: "nav-profile" }
 ];
 

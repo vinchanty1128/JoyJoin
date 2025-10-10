@@ -10,7 +10,8 @@ import ProfileSetupPage from "@/pages/ProfileSetupPage";
 import OnboardingQuizPage from "@/pages/OnboardingQuizPage";
 import DiscoverPage from "@/pages/DiscoverPage";
 import EventsPage from "@/pages/EventsPage";
-import MatchesPage from "@/pages/MatchesPage";
+import ChatsPage from "@/pages/ChatsPage";
+import EventChatDetailPage from "@/pages/EventChatDetailPage";
 import ProfilePage from "@/pages/ProfilePage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import NotFound from "@/pages/not-found";
@@ -56,7 +57,8 @@ function AuthenticatedRouter() {
     <Switch>
       <Route path="/" component={DiscoverPage} />
       <Route path="/events" component={EventsPage} />
-      <Route path="/matches" component={MatchesPage} />
+      <Route path="/chats" component={ChatsPage} />
+      <Route path="/chats/:eventId" component={EventChatDetailPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/event/:id" component={EventDetailPage} />
       <Route path="/onboarding/quiz" component={OnboardingQuizPage} />
