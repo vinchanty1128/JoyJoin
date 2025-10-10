@@ -2,10 +2,10 @@ import { Home, Calendar, Heart, User } from "lucide-react";
 import { useLocation } from "wouter";
 
 const navItems = [
-  { icon: Home, label: "发现", path: "/" },
-  { icon: Calendar, label: "活动", path: "/events" },
-  { icon: Heart, label: "好友", path: "/matches" },
-  { icon: User, label: "我的", path: "/profile" },
+  { icon: Home, label: "Discover", path: "/" },
+  { icon: Calendar, label: "Events", path: "/events" },
+  { icon: Heart, label: "Matches", path: "/matches" },
+  { icon: User, label: "Profile", path: "/profile" },
 ];
 
 export default function BottomNav() {
