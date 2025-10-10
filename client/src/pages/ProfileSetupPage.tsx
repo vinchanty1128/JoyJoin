@@ -30,7 +30,7 @@ export default function ProfileSetupPage() {
 
   const setupMutation = useMutation({
     mutationFn: async (data: { displayName: string; vibes: string[] }) => {
-      return await apiRequest("/api/profile/setup", "POST", data);
+      return await apiRequest("POST", "/api/profile/setup", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });

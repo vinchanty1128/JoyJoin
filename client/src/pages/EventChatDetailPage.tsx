@@ -51,7 +51,7 @@ export default function EventChatDetailPage() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (msg: string) => {
-      return await apiRequest(`/api/events/${eventId}/messages`, "POST", { message: msg });
+      return await apiRequest("POST", `/api/events/${eventId}/messages`, { message: msg });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events", eventId, "/messages"] });
@@ -68,7 +68,7 @@ export default function EventChatDetailPage() {
 
   const submitFeedbackMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest(`/api/events/${eventId}/feedback`, "POST", data);
+      return await apiRequest("POST", `/api/events/${eventId}/feedback`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events", eventId, "/feedback"] });

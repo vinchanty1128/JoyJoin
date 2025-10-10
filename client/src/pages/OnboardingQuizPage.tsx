@@ -19,7 +19,7 @@ export default function OnboardingQuizPage() {
 
   const savePersonalityMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/profile/personality", "POST", {
+      return await apiRequest("POST", "/api/profile/personality", {
         personalityTraits: data.traits,
         personalityChallenges: data.challenges,
         idealMatch: data.idealMatch,
