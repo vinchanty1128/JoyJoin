@@ -1,9 +1,10 @@
-import { Switch, Route, Redirect } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 import LandingPage from "@/pages/LandingPage";
 import ProfileSetupPage from "@/pages/ProfileSetupPage";
 import OnboardingQuizPage from "@/pages/OnboardingQuizPage";
@@ -14,16 +15,30 @@ import ProfilePage from "@/pages/ProfilePage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import NotFound from "@/pages/not-found";
 
+function RedirectToSetup() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/onboarding/setup");
+  }, [setLocation]);
+  return null;
+}
+
+function RedirectToQuiz() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/onboarding/quiz");
+  }, [setLocation]);
+  return null;
+}
+
 function AuthenticatedRouter() {
-  const { user, needsProfileSetup, needsVoiceQuiz } = useAuth();
+  const { needsProfileSetup, needsVoiceQuiz } = useAuth();
 
   if (needsProfileSetup) {
     return (
       <Switch>
         <Route path="/onboarding/setup" component={ProfileSetupPage} />
-        <Route path="*">
-          {() => <Redirect to="/onboarding/setup" />}
-        </Route>
+        <Route path="*" component={RedirectToSetup} />
       </Switch>
     );
   }
@@ -32,9 +47,7 @@ function AuthenticatedRouter() {
     return (
       <Switch>
         <Route path="/onboarding/quiz" component={OnboardingQuizPage} />
-        <Route path="*">
-          {() => <Redirect to="/onboarding/quiz" />}
-        </Route>
+        <Route path="*" component={RedirectToQuiz} />
       </Switch>
     );
   }
