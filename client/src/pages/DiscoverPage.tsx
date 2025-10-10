@@ -1,6 +1,8 @@
 import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import JoyEventCard from "@/components/JoyEventCard";
+import DiscountCouponCard from "@/components/DiscountCouponCard";
+import UserEnergyBadge from "@/components/UserEnergyBadge";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +34,8 @@ const mockEvents = [
     groupSpark: "High" as const,
     vibeGradient: "from-orange-400 via-red-400 to-pink-500",
     iconName: "pizza",
-    socialProof: "3位朋友的朋友已加入"
+    socialProof: "3位朋友的朋友已加入",
+    discount: 15
   },
   {
     id: "2",
@@ -67,7 +70,8 @@ const mockEvents = [
     myFit: 86,
     groupSpark: "Medium" as const,
     vibeGradient: "from-purple-400 via-pink-400 to-rose-400",
-    iconName: "palette"
+    iconName: "palette",
+    discount: 10
   },
   {
     id: "4",
@@ -110,10 +114,19 @@ export default function DiscoverPage() {
       <MobileHeader showLogo={true} showNotification={true} />
       
       <div className="px-4 py-3 space-y-4">
-        <div>
-          <p className="text-sm text-muted-foreground mb-1">小局·好能量</p>
-          <h2 className="text-lg font-display font-bold">今晚来聚</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">小局·好能量</p>
+            <h2 className="text-lg font-display font-bold">今晚来聚</h2>
+          </div>
+          <UserEnergyBadge level={3} role="energizer" />
         </div>
+
+        <DiscountCouponCard 
+          discount={15}
+          reason="上次活动带动全场氛围，获得能量奖励"
+          expiresIn="7天"
+        />
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

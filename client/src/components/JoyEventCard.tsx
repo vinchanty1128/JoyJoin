@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Users } from "lucide-react";
+import { Clock, MapPin, Users, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import VibeChip from "./VibeChip";
 import MatchScoreBadge from "./MatchScoreBadge";
@@ -18,6 +18,7 @@ interface JoyEventCardProps {
   vibeGradient: string;
   iconName?: string;
   socialProof?: string;
+  discount?: number;
 }
 
 export default function JoyEventCard({
@@ -29,15 +30,24 @@ export default function JoyEventCard({
   spotsLeft,
   myFit,
   groupSpark,
-  socialProof
+  socialProof,
+  discount
 }: JoyEventCardProps) {
   return (
     <Link href={`/event/${id}`}>
-      <Card className="hover-elevate active-elevate-2 transition-all border-0 cursor-pointer" data-testid={`card-event-${title.toLowerCase().replace(/\s+/g, '-')}`}>
+      <Card className="hover-elevate active-elevate-2 transition-all cursor-pointer border shadow-sm" data-testid={`card-event-${title.toLowerCase().replace(/\s+/g, '-')}`}>
         <div className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 space-y-2">
-              <h3 className="font-display font-bold text-xl leading-tight">{title}</h3>
+              <div className="flex items-start gap-2">
+                <h3 className="font-display font-bold text-xl leading-tight flex-1">{title}</h3>
+                {discount && discount > 0 && (
+                  <Badge className="bg-primary/10 text-primary border-0 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    <span className="text-xs font-semibold">-{discount}%</span>
+                  </Badge>
+                )}
+              </div>
               <div className="flex gap-1.5 flex-wrap">
                 {vibes.slice(0, 3).map((vibe, i) => (
                   <VibeChip key={i} emoji={vibe.emoji} label={vibe.label} gradient={vibe.gradient} />

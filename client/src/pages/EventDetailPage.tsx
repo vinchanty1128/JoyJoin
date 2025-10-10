@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, MapPin, DollarSign, Users, ChevronDown } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, DollarSign, Users, ChevronDown, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 import VibeChip from "@/components/VibeChip";
 import GroupSparkMeter from "@/components/GroupSparkMeter";
@@ -11,6 +11,11 @@ import { useState } from "react";
 export default function EventDetailPage() {
   const [showSafety, setShowSafety] = useState(false);
   const [, setLocation] = useLocation();
+
+  // Mock discount data - in real app, this would come from user's coupons
+  const userDiscount = 15;
+  const originalPrice = 88;
+  const discountedPrice = Math.round(originalPrice * (1 - userDiscount / 100));
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -33,8 +38,34 @@ export default function EventDetailPage() {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-2xl font-display font-bold flex-1">墨西哥卷挑战赛</h2>
-              <span className="text-xl font-bold text-primary">¥88</span>
+              <div className="text-right">
+                {userDiscount > 0 && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground line-through mb-0.5">
+                    <span>¥{originalPrice}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xl font-bold text-primary">¥{discountedPrice}</span>
+                  {userDiscount > 0 && (
+                    <Badge className="bg-primary/10 text-primary border-0 gap-1 text-xs">
+                      <Sparkles className="h-3 w-3" />
+                      -{userDiscount}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {userDiscount > 0 && (
+              <Card className="border-0 bg-primary/5">
+                <CardContent className="p-2.5">
+                  <p className="text-xs text-primary flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span className="font-medium">已自动应用能量奖励优惠</span>
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex gap-1.5 flex-wrap">
               <VibeChip emoji="⚡" label="活力" gradient="from-orange-400 to-red-500" />
@@ -82,7 +113,7 @@ export default function EventDetailPage() {
               <DollarSign className="h-4 w-4 text-primary" />
               <div className="text-xs">
                 <p className="font-medium">价格</p>
-                <p className="text-muted-foreground">¥88</p>
+                <p className="text-muted-foreground">¥{discountedPrice}</p>
               </div>
             </CardContent>
           </Card>
