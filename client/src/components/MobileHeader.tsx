@@ -1,22 +1,29 @@
 import { Bell, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import JoyJoinLogo from "./JoyJoinLogo";
 
 interface MobileHeaderProps {
-  title: string;
+  title?: string;
+  showLogo?: boolean;
   showNotification?: boolean;
   showSettings?: boolean;
 }
 
 export default function MobileHeader({ 
-  title, 
+  title,
+  showLogo = false,
   showNotification = true, 
   showSettings = false 
 }: MobileHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur-sm border-b">
       <div className="flex items-center justify-between h-14 px-4">
-        <h1 className="text-lg font-semibold">{title}</h1>
+        {showLogo ? (
+          <JoyJoinLogo size="sm" />
+        ) : (
+          <h1 className="text-lg font-semibold">{title}</h1>
+        )}
         <div className="flex items-center gap-2">
           {showNotification && (
             <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">

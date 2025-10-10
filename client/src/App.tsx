@@ -7,6 +7,7 @@ import DiscoverPage from "@/pages/DiscoverPage";
 import EventsPage from "@/pages/EventsPage";
 import MatchesPage from "@/pages/MatchesPage";
 import ProfilePage from "@/pages/ProfilePage";
+import EventDetailPage from "@/pages/EventDetailPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/events" component={EventsPage} />
       <Route path="/matches" component={MatchesPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/event/:id" component={EventDetailPage} />
       <Route component={NotFound} />
     </Switch>
   );
