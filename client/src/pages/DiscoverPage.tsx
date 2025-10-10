@@ -1,95 +1,96 @@
 import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
-import CompactEventCard from "@/components/CompactEventCard";
+import JoyEventCard from "@/components/JoyEventCard";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { VibeType } from "@/lib/vibes";
 
 //todo: remove mock functionality
-const categories = ["All", "Coffee", "Games", "Art", "Music", "Fitness", "Food"];
+const categories = [
+  { label: "全部", value: "all" },
+  { label: "😌 Chill", value: "chill" },
+  { label: "🎈 Playful", value: "playful" },
+  { label: "⚡ High-Energy", value: "highEnergy" },
+  { label: "🧠 Curious", value: "curious" },
+  { label: "🕯️ Cozy", value: "cozy" },
+];
 
 const mockEvents = [
   {
-    title: "Sunday Coffee & Conversations",
-    date: "Oct 15",
-    time: "10:00 AM",
-    location: "Bean & Brew Cafe, Downtown",
-    attendees: [
-      { name: "Sarah J", initials: "SJ" },
-      { name: "Mike C", initials: "MC" },
-      { name: "Emma D", initials: "ED" },
-      { name: "Alex R", initials: "AR" }
-    ],
-    spotsLeft: 3,
-    matchScore: 92,
-    imageGradient: "from-amber-400 via-orange-500 to-pink-500"
-  },
-  {
-    title: "Indie Music Night",
-    date: "Oct 18",
-    time: "7:30 PM",
-    location: "The Velvet Room",
-    attendees: [
-      { name: "Jordan K", initials: "JK" },
-      { name: "Sam P", initials: "SP" },
-      { name: "Casey L", initials: "CL" }
-    ],
+    title: "High-Energy Taco Run",
+    time: "今晚 7:00 PM",
+    area: "三里屯",
+    price: "¥88",
+    vibes: ["highEnergy", "playful", "social"] as VibeType[],
     spotsLeft: 2,
-    matchScore: 88,
-    imageGradient: "from-violet-500 via-purple-500 to-fuchsia-500"
+    myFit: 92,
+    groupSpark: "High" as const,
+    imageGradient: "from-orange-400 via-red-500 to-pink-500",
+    socialProof: "3个共同好友已加入"
   },
   {
-    title: "Board Game Brunch",
-    date: "Oct 20",
-    time: "11:00 AM",
-    location: "Game Haven Cafe",
-    attendees: [
-      { name: "Taylor W", initials: "TW" },
-      { name: "Jamie H", initials: "JH" }
-    ],
+    title: "Cozy Game Night",
+    time: "周六 8:00 PM",
+    area: "朝阳公园",
+    price: "¥68",
+    vibes: ["cozy", "playful", "chill"] as VibeType[],
     spotsLeft: 4,
-    matchScore: 85,
-    imageGradient: "from-emerald-400 via-teal-500 to-cyan-500"
+    myFit: 88,
+    groupSpark: "High" as const,
+    imageGradient: "from-amber-400 via-yellow-500 to-orange-400",
+    socialProof: "Host favorite"
   },
   {
-    title: "Art Gallery Tour",
-    date: "Oct 22",
-    time: "2:00 PM",
-    location: "Downtown Arts District",
-    attendees: [
-      { name: "Avery B", initials: "AB" },
-      { name: "Blake N", initials: "BN" },
-      { name: "Drew S", initials: "DS" }
-    ],
+    title: "Coffee & Deep Talks",
+    time: "周日 10:00 AM",
+    area: "望京",
+    price: "¥48",
+    vibes: ["chill", "curious", "cozy"] as VibeType[],
     spotsLeft: 3,
-    matchScore: 90,
-    imageGradient: "from-rose-400 via-pink-500 to-purple-500"
+    myFit: 90,
+    groupSpark: "Medium" as const,
+    imageGradient: "from-blue-400 via-cyan-500 to-teal-400"
   },
   {
-    title: "Morning Yoga & Smoothies",
-    date: "Oct 25",
-    time: "8:00 AM",
-    location: "Sunrise Wellness Studio",
-    attendees: [
-      { name: "Phoenix K", initials: "PK" },
-      { name: "Skylar J", initials: "SJ" }
-    ],
+    title: "Art Gallery Walk",
+    time: "周六 2:00 PM",
+    area: "798艺术区",
+    price: "¥78",
+    vibes: ["curious", "creative", "chill"] as VibeType[],
+    spotsLeft: 3,
+    myFit: 85,
+    groupSpark: "High" as const,
+    imageGradient: "from-purple-400 via-indigo-500 to-pink-400",
+    socialProof: "2个共同好友已加入"
+  },
+  {
+    title: "Hiking Adventure",
+    time: "周日 7:00 AM",
+    area: "香山",
+    price: "¥58",
+    vibes: ["adventurous", "highEnergy", "social"] as VibeType[],
     spotsLeft: 2,
-    matchScore: 83,
-    imageGradient: "from-lime-400 via-green-500 to-emerald-500"
+    myFit: 83,
+    groupSpark: "High" as const,
+    imageGradient: "from-emerald-400 via-teal-500 to-green-500"
   }
 ];
 
 export default function DiscoverPage() {
   return (
     <div className="min-h-screen bg-background pb-16">
-      <MobileHeader title="Discover" showNotification={true} />
+      <MobileHeader title="发现" showNotification={true} showLogo={true} />
       
       <div className="px-4 py-3 space-y-4">
+        <div className="text-center py-2">
+          <p className="text-sm text-muted-foreground">小局·好能量</p>
+        </div>
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search events..." 
+            placeholder="搜索活动..." 
             className="pl-9"
             data-testid="input-search-events"
           />
@@ -98,23 +99,23 @@ export default function DiscoverPage() {
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
           {categories.map((cat, i) => (
             <Badge
-              key={cat}
+              key={cat.value}
               variant={i === 0 ? "default" : "outline"}
               className="cursor-pointer whitespace-nowrap hover-elevate active-elevate-2"
-              data-testid={`badge-category-${cat.toLowerCase()}`}
+              data-testid={`badge-category-${cat.value}`}
             >
-              {cat}
+              {cat.label}
             </Badge>
           ))}
         </div>
 
         <div>
           <h2 className="text-sm font-semibold text-muted-foreground mb-3">
-            RECOMMENDED FOR YOU
+            为你推荐
           </h2>
           <div className="space-y-3">
             {mockEvents.map((event, i) => (
-              <CompactEventCard key={i} {...event} />
+              <JoyEventCard key={i} {...event} />
             ))}
           </div>
         </div>
