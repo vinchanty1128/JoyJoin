@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Info, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PersonalityRadarChart from "./PersonalityRadarChart";
 
 interface PersonalityTrait {
   name: string;
@@ -41,28 +42,13 @@ export default function PersonalityProfile({
             )}
           </div>
 
-          <div className="space-y-3">
+          <PersonalityRadarChart traits={traits} />
+
+          <div className="grid grid-cols-2 gap-2 pt-2">
             {traits.map((trait, index) => (
-              <div key={index} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-medium">{trait.name}</span>
-                    <Info className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                  <span className="text-muted-foreground">{trait.score}/{trait.maxScore}</span>
-                </div>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: trait.maxScore }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-2 flex-1 rounded-sm ${
-                        i < trait.score
-                          ? 'bg-primary'
-                          : 'bg-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
+              <div key={index} className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">{trait.name}</span>
+                <span className="font-medium">{trait.score}/{trait.maxScore}</span>
               </div>
             ))}
           </div>
