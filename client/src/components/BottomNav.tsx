@@ -1,11 +1,11 @@
-import { Home, Calendar, Heart, User } from "lucide-react";
+import { Compass, Calendar, Users, User } from "lucide-react";
 import { useLocation } from "wouter";
 
 const navItems = [
-  { icon: Home, label: "Discover", path: "/" },
-  { icon: Calendar, label: "Events", path: "/events" },
-  { icon: Heart, label: "Matches", path: "/matches" },
-  { icon: User, label: "Profile", path: "/profile" },
+  { icon: Compass, label: "发现", path: "/", testId: "nav-discover" },
+  { icon: Calendar, label: "活动", path: "/events", testId: "nav-events" },
+  { icon: Users, label: "匹配", path: "/matches", testId: "nav-matches" },
+  { icon: User, label: "我的", path: "/profile", testId: "nav-profile" }
 ];
 
 export default function BottomNav() {
@@ -23,7 +23,7 @@ export default function BottomNav() {
               className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${
                 isActive ? "text-primary" : "text-muted-foreground"
               }`}
-              data-testid={`nav-${item.label.toLowerCase()}`}
+              data-testid={item.testId}
             >
               <item.icon className={`h-5 w-5 ${isActive ? "fill-primary/20" : ""}`} />
               <span className="text-xs font-medium">{item.label}</span>
