@@ -26,7 +26,6 @@ export default function JoyEventCard({
   title,
   time,
   area,
-  price,
   vibes,
   spotsLeft,
   myFit,
@@ -53,10 +52,7 @@ export default function JoyEventCard({
         </div>
 
         <div className="p-4 space-y-2.5">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="font-display font-bold text-lg leading-tight flex-1">{title}</h3>
-            <span className="text-base font-semibold text-primary whitespace-nowrap">{price}</span>
-          </div>
+          <h3 className="font-display font-bold text-lg leading-tight">{title}</h3>
           
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
