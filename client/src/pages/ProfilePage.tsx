@@ -13,8 +13,7 @@ export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const [showQuizIntro, setShowQuizIntro] = useState(false);
   
-  // Mock personality data - in real app, this would come from backend
-  const hasCompletedQuiz = true; // Set to false to show "Take Quiz" prompt
+  const hasCompletedQuiz = true;
   
   const personalityData = hasCompletedQuiz ? {
     traits: [
@@ -28,7 +27,8 @@ export default function ProfilePage() {
       "可能对突然的计划变更感到不适应",
       "在大型社交场合中可能需要独处时间恢复能量"
     ],
-    idealMatch: "你会在与同样重视深度对话、欣赏计划性活动但也能享受偶尔即兴时刻的朋友相处中感到愉快。寻找那些能理解你需要独处时间、同时也享受有意义社交互动的人。"
+    idealMatch: "你会在与同样重视深度对话、欣赏计划性活动但也能享受偶尔即兴时刻的朋友相处中感到愉快。寻找那些能理解你需要独处时间、同时也享受有意义社交互动的人。",
+    energyLevel: 75
   } : null;
 
   const handleStartQuiz = () => {
@@ -72,6 +72,7 @@ export default function ProfilePage() {
             traits={personalityData.traits}
             challenges={personalityData.challenges}
             idealMatch={personalityData.idealMatch}
+            energyLevel={personalityData.energyLevel}
             onRetakeQuiz={handleStartQuiz}
           />
         ) : null}

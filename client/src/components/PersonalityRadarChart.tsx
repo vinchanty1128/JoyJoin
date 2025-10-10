@@ -26,15 +26,15 @@ export default function PersonalityRadarChart({ traits }: PersonalityRadarChartP
 
   const labelPoints = traits.map((trait, index) => {
     const angle = (Math.PI * 2 * index) / traits.length - Math.PI / 2;
-    const labelRadius = maxRadius + 30;
+    const labelRadius = maxRadius + 35;
     const x = centerX + Math.cos(angle) * labelRadius;
     const y = centerY + Math.sin(angle) * labelRadius;
     return { x, y, trait, angle };
   });
 
   return (
-    <div className="flex items-center justify-center w-full py-4">
-      <svg width="300" height="300" viewBox="0 0 300 300" className="max-w-full">
+    <div className="flex items-center justify-center w-full py-4 overflow-visible">
+      <svg width="320" height="320" viewBox="0 0 300 300" className="max-w-full overflow-visible">
         <defs>
           <radialGradient id="radarGradient" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
@@ -107,18 +107,20 @@ export default function PersonalityRadarChart({ traits }: PersonalityRadarChartP
 
         {labelPoints.map((label, index) => {
           let textAnchor: "start" | "middle" | "end" = "middle";
-          let dy = "0.3em";
+          let dy = "0.35em";
           
-          if (label.angle > -Math.PI/2 + 0.3 && label.angle < Math.PI/2 - 0.3) {
+          const angle = label.angle;
+          
+          if (angle > -Math.PI/3 && angle < Math.PI/3) {
             textAnchor = "start";
-          } else if (label.angle > Math.PI/2 + 0.3 || label.angle < -Math.PI/2 - 0.3) {
+          } else if (angle > Math.PI*2/3 || angle < -Math.PI*2/3) {
             textAnchor = "end";
           }
           
-          if (label.angle < -Math.PI * 0.7 || label.angle > Math.PI * 0.7) {
+          if (angle < -Math.PI * 0.6 || angle > Math.PI * 0.6) {
             dy = "1em";
-          } else if (label.angle > -Math.PI * 0.3 && label.angle < Math.PI * 0.3) {
-            dy = "-0.5em";
+          } else if (angle > -Math.PI * 0.4 && angle < Math.PI * 0.4) {
+            dy = "-0.3em";
           }
 
           return (
@@ -128,7 +130,8 @@ export default function PersonalityRadarChart({ traits }: PersonalityRadarChartP
               y={label.y}
               textAnchor={textAnchor}
               dy={dy}
-              className="text-xs font-medium fill-foreground"
+              className="text-[11px] font-medium fill-foreground"
+              style={{ userSelect: 'none' }}
             >
               {label.trait.name}
             </text>

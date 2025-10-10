@@ -75,6 +75,7 @@ export default function OnboardingQuizPage() {
               traits={results.traits}
               challenges={results.challenges}
               idealMatch={results.idealMatch}
+              energyLevel={results.energyLevel || 75}
             />
 
             <Button 
