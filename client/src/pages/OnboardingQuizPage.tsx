@@ -5,12 +5,43 @@ import { useState } from "react";
 import VoiceQuiz from "@/components/VoiceQuiz";
 import QuizIntro from "@/components/QuizIntro";
 import PersonalityProfile from "@/components/PersonalityProfile";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function OnboardingQuizPage() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [stage, setStage] = useState<"intro" | "quiz" | "results">("intro");
   const [coachGender, setCoachGender] = useState<"female" | "male">("female");
   const [results, setResults] = useState<any>(null);
+
+  const savePersonalityMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("/api/profile/personality", "POST", {
+        personalityTraits: data.traits,
+        personalityChallenges: data.challenges,
+        idealMatch: data.idealMatch,
+        energyLevel: data.energyLevel || 75,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "测评完成",
+        description: "你的性格特质已保存",
+      });
+      setLocation("/");
+    },
+    onError: (error) => {
+      toast({
+        title: "保存失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleStartQuiz = (gender: "female" | "male") => {
     setCoachGender(gender);
@@ -23,7 +54,9 @@ export default function OnboardingQuizPage() {
   };
 
   const handleFinish = () => {
-    setLocation("/profile");
+    if (results) {
+      savePersonalityMutation.mutate(results);
+    }
   };
 
   return (
@@ -33,7 +66,7 @@ export default function OnboardingQuizPage() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => stage === "results" ? handleFinish() : setLocation("/profile")}
+            onClick={() => stage === "results" ? handleFinish() : setLocation("/")}
             data-testid="button-back"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -50,14 +83,14 @@ export default function OnboardingQuizPage() {
         {stage === "intro" && (
           <QuizIntro 
             onStart={handleStartQuiz}
-            onSkip={() => setLocation("/profile")}
+            onSkip={() => setLocation("/")}
           />
         )}
 
         {stage === "quiz" && (
           <VoiceQuiz 
             onComplete={handleQuizComplete}
-            onSkip={() => setLocation("/profile")}
+            onSkip={() => setLocation("/")}
             coachGender={coachGender}
           />
         )}
@@ -82,9 +115,10 @@ export default function OnboardingQuizPage() {
               className="w-full" 
               size="lg"
               onClick={handleFinish}
+              disabled={savePersonalityMutation.isPending}
               data-testid="button-finish-quiz"
             >
-              完成并保存
+              {savePersonalityMutation.isPending ? "保存中..." : "完成并保存"}
             </Button>
           </div>
         )}
