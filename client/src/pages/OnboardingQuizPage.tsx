@@ -9,7 +9,13 @@ import PersonalityProfile from "@/components/PersonalityProfile";
 export default function OnboardingQuizPage() {
   const [, setLocation] = useLocation();
   const [stage, setStage] = useState<"intro" | "quiz" | "results">("intro");
+  const [coachGender, setCoachGender] = useState<"female" | "male">("female");
   const [results, setResults] = useState<any>(null);
+
+  const handleStartQuiz = (gender: "female" | "male") => {
+    setCoachGender(gender);
+    setStage("quiz");
+  };
 
   const handleQuizComplete = (quizResults: any) => {
     setResults(quizResults);
@@ -17,7 +23,6 @@ export default function OnboardingQuizPage() {
   };
 
   const handleFinish = () => {
-    // In real app, save results to backend
     setLocation("/profile");
   };
 
@@ -44,7 +49,7 @@ export default function OnboardingQuizPage() {
       <div className="px-4 py-6">
         {stage === "intro" && (
           <QuizIntro 
-            onStart={() => setStage("quiz")}
+            onStart={handleStartQuiz}
             onSkip={() => setLocation("/profile")}
           />
         )}
@@ -53,6 +58,7 @@ export default function OnboardingQuizPage() {
           <VoiceQuiz 
             onComplete={handleQuizComplete}
             onSkip={() => setLocation("/profile")}
+            coachGender={coachGender}
           />
         )}
 

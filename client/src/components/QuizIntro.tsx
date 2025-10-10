@@ -4,7 +4,7 @@ import { Mic, Clock, Brain } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface QuizIntroProps {
-  onStart: () => void;
+  onStart: (gender: "female" | "male") => void;
   onSkip?: () => void;
 }
 
@@ -21,7 +21,7 @@ export default function QuizIntro({ onStart, onSkip }: QuizIntroProps) {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            通过语音回答几个简单问题，深入了解你的性格特质，发现潜在的社交挑战，并找到最适合你的朋友类型。
+            AI教练将用语音引导你完成测评，深入了解你的性格特质，发现潜在的社交挑战，并找到最适合你的朋友类型。
           </p>
 
           <div className="grid gap-3 pt-2">
@@ -40,7 +40,7 @@ export default function QuizIntro({ onStart, onSkip }: QuizIntroProps) {
                 <Mic className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1 space-y-0.5">
-                <p className="text-sm font-medium">语音回答</p>
+                <p className="text-sm font-medium">AI教练语音引导</p>
                 <p className="text-xs text-muted-foreground">用自然的方式表达真实的你</p>
               </div>
             </div>
@@ -58,14 +58,42 @@ export default function QuizIntro({ onStart, onSkip }: QuizIntroProps) {
         </CardContent>
       </Card>
 
-      <Button 
-        className="w-full" 
-        size="lg"
-        onClick={onStart}
-        data-testid="button-start-quiz"
-      >
-        开始测评
-      </Button>
+      <div className="space-y-3">
+        <p className="text-sm font-medium text-center">选择你的AI教练</p>
+        <div className="grid grid-cols-2 gap-3">
+          <Card 
+            className="border shadow-sm cursor-pointer hover-elevate active-elevate-2 transition-all"
+            onClick={() => onStart("female")}
+            data-testid="button-select-female-coach"
+          >
+            <CardContent className="p-4 text-center space-y-2">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-pink-400/20 to-rose-400/20 flex items-center justify-center mx-auto">
+                <span className="text-2xl">👩</span>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">小周</p>
+                <p className="text-xs text-muted-foreground">你的好姐妹</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="border shadow-sm cursor-pointer hover-elevate active-elevate-2 transition-all"
+            onClick={() => onStart("male")}
+            data-testid="button-select-male-coach"
+          >
+            <CardContent className="p-4 text-center space-y-2">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-400/20 flex items-center justify-center mx-auto">
+                <span className="text-2xl">👨</span>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Ben</p>
+                <p className="text-xs text-muted-foreground">你的好兄弟</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {onSkip && (
         <Button 
