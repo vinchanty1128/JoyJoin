@@ -6,7 +6,6 @@ import { ArrowLeft, Clock, MapPin, DollarSign, Users, ChevronDown } from "lucide
 import { useLocation } from "wouter";
 import VibeChip from "@/components/VibeChip";
 import GroupSparkMeter from "@/components/GroupSparkMeter";
-import EventIconBanner from "@/components/EventIconBanner";
 import { useState } from "react";
 
 export default function EventDetailPage() {
@@ -29,21 +28,18 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      <div className="relative">
-        <EventIconBanner vibeGradient="from-orange-400 via-red-400 to-pink-500" iconName="pizza" />
-        <div className="absolute top-3 left-3 flex gap-1">
-          <VibeChip emoji="⚡" label="活力" gradient="from-orange-400 to-red-500" />
-          <VibeChip emoji="🎈" label="玩乐" gradient="from-pink-400 to-rose-400" />
-          <VibeChip emoji="🤝" label="社交" gradient="from-violet-400 to-purple-400" />
-        </div>
-      </div>
-
-      <div className="px-4 -mt-4 relative z-10 space-y-4">
+      <div className="px-4 py-4 space-y-4">
         <Card className="border-0 shadow-lg">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-2xl font-display font-bold flex-1">墨西哥卷挑战赛</h2>
               <span className="text-xl font-bold text-primary">¥88</span>
+            </div>
+
+            <div className="flex gap-1.5 flex-wrap">
+              <VibeChip emoji="⚡" label="活力" gradient="from-orange-400 to-red-500" />
+              <VibeChip emoji="🎈" label="玩乐" gradient="from-pink-400 to-rose-400" />
+              <VibeChip emoji="🤝" label="社交" gradient="from-violet-400 to-purple-400" />
             </div>
             
             <p className="text-sm text-muted-foreground">

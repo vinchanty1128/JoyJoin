@@ -4,7 +4,6 @@ import { Clock, MapPin, Users } from "lucide-react";
 import { Link } from "wouter";
 import VibeChip from "./VibeChip";
 import MatchScoreBadge from "./MatchScoreBadge";
-import EventIconBanner from "./EventIconBanner";
 
 interface JoyEventCardProps {
   id: string;
@@ -30,44 +29,38 @@ export default function JoyEventCard({
   spotsLeft,
   myFit,
   groupSpark,
-  vibeGradient,
-  iconName,
   socialProof
 }: JoyEventCardProps) {
   return (
     <Link href={`/event/${id}`}>
-      <Card className="overflow-hidden hover-elevate active-elevate-2 transition-all border-0 cursor-pointer" data-testid={`card-event-${title.toLowerCase().replace(/\s+/g, '-')}`}>
-        <div className="relative">
-          <EventIconBanner vibeGradient={vibeGradient} iconName={iconName} />
-          
-          <div className="absolute top-2 left-2 flex gap-1">
-            {vibes.slice(0, 3).map((vibe, i) => (
-              <VibeChip key={i} emoji={vibe.emoji} label={vibe.label} gradient={vibe.gradient} />
-            ))}
-          </div>
-          
-          <div className="absolute top-2 right-2">
+      <Card className="hover-elevate active-elevate-2 transition-all border-0 cursor-pointer" data-testid={`card-event-${title.toLowerCase().replace(/\s+/g, '-')}`}>
+        <div className="p-4 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 space-y-2">
+              <h3 className="font-display font-bold text-xl leading-tight">{title}</h3>
+              <div className="flex gap-1.5 flex-wrap">
+                {vibes.slice(0, 3).map((vibe, i) => (
+                  <VibeChip key={i} emoji={vibe.emoji} label={vibe.label} gradient={vibe.gradient} />
+                ))}
+              </div>
+            </div>
             <MatchScoreBadge myFit={myFit} groupSpark={groupSpark} />
           </div>
-        </div>
 
-        <div className="p-4 space-y-2.5">
-          <h3 className="font-display font-bold text-lg leading-tight">{title}</h3>
-          
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
+              <Clock className="h-4 w-4" />
               <span>{time}</span>
             </div>
             <span>•</span>
             <div className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
+              <MapPin className="h-4 w-4" />
               <span>{area}</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="flex items-center gap-1.5 text-sm">
               <Users className="h-4 w-4 text-primary" />
               <span className="font-medium">剩余 {spotsLeft} 位</span>
             </div>
