@@ -1,10 +1,11 @@
 import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import JoyEventCard from "@/components/JoyEventCard";
+import BlindBoxEventCard from "@/components/BlindBoxEventCard";
 import DiscountCouponCard from "@/components/DiscountCouponCard";
 import UserEnergyBadge from "@/components/UserEnergyBadge";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, Star } from "lucide-react";
+import { Search, Sparkles, Star, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VIBE_TAGS } from "@/lib/vibes";
 import { useState } from "react";
@@ -132,6 +133,56 @@ const mockEvents = [
   }
 ];
 
+const blindBoxEvents = [
+  {
+    id: "bb1",
+    date: "周五",
+    time: "19:30",
+    eventType: "饭局" as const,
+    area: "中环",
+    mysteryTitle: "神秘聚会｜城市夜色",
+    priceRange: "¥80-120",
+    isAA: true
+  },
+  {
+    id: "bb2",
+    date: "周六",
+    time: "20:00",
+    eventType: "酒局" as const,
+    area: "铜锣湾",
+    mysteryTitle: "夜晚奇遇｜微醺时光",
+    priceRange: "¥100-150"
+  },
+  {
+    id: "bb3",
+    date: "周日",
+    time: "18:00",
+    eventType: "饭局" as const,
+    area: "尖沙咀",
+    mysteryTitle: "未知的相聚｜美食探索",
+    isAA: true
+  },
+  {
+    id: "bb4",
+    date: "周三",
+    time: "19:00",
+    eventType: "饭局" as const,
+    area: "南山",
+    mysteryTitle: "神秘晚餐｜意外惊喜",
+    priceRange: "¥60-100",
+    isAA: true
+  },
+  {
+    id: "bb5",
+    date: "周四",
+    time: "21:00",
+    eventType: "酒局" as const,
+    area: "深圳湾",
+    mysteryTitle: "盲盒派对｜深夜放松",
+    priceRange: "¥120-180"
+  }
+];
+
 export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState<"blindbox" | "featured">("blindbox");
 
@@ -163,37 +214,55 @@ export default function DiscoverPage() {
           />
         </div>
 
-        <div className="inline-flex rounded-lg p-1 bg-muted">
-          <button
-            onClick={() => setActiveTab("blindbox")}
-            className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-              activeTab === "blindbox"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover-elevate"
-            }`}
-            data-testid="button-tab-blindbox"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            盲盒模式
-          </button>
-          <button
-            onClick={() => setActiveTab("featured")}
-            className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-              activeTab === "featured"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover-elevate"
-            }`}
-            data-testid="button-tab-featured"
-          >
-            <Star className="h-3.5 w-3.5" />
-            活动精选
-          </button>
+        <div className="flex items-center justify-between gap-3">
+          <div className="inline-flex rounded-lg p-1 bg-muted">
+            <button
+              onClick={() => setActiveTab("blindbox")}
+              className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                activeTab === "blindbox"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover-elevate"
+              }`}
+              data-testid="button-tab-blindbox"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              盲盒模式
+            </button>
+            <button
+              onClick={() => setActiveTab("featured")}
+              className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                activeTab === "featured"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover-elevate"
+              }`}
+              data-testid="button-tab-featured"
+            >
+              <Star className="h-3.5 w-3.5" />
+              活动精选
+            </button>
+          </div>
+          
+          {activeTab === "blindbox" && (
+            <button 
+              className="inline-flex items-center gap-1 text-xs text-primary hover-elevate active-elevate-2 px-2 py-1 rounded-md"
+              data-testid="button-blindbox-rules"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+              玩法说明
+            </button>
+          )}
         </div>
 
         <div className="space-y-5">
-          {mockEvents.map((event) => (
-            <JoyEventCard key={event.id} {...event} />
-          ))}
+          {activeTab === "blindbox" ? (
+            blindBoxEvents.map((event) => (
+              <BlindBoxEventCard key={event.id} {...event} />
+            ))
+          ) : (
+            mockEvents.map((event) => (
+              <JoyEventCard key={event.id} {...event} />
+            ))
+          )}
         </div>
       </div>
 
