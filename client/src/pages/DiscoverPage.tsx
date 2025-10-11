@@ -35,7 +35,15 @@ const mockEvents = [
     vibeGradient: "from-orange-400 via-red-400 to-pink-500",
     iconName: "pizza",
     socialProof: "3位朋友的朋友已加入",
-    discount: 15
+    discount: 15,
+    participants: [
+      { id: "p1", displayName: "小美", vibes: ["活力", "社交"] },
+      { id: "p2", displayName: "阿强", vibes: ["玩乐", "冒险"] },
+      { id: "p3", displayName: "莉莉", vibes: ["活力", "玩乐"] },
+      { id: "p4", displayName: "大明", vibes: ["社交", "活力"] },
+      { id: "p5", displayName: "小红", vibes: ["玩乐", "社交"] }
+    ],
+    attendeeCount: 5
   },
   {
     id: "2",
@@ -53,7 +61,13 @@ const mockEvents = [
     groupSpark: "High" as const,
     vibeGradient: "from-amber-300 via-orange-300 to-yellow-400",
     iconName: "gamepad",
-    socialProof: "主办热门"
+    socialProof: "主办热门",
+    participants: [
+      { id: "p6", displayName: "安安", vibes: ["温馨", "悠闲"] },
+      { id: "p7", displayName: "小白", vibes: ["悠闲", "温馨"] },
+      { id: "p8", displayName: "阿文", vibes: ["探索", "创意"] }
+    ],
+    attendeeCount: 3
   },
   {
     id: "3",
@@ -71,7 +85,12 @@ const mockEvents = [
     groupSpark: "Medium" as const,
     vibeGradient: "from-purple-400 via-pink-400 to-rose-400",
     iconName: "palette",
-    discount: 10
+    discount: 10,
+    participants: [
+      { id: "p9", displayName: "艺琳", vibes: ["创意", "探索"] },
+      { id: "p10", displayName: "小杰", vibes: ["探索", "悠闲"] }
+    ],
+    attendeeCount: 2
   },
   {
     id: "4",
@@ -88,7 +107,13 @@ const mockEvents = [
     groupSpark: "Medium" as const,
     vibeGradient: "from-rose-400 via-pink-400 to-fuchsia-400",
     iconName: "utensils",
-    socialProof: "2对情侣已报名"
+    socialProof: "2对情侣已报名",
+    participants: [
+      { id: "p11", displayName: "晓晓", vibes: ["玩乐", "社交"] },
+      { id: "p12", displayName: "阿宝", vibes: ["社交", "玩乐"] },
+      { id: "p13", displayName: "小芳", vibes: ["玩乐", "活力"] }
+    ],
+    attendeeCount: 3
   },
   {
     id: "5",
@@ -104,7 +129,14 @@ const mockEvents = [
     myFit: 79,
     groupSpark: "High" as const,
     vibeGradient: "from-emerald-400 via-teal-400 to-cyan-400",
-    iconName: "mountain"
+    iconName: "mountain",
+    participants: [
+      { id: "p14", displayName: "阿峰", vibes: ["冒险", "活力"] },
+      { id: "p15", displayName: "小龙", vibes: ["活力", "冒险"] },
+      { id: "p16", displayName: "静怡", vibes: ["探索", "冒险"] },
+      { id: "p17", displayName: "大伟", vibes: ["活力", "社交"] }
+    ],
+    attendeeCount: 4
   }
 ];
 
