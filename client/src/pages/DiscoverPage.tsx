@@ -183,7 +183,7 @@ export default function DiscoverPage() {
           ))}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-5">
           {mockEvents.map((event) => (
             <JoyEventCard key={event.id} {...event} />
           ))}
