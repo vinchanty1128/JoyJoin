@@ -56,6 +56,7 @@ function AuthenticatedRouter() {
   return (
     <Switch>
       <Route path="/" component={DiscoverPage} />
+      <Route path="/discover" component={DiscoverPage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/chats" component={ChatsPage} />
       <Route path="/chats/:eventId" component={EventChatDetailPage} />
