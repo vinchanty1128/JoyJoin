@@ -141,7 +141,7 @@ const blindBoxEvents = [
     eventType: "饭局" as const,
     area: "中环",
     mysteryTitle: "神秘聚会｜城市夜色",
-    priceRange: "¥80-120",
+    priceTier: "100元以下" as const,
     isAA: true
   },
   {
@@ -151,7 +151,7 @@ const blindBoxEvents = [
     eventType: "酒局" as const,
     area: "铜锣湾",
     mysteryTitle: "夜晚奇遇｜微醺时光",
-    priceRange: "¥100-150"
+    priceTier: "100-200" as const
   },
   {
     id: "bb3",
@@ -160,6 +160,7 @@ const blindBoxEvents = [
     eventType: "饭局" as const,
     area: "尖沙咀",
     mysteryTitle: "未知的相聚｜美食探索",
+    priceTier: "200-300" as const,
     isAA: true
   },
   {
@@ -169,7 +170,7 @@ const blindBoxEvents = [
     eventType: "饭局" as const,
     area: "南山",
     mysteryTitle: "神秘晚餐｜意外惊喜",
-    priceRange: "¥60-100",
+    priceTier: "100元以下" as const,
     isAA: true
   },
   {
@@ -179,7 +180,16 @@ const blindBoxEvents = [
     eventType: "酒局" as const,
     area: "深圳湾",
     mysteryTitle: "盲盒派对｜深夜放松",
-    priceRange: "¥120-180"
+    priceTier: "300-500" as const
+  },
+  {
+    id: "bb6",
+    date: "周六",
+    time: "22:00",
+    eventType: "酒局" as const,
+    area: "太古",
+    mysteryTitle: "奢华夜宴｜极致体验",
+    priceTier: "500+" as const
   }
 ];
 

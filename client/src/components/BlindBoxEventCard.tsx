@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Sparkles } from "lucide-react";
 
+type PriceTier = "100元以下" | "100-200" | "200-300" | "300-500" | "500+";
+
 interface BlindBoxEventCardProps {
   id: string;
   date: string;
@@ -10,7 +12,7 @@ interface BlindBoxEventCardProps {
   eventType: "饭局" | "酒局";
   area: string;
   mysteryTitle: string;
-  priceRange?: string;
+  priceTier?: PriceTier;
   isAA?: boolean;
 }
 
@@ -21,7 +23,7 @@ export default function BlindBoxEventCard({
   eventType,
   area,
   mysteryTitle,
-  priceRange,
+  priceTier,
   isAA
 }: BlindBoxEventCardProps) {
   return (
@@ -56,9 +58,9 @@ export default function BlindBoxEventCard({
           <span>{area}</span>
         </div>
 
-        {(priceRange || isAA) && (
+        {(priceTier || isAA) && (
           <div className="text-xs text-muted-foreground">
-            {priceRange && <span>{priceRange}</span>}
+            {priceTier && <span>{priceTier}</span>}
             {isAA && <span className="ml-2">• AA制</span>}
           </div>
         )}
