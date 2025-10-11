@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Send, Users, Star, Zap } from "lucide-react";
+import { ArrowLeft, Send, Users, Star, Zap, Smile, PartyPopper, Compass, Flame, Mountain, Palette } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, ChatMessage, EventFeedback } from "@shared/schema";
@@ -135,6 +135,35 @@ export default function EventChatDetailPage() {
     return { label: "温和", color: "from-teal-500 to-cyan-500" };
   };
 
+  const getVibeIcon = (vibes: string[] | null) => {
+    if (!vibes || vibes.length === 0) return { Icon: Smile, color: "from-gray-400 to-gray-500" };
+    
+    const vibeMap: Record<string, { icon: any; color: string }> = {
+      "悠闲": { icon: Smile, color: "from-blue-400 to-cyan-400" },
+      "relaxed": { icon: Smile, color: "from-blue-400 to-cyan-400" },
+      "chill": { icon: Smile, color: "from-blue-400 to-cyan-400" },
+      "玩乐": { icon: PartyPopper, color: "from-pink-400 to-rose-400" },
+      "playful": { icon: PartyPopper, color: "from-pink-400 to-rose-400" },
+      "活力": { icon: Zap, color: "from-orange-400 to-red-500" },
+      "energetic": { icon: Zap, color: "from-orange-400 to-red-500" },
+      "探索": { icon: Compass, color: "from-purple-400 to-indigo-400" },
+      "exploratory": { icon: Compass, color: "from-purple-400 to-indigo-400" },
+      "curious": { icon: Compass, color: "from-purple-400 to-indigo-400" },
+      "温馨": { icon: Flame, color: "from-amber-400 to-yellow-400" },
+      "cozy": { icon: Flame, color: "from-amber-400 to-yellow-400" },
+      "冒险": { icon: Mountain, color: "from-emerald-400 to-teal-400" },
+      "adventurous": { icon: Mountain, color: "from-emerald-400 to-teal-400" },
+      "社交": { icon: Users, color: "from-violet-400 to-purple-400" },
+      "social": { icon: Users, color: "from-violet-400 to-purple-400" },
+      "创意": { icon: Palette, color: "from-fuchsia-400 to-pink-400" },
+      "creative": { icon: Palette, color: "from-fuchsia-400 to-pink-400" },
+    };
+    
+    const firstVibe = vibes[0].toLowerCase();
+    const config = vibeMap[firstVibe] || vibeMap[vibes[0]];
+    return config ? { Icon: config.icon, color: config.color } : { Icon: Smile, color: "from-gray-400 to-gray-500" };
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b">
@@ -230,20 +259,16 @@ export default function EventChatDetailPage() {
           <div className="space-y-3">
             {participants?.map((participant) => {
               const energyBadge = getEnergyBadge(participant.energyLevel);
+              const vibeIcon = getVibeIcon(participant.vibes);
+              const VibeIconComponent = vibeIcon.Icon;
               
               return (
                 <Card key={participant.id} className="border shadow-sm">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Avatar className="h-12 w-12 flex-shrink-0">
-                        {participant.profileImageUrl ? (
-                          <AvatarImage src={participant.profileImageUrl} />
-                        ) : (
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {participant.displayName?.[0] || participant.firstName?.[0] || "U"}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
+                      <div className={`h-12 w-12 flex-shrink-0 rounded-full bg-gradient-to-br ${vibeIcon.color} flex items-center justify-center shadow-sm`}>
+                        <VibeIconComponent className="h-5 w-5 text-white" />
+                      </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
