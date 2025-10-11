@@ -1,9 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Users, Sparkles } from "lucide-react";
+import { Clock, MapPin, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import VibeChip from "./VibeChip";
 import MatchScoreBadge from "./MatchScoreBadge";
+import ParticipantAvatars from "./ParticipantAvatars";
 
 interface JoyEventCardProps {
   id: string;
@@ -19,6 +20,8 @@ interface JoyEventCardProps {
   iconName?: string;
   socialProof?: string;
   discount?: number;
+  participants?: Array<{ id: string; displayName: string | null; vibes: string[] | null }>;
+  attendeeCount?: number;
 }
 
 export default function JoyEventCard({
@@ -31,7 +34,9 @@ export default function JoyEventCard({
   myFit,
   groupSpark,
   socialProof,
-  discount
+  discount,
+  participants = [],
+  attendeeCount = 0
 }: JoyEventCardProps) {
   return (
     <Link href={`/event/${id}`}>
@@ -70,9 +75,18 @@ export default function JoyEventCard({
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-1.5 text-sm">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="font-medium">剩余 {spotsLeft} 位</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">参与者</span>
+              <ParticipantAvatars 
+                participants={participants} 
+                maxDisplay={8}
+                size="sm"
+              />
+              {attendeeCount > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {spotsLeft > 0 ? `剩余 ${spotsLeft} 位` : '已满'}
+                </span>
+              )}
             </div>
             {socialProof && (
               <Badge variant="secondary" className="text-xs">
