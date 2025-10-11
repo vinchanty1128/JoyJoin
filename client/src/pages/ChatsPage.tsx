@@ -2,15 +2,22 @@ import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, MessageSquare } from "lucide-react";
+import { Calendar, MapPin, MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import ParticipantAvatars from "@/components/ParticipantAvatars";
 import type { Event } from "@shared/schema";
+
+type EventWithParticipants = Event & { 
+  attendanceStatus: string; 
+  attendeeCount: number;
+  participants: Array<{ id: string; displayName: string | null; vibes: string[] | null }>;
+};
 
 export default function ChatsPage() {
   const [, setLocation] = useLocation();
   
-  const { data: joinedEvents, isLoading } = useQuery<Array<Event & { attendanceStatus: string; attendeeCount: number }>>({
+  const { data: joinedEvents, isLoading } = useQuery<Array<EventWithParticipants>>({
     queryKey: ["/api/events/joined"],
   });
 
@@ -88,7 +95,7 @@ export default function ChatsPage() {
                       <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     </div>
                     
-                    <div className="space-y-1.5 text-xs text-muted-foreground">
+                    <div className="space-y-2 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>{formatDate(event.dateTime)}</span>
@@ -99,9 +106,18 @@ export default function ChatsPage() {
                         <span>{event.location}</span>
                       </div>
                       
-                      <div className="flex items-center gap-1.5">
-                        <Users className="h-3.5 w-3.5" />
-                        <span>{event.attendeeCount} 人参加</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">参与者</span>
+                        <ParticipantAvatars 
+                          participants={event.participants || []} 
+                          maxDisplay={8}
+                          size="sm"
+                        />
+                        {event.attendeeCount > 8 && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            共{event.attendeeCount}人
+                          </span>
+                        )}
                       </div>
                     </div>
 

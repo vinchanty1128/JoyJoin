@@ -17,7 +17,7 @@ export interface IStorage {
   markVoiceQuizComplete(id: string): Promise<void>;
   
   // Event operations
-  getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number }>>;
+  getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number; participants: Array<{ id: string; displayName: string | null; vibes: string[] | null }> }>>;
   getEventParticipants(eventId: string): Promise<Array<User>>;
   
   // Chat operations
@@ -96,7 +96,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Event operations
-  async getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number }>> {
+  async getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number; participants: Array<{ id: string; displayName: string | null; vibes: string[] | null }> }>> {
     const result = await db
       .select({
         event: events,
@@ -108,11 +108,34 @@ export class DatabaseStorage implements IStorage {
       .where(eq(eventAttendance.userId, userId))
       .orderBy(desc(events.dateTime));
 
-    return result.map(r => ({
-      ...r.event,
-      attendanceStatus: r.attendanceStatus || 'confirmed',
-      attendeeCount: Number(r.attendeeCount) || 0,
-    }));
+    // Get participants for each event
+    const eventsWithParticipants = await Promise.all(
+      result.map(async (r) => {
+        const participants = await db
+          .select({
+            id: users.id,
+            displayName: users.displayName,
+            vibes: users.vibes,
+          })
+          .from(eventAttendance)
+          .innerJoin(users, eq(eventAttendance.userId, users.id))
+          .where(
+            and(
+              eq(eventAttendance.eventId, r.event.id),
+              eq(eventAttendance.status, 'confirmed')
+            )
+          )
+
+        return {
+          ...r.event,
+          attendanceStatus: r.attendanceStatus || 'confirmed',
+          attendeeCount: Number(r.attendeeCount) || 0,
+          participants: participants,
+        };
+      })
+    );
+
+    return eventsWithParticipants;
   }
 
   async getEventParticipants(eventId: string): Promise<Array<User>> {
