@@ -16,6 +16,8 @@ interface BlindBoxEventCardProps {
   mysteryTitle: string;
   priceTier?: PriceTier;
   isAA?: boolean;
+  city?: "香港" | "深圳";
+  isGirlsNight?: boolean;
 }
 
 export default function BlindBoxEventCard({
@@ -26,7 +28,9 @@ export default function BlindBoxEventCard({
   area,
   mysteryTitle,
   priceTier,
-  isAA
+  isAA,
+  city,
+  isGirlsNight
 }: BlindBoxEventCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -52,6 +56,15 @@ export default function BlindBoxEventCard({
                 >
                   {eventType}
                 </Badge>
+                {isGirlsNight && (
+                  <Badge 
+                    variant="default" 
+                    className="text-xs px-2 py-0.5 rounded-md bg-pink-500 hover:bg-pink-600"
+                    data-testid="badge-girls-night"
+                  >
+                    👭 Girls Night
+                  </Badge>
+                )}
               </div>
             </div>
             
