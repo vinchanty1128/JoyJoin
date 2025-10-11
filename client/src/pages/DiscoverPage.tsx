@@ -136,35 +136,6 @@ const mockEvents = [
 const blindBoxEvents = [
   {
     id: "bb1",
-    date: "周五",
-    time: "19:30",
-    eventType: "饭局" as const,
-    area: "香港·中西区",
-    mysteryTitle: "神秘聚会｜城市夜色",
-    priceTier: "100元以下" as const,
-    isAA: true
-  },
-  {
-    id: "bb2",
-    date: "周六",
-    time: "20:00",
-    eventType: "酒局" as const,
-    area: "香港·湾仔区",
-    mysteryTitle: "夜晚奇遇｜微醺时光",
-    priceTier: "100-200" as const
-  },
-  {
-    id: "bb3",
-    date: "周日",
-    time: "18:00",
-    eventType: "饭局" as const,
-    area: "香港·油尖旺区",
-    mysteryTitle: "未知的相聚｜美食探索",
-    priceTier: "200-300" as const,
-    isAA: true
-  },
-  {
-    id: "bb4",
     date: "周三",
     time: "19:00",
     eventType: "饭局" as const,
@@ -174,21 +145,51 @@ const blindBoxEvents = [
     isAA: true
   },
   {
-    id: "bb5",
+    id: "bb2",
     date: "周四",
-    time: "21:00",
-    eventType: "酒局" as const,
+    time: "19:00",
+    eventType: "饭局" as const,
     area: "深圳·福田区",
     mysteryTitle: "盲盒派对｜深夜放松",
-    priceTier: "300-500" as const
+    priceTier: "300-500" as const,
+    isAA: true
+  },
+  {
+    id: "bb3",
+    date: "周五",
+    time: "19:00",
+    eventType: "饭局" as const,
+    area: "深圳·华侨城",
+    mysteryTitle: "奢华夜宴｜极致体验",
+    priceTier: "200-300" as const,
+    isAA: true
+  },
+  {
+    id: "bb4",
+    date: "周六",
+    time: "19:00",
+    eventType: "饭局" as const,
+    area: "深圳·罗湖区",
+    mysteryTitle: "周末盲盒｜惊喜连连",
+    priceTier: "100-200" as const,
+    isAA: true
+  },
+  {
+    id: "bb5",
+    date: "周五",
+    time: "20:00",
+    eventType: "酒局" as const,
+    area: "香港·中西区",
+    mysteryTitle: "神秘聚会｜城市夜色",
+    priceTier: "100元以下" as const
   },
   {
     id: "bb6",
     date: "周六",
     time: "22:00",
     eventType: "酒局" as const,
-    area: "深圳·华侨城",
-    mysteryTitle: "奢华夜宴｜极致体验",
+    area: "香港·湾仔区",
+    mysteryTitle: "夜晚奇遇｜微醺时光",
     priceTier: "500+" as const
   }
 ];
