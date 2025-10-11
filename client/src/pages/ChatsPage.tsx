@@ -55,7 +55,7 @@ export default function ChatsPage() {
     <div className="min-h-screen bg-background pb-16">
       <MobileHeader title="聊天" />
       
-      <div className="px-4 py-4 space-y-3">
+      <div className="px-4 py-4 space-y-4">
         <p className="text-sm text-muted-foreground">
           你参加的活动群聊
         </p>
