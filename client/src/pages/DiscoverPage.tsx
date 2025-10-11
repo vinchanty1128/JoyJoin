@@ -4,18 +4,10 @@ import JoyEventCard from "@/components/JoyEventCard";
 import DiscountCouponCard from "@/components/DiscountCouponCard";
 import UserEnergyBadge from "@/components/UserEnergyBadge";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Sparkles, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VIBE_TAGS } from "@/lib/vibes";
-
-const categories = [
-  { emoji: "😌", label: "悠闲" },
-  { emoji: "🎈", label: "玩乐" },
-  { emoji: "⚡", label: "活力" },
-  { emoji: "🧠", label: "探索" },
-  { emoji: "🕯️", label: "温馨" },
-  { emoji: "🧗", label: "冒险" }
-];
+import { useState } from "react";
 
 const mockEvents = [
   {
@@ -141,6 +133,8 @@ const mockEvents = [
 ];
 
 export default function DiscoverPage() {
+  const [activeTab, setActiveTab] = useState<"blindbox" | "featured">("blindbox");
+
   return (
     <div className="min-h-screen bg-background pb-16">
       <MobileHeader showLogo={true} showNotification={true} />
@@ -169,18 +163,31 @@ export default function DiscoverPage() {
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-          {categories.map((cat) => (
-            <Badge
-              key={cat.label}
-              variant="outline"
-              className="cursor-pointer whitespace-nowrap hover-elevate active-elevate-2 px-3 py-1"
-              data-testid={`badge-category-${cat.label}`}
-            >
-              <span className="mr-1">{cat.emoji}</span>
-              {cat.label}
-            </Badge>
-          ))}
+        <div className="inline-flex rounded-lg p-1 bg-muted">
+          <button
+            onClick={() => setActiveTab("blindbox")}
+            className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              activeTab === "blindbox"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover-elevate"
+            }`}
+            data-testid="button-tab-blindbox"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            盲盒模式
+          </button>
+          <button
+            onClick={() => setActiveTab("featured")}
+            className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              activeTab === "featured"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover-elevate"
+            }`}
+            data-testid="button-tab-featured"
+          >
+            <Star className="h-3.5 w-3.5" />
+            活动精选
+          </button>
         </div>
 
         <div className="space-y-5">
