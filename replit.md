@@ -161,3 +161,31 @@ Preferred communication style: Simple, everyday language.
 5. **Mobile-First, Bilingual Design:** Bottom navigation, touch-friendly interactions, and Chinese/English branding reflect the target market and use cases.
 
 6. **Explainable Matching:** Two-part scoring (My Fit + Group Spark) with transparent reasoning addresses trust and helps users understand why they're matched with specific events.
+
+## Recent Changes (October 12, 2025)
+
+### Budget-Based Matching System
+- Added `budgetPreference` field to users schema (text array type) to support multiple budget tier selections
+- Created POST `/api/profile/budget` endpoint for saving user budget preferences
+- Implemented budget selection UI in JoinBlindBoxSheet with clean, reference-inspired design:
+  - Simple card-style buttons with rounded checkboxes
+  - Multi-select support (users can choose multiple budget tiers)
+  - Four budget tiers: ¥100以下, ¥100-200, ¥300-500, ¥500+
+  - Budget selection is mandatory before joining blind box events
+- Budget preferences are saved to user profile and used for pool-based matching
+
+### UI/UX Improvements
+- **Blind Box Event Cards:** Removed price tier and AA制 display from discovery cards for cleaner, more mysterious presentation
+- **Join Flow Reorganization:** Grouped all user preference selections together at the top of JoinBlindBoxSheet after basic event info:
+  1. Basic event information (date, time, location, etc.)
+  2. User preferences section (grouped):
+     - Budget selection (required)
+     - Invite friends toggle
+     - Improve success rate options
+  3. My preferences quick view
+  4. Rules & guarantees
+- **Budget Selection Design:** Adopted clean, minimal design pattern with:
+  - Rounded rectangular cards with 2px borders
+  - Circular checkboxes (filled on selection)
+  - Simple "(必填)" label instead of lengthy explanations
+  - Increased spacing between options for better readability
