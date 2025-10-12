@@ -173,6 +173,10 @@ Preferred communication style: Simple, everyday language.
   - Four budget tiers: ¥100以下, ¥100-200, ¥300-500, ¥500+
   - Budget selection is mandatory before joining blind box events
 - Budget preferences are saved to user profile and used for pool-based matching
+- **Payment Page Enhancement:** Added budget range and preference options display on BlindBoxPaymentPage (/blindbox/payment) using consistent multiple tickboxes format:
+  - "你的预算范围" section shows user's selected budget tiers with checkmarks
+  - "偏好选项" section shows user's preference selections with checkmarks
+  - Both use unified tickbox UI pattern: circular checkboxes, border-2, selected items show border-primary bg-primary/5
 
 ### UI/UX Improvements
 - **Blind Box Event Cards:** Removed price tier and AA制 display from discovery cards for cleaner, more mysterious presentation
