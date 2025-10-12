@@ -86,13 +86,6 @@ export default function BlindBoxEventCard({
             </span>
           </div>
 
-          {(priceTier || isAA) && (
-            <div className="text-xs text-muted-foreground">
-              {priceTier && <span>¥{priceTier}</span>}
-              {isAA && <span className="ml-2">• AA制</span>}
-            </div>
-          )}
-
           <div className="flex gap-2 pt-1">
             <Button 
               className="flex-1" 
