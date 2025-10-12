@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Drawer } from "vaul";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +16,19 @@ import {
   Clock,
   DollarSign
 } from "lucide-react";
-import { useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
@@ -53,6 +61,9 @@ export default function JoinBlindBoxSheet({
   
   // 预算偏好 - 可多选
   const [budgetPreference, setBudgetPreference] = useState<string[]>([]);
+  
+  // 确认弹窗状态
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
   // 提升成功率选项
   const [acceptNearby, setAcceptNearby] = useState(false);
@@ -100,7 +111,7 @@ export default function JoinBlindBoxSheet({
     });
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (budgetPreference.length === 0) {
       toast({
         title: "请选择预算范围",
@@ -110,10 +121,16 @@ export default function JoinBlindBoxSheet({
       return;
     }
 
+    // 打开确认弹窗
+    setShowConfirmDialog(true);
+  };
+
+  const handleFinalConfirm = async () => {
     // 保存预算偏好到用户profile
     try {
       await saveBudgetMutation.mutateAsync(budgetPreference);
       
+      setShowConfirmDialog(false);
       onOpenChange(false);
       // 导航到付费页面
       setTimeout(() => {
@@ -132,6 +149,7 @@ export default function JoinBlindBoxSheet({
   };
 
   return (
+    <React.Fragment>
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
@@ -471,5 +489,114 @@ export default function JoinBlindBoxSheet({
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
+
+    {/* 确认弹窗 */}
+    <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+      <DialogContent className="max-w-md" data-testid="dialog-confirm-join">
+        <DialogHeader>
+          <DialogTitle>确认参与信息</DialogTitle>
+          <DialogDescription>
+            请确认你的预算范围和偏好选项
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {/* 你的预算范围 */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">你的预算范围</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "¥100以下", value: "100以下" },
+                { label: "¥100-200", value: "100-200" },
+                { label: "¥300-500", value: "300-500" },
+                { label: "¥500+", value: "500+" },
+              ].map((option) => {
+                const isSelected = budgetPreference.includes(option.value);
+                return (
+                  <div
+                    key={option.value}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "border-muted bg-muted/30"
+                    }`}
+                    data-testid={`dialog-budget-${option.value}`}
+                  >
+                    <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                    }`}>
+                      {isSelected && (
+                        <CheckCircle2 className="h-4 w-4 text-background" />
+                      )}
+                    </div>
+                    <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>
+                      {option.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 偏好选项 */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">偏好选项</h3>
+            <div className="space-y-2">
+              {[
+                { label: "接受相邻商圈", detail: "扩大半径至3-5km", selected: acceptNearby },
+                { label: "时间可前后±30分钟", detail: null, selected: flexibleTime },
+                { label: eventData.eventType === "饭局" ? "饭局可替代为酒局" : "酒局可替代为饭局", detail: null, selected: typeSubstitute },
+                { label: "不做性别/年龄硬性限制", detail: null, selected: noStrictRestrictions },
+                { label: "优先快成局", detail: "可能牺牲部分兴趣匹配度", selected: prioritizeFast },
+              ].map((option, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all ${
+                    option.selected
+                      ? "border-primary bg-primary/5"
+                      : "border-muted bg-muted/30"
+                  }`}
+                  data-testid={`dialog-preference-${idx}`}
+                >
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    option.selected ? "border-primary bg-primary" : "border-muted-foreground"
+                  }`}>
+                    {option.selected && (
+                      <CheckCircle2 className="h-4 w-4 text-background" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <span className={`text-sm ${option.selected ? "font-medium" : ""}`}>
+                      {option.label}
+                    </span>
+                    {option.detail && (
+                      <span className="text-xs text-muted-foreground ml-1">（{option.detail}）</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowConfirmDialog(false)}
+            data-testid="button-dialog-cancel"
+          >
+            返回修改
+          </Button>
+          <Button
+            onClick={handleFinalConfirm}
+            disabled={saveBudgetMutation.isPending}
+            data-testid="button-dialog-confirm"
+          >
+            {saveBudgetMutation.isPending ? "处理中..." : "确认并支付"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </React.Fragment>
   );
 }

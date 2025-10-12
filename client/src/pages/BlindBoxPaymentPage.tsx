@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X, ChevronDown, Sparkles, Zap, Gift, CheckCircle2 } from "lucide-react";
+import { X, ChevronDown, Sparkles, Zap, Gift } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Collapsible,
@@ -108,80 +108,6 @@ export default function BlindBoxPaymentPage() {
             <div className="text-sm text-muted-foreground space-y-1">
               <p>📍 深圳·南山区</p>
               <p>👥 4-6人 · AI智能匹配</p>
-            </div>
-          </div>
-
-          {/* 你的预算范围 */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">你的预算范围</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: "¥100以下", value: "100以下", selected: true },
-                { label: "¥100-200", value: "100-200", selected: true },
-                { label: "¥300-500", value: "300-500", selected: false },
-                { label: "¥500+", value: "500+", selected: false },
-              ].map((option) => (
-                <div
-                  key={option.value}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all ${
-                    option.selected
-                      ? "border-primary bg-primary/5"
-                      : "border-muted bg-muted/30"
-                  }`}
-                  data-testid={`budget-option-${option.value}`}
-                >
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    option.selected ? "border-primary bg-primary" : "border-muted-foreground"
-                  }`}>
-                    {option.selected && (
-                      <CheckCircle2 className="h-4 w-4 text-background" />
-                    )}
-                  </div>
-                  <span className={`text-sm ${option.selected ? "font-medium" : ""}`}>
-                    {option.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 偏好选项 */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">偏好选项</h3>
-            <div className="space-y-2">
-              {[
-                { label: "接受相邻商圈", detail: "扩大半径至3-5km", selected: true },
-                { label: "时间可前后±30分钟", detail: null, selected: true },
-                { label: "饭局可替代为酒局", detail: null, selected: false },
-                { label: "不做性别/年龄硬性限制", detail: null, selected: true },
-                { label: "优先快成局", detail: "可能牺牲部分兴趣匹配度", selected: false },
-              ].map((option, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all ${
-                    option.selected
-                      ? "border-primary bg-primary/5"
-                      : "border-muted bg-muted/30"
-                  }`}
-                  data-testid={`preference-option-${idx}`}
-                >
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    option.selected ? "border-primary bg-primary" : "border-muted-foreground"
-                  }`}>
-                    {option.selected && (
-                      <CheckCircle2 className="h-4 w-4 text-background" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <span className={`text-sm ${option.selected ? "font-medium" : ""}`}>
-                      {option.label}
-                    </span>
-                    {option.detail && (
-                      <span className="text-xs text-muted-foreground ml-1">（{option.detail}）</span>
-                    )}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 
