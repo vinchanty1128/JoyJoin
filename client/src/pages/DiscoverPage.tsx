@@ -4,12 +4,14 @@ import JoyEventCard from "@/components/JoyEventCard";
 import BlindBoxEventCard from "@/components/BlindBoxEventCard";
 import DiscountCouponCard from "@/components/DiscountCouponCard";
 import UserEnergyBadge from "@/components/UserEnergyBadge";
-import LocationSelector from "@/components/LocationSelector";
+import HeroWelcome from "@/components/HeroWelcome";
+import LocationPickerSheet from "@/components/LocationPickerSheet";
 import { Input } from "@/components/ui/input";
 import { Search, Sparkles, Star, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VIBE_TAGS } from "@/lib/vibes";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const mockEvents = [
   {
@@ -214,8 +216,16 @@ const blindBoxEvents = [
 ];
 
 export default function DiscoverPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"blindbox" | "featured">("blindbox");
   const [selectedCity, setSelectedCity] = useState<"香港" | "深圳">("深圳");
+  const [selectedArea, setSelectedArea] = useState<string>("南山区");
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+
+  const handleLocationSave = (city: "香港" | "深圳", area: string) => {
+    setSelectedCity(city);
+    setSelectedArea(area);
+  };
 
   const filteredBlindBoxEvents = blindBoxEvents.filter(event => event.city === selectedCity);
   const filteredFeaturedEvents = mockEvents.filter(event => {
@@ -230,95 +240,114 @@ export default function DiscoverPage() {
     <div className="min-h-screen bg-background pb-16">
       <MobileHeader showLogo={true} showNotification={true} />
       
-      <div className="px-4 py-3 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <LocationSelector selectedCity={selectedCity} onCityChange={setSelectedCity} />
-            <h2 className="text-lg font-display font-bold mt-1">今晚来聚</h2>
-          </div>
-          <UserEnergyBadge level={3} role="energizer" />
-        </div>
-
-        <DiscountCouponCard 
-          discount={15}
-          reason="上次活动带动全场氛围，获得能量奖励"
-          expiresIn="7天"
-        />
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="搜索氛围、地区、活动..." 
-            className="pl-9"
-            data-testid="input-search-events"
+      <div className="space-y-4">
+        {/* Hero 欢迎区 */}
+        <div className="flex items-start justify-between pr-4">
+          <HeroWelcome 
+            userName={user?.displayName || "朋友"}
+            selectedCity={selectedCity}
+            selectedArea={selectedArea}
+            onLocationClick={() => setLocationPickerOpen(true)}
           />
-        </div>
-
-        <div className="flex items-center justify-between gap-3">
-          <div className="inline-flex rounded-lg p-1 bg-muted">
-            <button
-              onClick={() => setActiveTab("blindbox")}
-              className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                activeTab === "blindbox"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover-elevate"
-              }`}
-              data-testid="button-tab-blindbox"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              盲盒模式
-            </button>
-            <button
-              onClick={() => setActiveTab("featured")}
-              className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                activeTab === "featured"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover-elevate"
-              }`}
-              data-testid="button-tab-featured"
-            >
-              <Star className="h-3.5 w-3.5" />
-              活动精选
-            </button>
+          <div className="pt-6">
+            <UserEnergyBadge level={3} role="energizer" />
           </div>
-          
-          {activeTab === "blindbox" && (
-            <button 
-              className="inline-flex items-center gap-1 text-xs text-primary hover-elevate active-elevate-2 px-2 py-1 rounded-md"
-              data-testid="button-blindbox-rules"
-            >
-              <HelpCircle className="h-3.5 w-3.5" />
-              玩法说明
-            </button>
-          )}
         </div>
 
-        <div className="space-y-5">
-          {activeTab === "blindbox" ? (
-            filteredBlindBoxEvents.length > 0 ? (
-              filteredBlindBoxEvents.map((event) => (
-                <BlindBoxEventCard key={event.id} {...event} />
-              ))
+        {/* 分割线 */}
+        <div className="h-px bg-border/50 mx-4" />
+
+        <div className="px-4 space-y-4">
+          <DiscountCouponCard 
+            discount={15}
+            reason="上次活动带动全场氛围，获得能量奖励"
+            expiresIn="7天"
+          />
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="搜索氛围、地区、活动..." 
+              className="pl-9"
+              data-testid="input-search-events"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="inline-flex rounded-lg p-1 bg-muted">
+              <button
+                onClick={() => setActiveTab("blindbox")}
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  activeTab === "blindbox"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover-elevate"
+                }`}
+                data-testid="button-tab-blindbox"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                盲盒模式
+              </button>
+              <button
+                onClick={() => setActiveTab("featured")}
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  activeTab === "featured"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover-elevate"
+                }`}
+                data-testid="button-tab-featured"
+              >
+                <Star className="h-3.5 w-3.5" />
+                活动精选
+              </button>
+            </div>
+            
+            {activeTab === "blindbox" && (
+              <button 
+                className="inline-flex items-center gap-1 text-xs text-primary hover-elevate active-elevate-2 px-2 py-1 rounded-md"
+                data-testid="button-blindbox-rules"
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+                玩法说明
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-5">
+            {activeTab === "blindbox" ? (
+              filteredBlindBoxEvents.length > 0 ? (
+                filteredBlindBoxEvents.map((event) => (
+                  <BlindBoxEventCard key={event.id} {...event} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>暂无{selectedCity}的盲盒活动</p>
+                </div>
+              )
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>暂无{selectedCity}的盲盒活动</p>
-              </div>
-            )
-          ) : (
-            filteredFeaturedEvents.length > 0 ? (
-              filteredFeaturedEvents.map((event) => (
-                <JoyEventCard key={event.id} {...event} />
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>暂无{selectedCity}的精选活动</p>
-              </div>
-            )
-          )}
+              filteredFeaturedEvents.length > 0 ? (
+                filteredFeaturedEvents.map((event) => (
+                  <JoyEventCard key={event.id} {...event} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>暂无{selectedCity}的精选活动</p>
+                </div>
+              )
+            )}
+          </div>
         </div>
       </div>
 
       <BottomNav />
+      
+      {/* 地点选择器 */}
+      <LocationPickerSheet
+        open={locationPickerOpen}
+        onOpenChange={setLocationPickerOpen}
+        selectedCity={selectedCity}
+        selectedArea={selectedArea}
+        onSave={handleLocationSave}
+      />
     </div>
   );
 }
