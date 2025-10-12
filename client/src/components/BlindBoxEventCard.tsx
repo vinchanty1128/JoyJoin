@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Sparkles } from "lucide-react";
 import BlindBoxInfoSheet from "./BlindBoxInfoSheet";
+import JoinBlindBoxSheet from "./JoinBlindBoxSheet";
 
 type PriceTier = "100元以下" | "100-200" | "200-300" | "300-500" | "500+";
 
@@ -32,7 +33,8 @@ export default function BlindBoxEventCard({
   city,
   isGirlsNight
 }: BlindBoxEventCardProps) {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [infoSheetOpen, setInfoSheetOpen] = useState(false);
+  const [joinSheetOpen, setJoinSheetOpen] = useState(false);
 
   return (
     <>
@@ -87,6 +89,7 @@ export default function BlindBoxEventCard({
             <Button 
               className="flex-1" 
               size="default"
+              onClick={() => setJoinSheetOpen(true)}
               data-testid={`button-join-${id}`}
             >
               <Sparkles className="h-4 w-4 mr-1.5" />
@@ -95,7 +98,7 @@ export default function BlindBoxEventCard({
             <Button 
               variant="outline" 
               size="default"
-              onClick={() => setSheetOpen(true)}
+              onClick={() => setInfoSheetOpen(true)}
               data-testid={`button-learn-more-${id}`}
             >
               了解更多
@@ -105,8 +108,8 @@ export default function BlindBoxEventCard({
       </Card>
 
       <BlindBoxInfoSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        open={infoSheetOpen}
+        onOpenChange={setInfoSheetOpen}
         eventData={{
           date,
           time,
@@ -114,6 +117,20 @@ export default function BlindBoxEventCard({
           area,
           priceTier,
           isAA
+        }}
+      />
+
+      <JoinBlindBoxSheet
+        open={joinSheetOpen}
+        onOpenChange={setJoinSheetOpen}
+        eventData={{
+          date,
+          time,
+          eventType,
+          area,
+          priceTier,
+          isAA,
+          isGirlsNight
         }}
       />
     </>
