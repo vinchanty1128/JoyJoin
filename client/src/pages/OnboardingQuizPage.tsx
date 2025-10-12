@@ -43,6 +43,28 @@ export default function OnboardingQuizPage() {
     },
   });
 
+  const skipOnboardingMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/profile/personality", {
+        personalityTraits: [],
+        personalityChallenges: [],
+        idealMatch: "",
+        energyLevel: 75,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setLocation("/");
+    },
+    onError: (error) => {
+      toast({
+        title: "跳过失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleStartQuiz = (gender: "female" | "male") => {
     setCoachGender(gender);
     setStage("quiz");
@@ -66,7 +88,7 @@ export default function OnboardingQuizPage() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => stage === "results" ? handleFinish() : setLocation("/")}
+            onClick={() => stage === "results" ? handleFinish() : skipOnboardingMutation.mutate()}
             data-testid="button-back"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -83,14 +105,14 @@ export default function OnboardingQuizPage() {
         {stage === "intro" && (
           <QuizIntro 
             onStart={handleStartQuiz}
-            onSkip={() => setLocation("/")}
+            onSkip={() => skipOnboardingMutation.mutate()}
           />
         )}
 
         {stage === "quiz" && (
           <VoiceQuiz 
             onComplete={handleQuizComplete}
-            onSkip={() => setLocation("/")}
+            onSkip={() => skipOnboardingMutation.mutate()}
             coachGender={coachGender}
           />
         )}
