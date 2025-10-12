@@ -127,10 +127,10 @@ export default function LocationPickerSheet({
             <Tabs value={tempCity} onValueChange={(v) => setTempCity(v as "香港" | "深圳")}>
               <TabsList className="w-full grid grid-cols-2">
                 <TabsTrigger value="深圳" data-testid="tab-shenzhen">
-                  🏙️ 深圳
+                  深圳
                 </TabsTrigger>
                 <TabsTrigger value="香港" data-testid="tab-hongkong">
-                  🇭🇰 香港
+                  香港
                 </TabsTrigger>
               </TabsList>
 
