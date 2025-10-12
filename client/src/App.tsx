@@ -14,6 +14,7 @@ import ChatsPage from "@/pages/ChatsPage";
 import EventChatDetailPage from "@/pages/EventChatDetailPage";
 import ProfilePage from "@/pages/ProfilePage";
 import EventDetailPage from "@/pages/EventDetailPage";
+import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
 import NotFound from "@/pages/not-found";
 
 function RedirectToSetup() {
@@ -57,6 +58,7 @@ function AuthenticatedRouter() {
     <Switch>
       <Route path="/" component={DiscoverPage} />
       <Route path="/discover" component={DiscoverPage} />
+      <Route path="/blindbox/payment" component={BlindBoxPaymentPage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/chats" component={ChatsPage} />
       <Route path="/chats/:eventId" component={EventChatDetailPage} />

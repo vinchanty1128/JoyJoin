@@ -22,6 +22,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface JoinBlindBoxSheetProps {
   open: boolean;
@@ -43,6 +44,7 @@ export default function JoinBlindBoxSheet({
   eventData 
 }: JoinBlindBoxSheetProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [inviteFriends, setInviteFriends] = useState(false);
   const [friendsCount, setFriendsCount] = useState<1 | 2>(1);
   const [mustMatchTogether, setMustMatchTogether] = useState(true);
@@ -64,12 +66,11 @@ export default function JoinBlindBoxSheet({
   };
 
   const handleConfirm = () => {
-    toast({
-      title: "已进入匹配队列",
-      description: "预计数小时内完成；你可在\"我的-盲盒\"查看进度",
-      duration: 3000,
-    });
     onOpenChange(false);
+    // 导航到付费页面
+    setTimeout(() => {
+      setLocation("/blindbox/payment");
+    }, 300);
   };
 
   const getConfirmButtonText = () => {
