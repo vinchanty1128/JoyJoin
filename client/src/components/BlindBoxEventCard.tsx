@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Sparkles, Users } from "lucide-react";
 import BlindBoxInfoSheet from "./BlindBoxInfoSheet";
 import JoinBlindBoxSheet from "./JoinBlindBoxSheet";
 
@@ -76,6 +76,14 @@ export default function BlindBoxEventCard({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4" />
             <span>{area}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <span>4-6人</span>
+            {!isGirlsNight && (
+              <span className="text-xs">• 尽量保持男女比例平衡</span>
+            )}
           </div>
 
           {(priceTier || isAA) && (
