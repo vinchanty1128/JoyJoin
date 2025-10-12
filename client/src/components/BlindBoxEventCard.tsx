@@ -81,9 +81,9 @@ export default function BlindBoxEventCard({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" />
             <span>4-6人</span>
-            {!isGirlsNight && (
-              <span className="text-xs">• 尽量保持男女比例平衡</span>
-            )}
+            <span className="text-xs">
+              • {isGirlsNight ? "仅限女生" : "尽量保持男女比例平衡"}
+            </span>
           </div>
 
           {(priceTier || isAA) && (
