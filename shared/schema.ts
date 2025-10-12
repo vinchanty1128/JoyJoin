@@ -43,6 +43,9 @@ export const users = pgTable("users", {
   idealMatch: text("ideal_match"),
   energyLevel: integer("energy_level"),
   
+  // Budget preference
+  budgetPreference: text("budget_preference").array(),
+  
   // Gamification
   eventsAttended: integer("events_attended").default(0),
   matchesMade: integer("matches_made").default(0),
@@ -127,6 +130,12 @@ export const updatePersonalitySchema = createInsertSchema(users).pick({
   energyLevel: true,
 });
 
+export const updateBudgetPreferenceSchema = createInsertSchema(users).pick({
+  budgetPreference: true,
+}).extend({
+  budgetPreference: z.array(z.string()).min(1, "请至少选择一个预算档位"),
+});
+
 export const insertEventAttendanceSchema = createInsertSchema(eventAttendance).pick({
   eventId: true,
   userId: true,
@@ -158,6 +167,7 @@ export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export type UpdatePersonality = z.infer<typeof updatePersonalitySchema>;
+export type UpdateBudgetPreference = z.infer<typeof updateBudgetPreferenceSchema>;
 
 export type Event = typeof events.$inferSelect;
 export type EventAttendance = typeof eventAttendance.$inferSelect;

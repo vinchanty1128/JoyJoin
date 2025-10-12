@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { updateProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertEventFeedbackSchema } from "@shared/schema";
+import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertEventFeedbackSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -56,6 +56,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating personality:", error);
       res.status(500).json({ message: "Failed to update personality" });
+    }
+  });
+
+  app.post('/api/profile/budget', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = updateBudgetPreferenceSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      const user = await storage.updateBudgetPreference(userId, result.data);
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating budget preference:", error);
+      res.status(500).json({ message: "Failed to update budget preference" });
     }
   });
 

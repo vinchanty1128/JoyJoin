@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface JoinBlindBoxSheetProps {
   open: boolean;
@@ -49,12 +51,45 @@ export default function JoinBlindBoxSheet({
   const [friendsCount, setFriendsCount] = useState<1 | 2>(1);
   const [mustMatchTogether, setMustMatchTogether] = useState(true);
   
+  // 预算偏好 - 可多选
+  const [budgetPreference, setBudgetPreference] = useState<string[]>([]);
+  
   // 提升成功率选项
   const [acceptNearby, setAcceptNearby] = useState(false);
   const [flexibleTime, setFlexibleTime] = useState(false);
   const [typeSubstitute, setTypeSubstitute] = useState(false);
   const [noStrictRestrictions, setNoStrictRestrictions] = useState(false);
   const [prioritizeFast, setPrioritizeFast] = useState(false);
+
+  const budgetOptions = [
+    { value: "100以下", label: "¥100以下" },
+    { value: "100-200", label: "¥100-200" },
+    { value: "300-500", label: "¥300-500" },
+    { value: "500+", label: "¥500+" },
+  ];
+
+  const toggleBudget = (value: string) => {
+    setBudgetPreference(prev => 
+      prev.includes(value) 
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    );
+  };
+
+  const saveBudgetMutation = useMutation({
+    mutationFn: async (budgetPreference: string[]) => {
+      return await apiRequest("POST", "/api/profile/budget", {
+        budgetPreference,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "保存失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleCopyInviteLink = () => {
     const link = `https://joyjoin.app/invite/${Math.random().toString(36).substr(2, 9)}`;
@@ -65,12 +100,28 @@ export default function JoinBlindBoxSheet({
     });
   };
 
-  const handleConfirm = () => {
-    onOpenChange(false);
-    // 导航到付费页面
-    setTimeout(() => {
-      setLocation("/blindbox/payment");
-    }, 300);
+  const handleConfirm = async () => {
+    if (budgetPreference.length === 0) {
+      toast({
+        title: "请选择预算范围",
+        description: "至少选择一个预算档位",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 保存预算偏好到用户profile
+    try {
+      await saveBudgetMutation.mutateAsync(budgetPreference);
+      
+      onOpenChange(false);
+      // 导航到付费页面
+      setTimeout(() => {
+        setLocation("/blindbox/payment");
+      }, 300);
+    } catch (error) {
+      // Error already handled by mutation's onError
+    }
   };
 
   const getConfirmButtonText = () => {
@@ -129,16 +180,46 @@ export default function JoinBlindBoxSheet({
               </div>
 
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <DollarSign className="h-4 w-4" />
-                <span>
-                  {eventData.priceTier && `¥${eventData.priceTier}`}
-                  {eventData.isAA && ` · 当天现场AA`}
-                </span>
+                <Users className="h-4 w-4" />
+                <span>最少4人，最多6人</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="h-4 w-4" />
-                <span>最少4人，最多6人</span>
+                <DollarSign className="h-4 w-4" />
+                <span>当天现场AA</span>
+              </div>
+            </div>
+
+            {/* 预算选择 */}
+            <div className="mb-6">
+              <div className="mb-3">
+                <h3 className="text-base font-semibold mb-1">你的预算范围？</h3>
+                <p className="text-xs text-muted-foreground">必填 · 可多选，系统将匹配相同预算池的参与者</p>
+              </div>
+              <div className="space-y-2">
+                {budgetOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => toggleBudget(option.value)}
+                    className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all hover-elevate ${
+                      budgetPreference.includes(option.value)
+                        ? 'bg-primary/10 border-primary'
+                        : 'bg-background border-border'
+                    }`}
+                    data-testid={`button-budget-${option.value}`}
+                  >
+                    <span className="font-medium">{option.label}</span>
+                    <div className={`h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+                      budgetPreference.includes(option.value)
+                        ? 'bg-primary border-primary'
+                        : 'border-muted-foreground'
+                    }`}>
+                      {budgetPreference.includes(option.value) && (
+                        <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
+                      )}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -363,10 +444,16 @@ export default function JoinBlindBoxSheet({
               className="w-full" 
               size="lg"
               onClick={handleConfirm}
+              disabled={budgetPreference.length === 0}
               data-testid="button-confirm-join"
             >
               {getConfirmButtonText()}
             </Button>
+            {budgetPreference.length === 0 && (
+              <p className="text-xs text-center text-muted-foreground">
+                请先选择预算范围
+              </p>
+            )}
             <Button 
               variant="ghost" 
               className="w-full" 
