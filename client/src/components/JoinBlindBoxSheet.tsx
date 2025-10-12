@@ -74,9 +74,9 @@ export default function JoinBlindBoxSheet({
 
   const getConfirmButtonText = () => {
     if (inviteFriends) {
-      return "确认并为我和朋友抽盲盒";
+      return "确认参与（我和朋友）";
     }
-    return "确认并抽盲盒";
+    return "确认参与";
   };
 
   return (
