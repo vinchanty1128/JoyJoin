@@ -194,28 +194,24 @@ export default function JoinBlindBoxSheet({
             <div className="mb-6">
               <div className="mb-3">
                 <h3 className="text-base font-semibold mb-1">你的预算范围？</h3>
-                <p className="text-xs text-muted-foreground">必填 · 可多选，系统将匹配相同预算池的参与者</p>
+                <p className="text-xs text-muted-foreground">(必填)</p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {budgetOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => toggleBudget(option.value)}
-                    className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all hover-elevate ${
-                      budgetPreference.includes(option.value)
-                        ? 'bg-primary/10 border-primary'
-                        : 'bg-background border-border'
-                    }`}
+                    className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
                     data-testid={`button-budget-${option.value}`}
                   >
-                    <span className="font-medium">{option.label}</span>
-                    <div className={`h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+                    <span className="font-medium text-base">{option.label}</span>
+                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
                       budgetPreference.includes(option.value)
-                        ? 'bg-primary border-primary'
-                        : 'border-muted-foreground'
+                        ? 'bg-foreground border-foreground'
+                        : 'border-foreground/30'
                     }`}>
                       {budgetPreference.includes(option.value) && (
-                        <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
+                        <CheckCircle2 className="h-4 w-4 text-background" />
                       )}
                     </div>
                   </button>
