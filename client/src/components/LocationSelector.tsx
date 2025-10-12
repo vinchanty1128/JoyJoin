@@ -1,4 +1,4 @@
-import { MapPin, ChevronDown, Building2 } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,16 +15,12 @@ interface LocationSelectorProps {
 
 const cityConfig = {
   "深圳": {
-    icon: "🏙️",
-    label: "深圳",
-    color: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-50 dark:bg-purple-950/30"
+    flag: "🏙️",
+    label: "深圳 试点城市"
   },
   "香港": {
-    icon: "🇭🇰",
-    label: "香港",
-    color: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30"
+    flag: "🇭🇰",
+    label: "香港 特别行政区"
   }
 };
 
@@ -36,45 +32,37 @@ export default function LocationSelector({ selectedCity, onCityChange }: Locatio
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
-          className={`gap-2 px-4 h-10 font-semibold text-base border-2 ${config.bgColor} hover-elevate active-elevate-2 shadow-sm`}
+          className="gap-1.5 px-3 h-8 hover-elevate active-elevate-2"
           data-testid="button-location-selector"
         >
-          <span className="text-xl">{config.icon}</span>
-          <span className={`font-bold bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
-            {config.label}
-          </span>
-          <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
+          <span className="text-base">{config.flag}</span>
+          <span className="text-sm font-medium text-primary">{selectedCity}</span>
+          <ChevronDown className="h-3.5 w-3.5 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-48" data-testid="menu-location-options">
+      <DropdownMenuContent align="start" className="min-w-[180px]" data-testid="menu-location-options">
         <DropdownMenuItem 
           onClick={() => onCityChange("深圳")}
-          className="gap-3 cursor-pointer p-3 hover-elevate"
+          className="gap-2 cursor-pointer hover-elevate"
           data-testid="menu-item-shenzhen"
         >
-          <span className="text-2xl">{cityConfig["深圳"].icon}</span>
-          <div className="flex-1">
-            <div className="font-semibold text-base">深圳</div>
-            <div className="text-xs text-muted-foreground">试点城市</div>
-          </div>
+          <span className="text-base">🏙️</span>
+          <span className="flex-1 text-sm">{cityConfig["深圳"].label}</span>
           {selectedCity === "深圳" && (
-            <Badge variant="default" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+            <Badge variant="default" className="bg-blue-500 hover:bg-blue-600 text-white text-xs">
               当前
             </Badge>
           )}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => onCityChange("香港")}
-          className="gap-3 cursor-pointer p-3 hover-elevate"
+          className="gap-2 cursor-pointer hover-elevate"
           data-testid="menu-item-hongkong"
         >
-          <span className="text-2xl">{cityConfig["香港"].icon}</span>
-          <div className="flex-1">
-            <div className="font-semibold text-base">香港</div>
-            <div className="text-xs text-muted-foreground">特别行政区</div>
-          </div>
+          <span className="text-base">🇭🇰</span>
+          <span className="flex-1 text-sm">{cityConfig["香港"].label}</span>
           {selectedCity === "香港" && (
-            <Badge variant="default" className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0">
+            <Badge variant="default" className="bg-blue-500 hover:bg-blue-600 text-white text-xs">
               当前
             </Badge>
           )}
