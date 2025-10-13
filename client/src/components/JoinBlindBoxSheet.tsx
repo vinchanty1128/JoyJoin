@@ -614,34 +614,7 @@ export default function JoinBlindBoxSheet({
             </div>
           </div>
 
-          {/* 2. 我的偏好 */}
-          {(selectedLanguages.length > 0 || selectedTasteIntensity.length > 0 || selectedCuisines.length > 0) && (
-            <div className="space-y-3 pb-4 border-b">
-              <h3 className="text-sm font-semibold">我的偏好</h3>
-              <div className="space-y-2 text-sm">
-                {selectedLanguages.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground">语言：</span>
-                    <span className="font-medium ml-2">{selectedLanguages.join(' · ')}</span>
-                  </div>
-                )}
-                {selectedTasteIntensity.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground">口味强度：</span>
-                    <span className="font-medium ml-2">{selectedTasteIntensity.join(' · ')}</span>
-                  </div>
-                )}
-                {selectedCuisines.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground">菜系：</span>
-                    <span className="font-medium ml-2">{selectedCuisines.join(' · ')}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 3. 预算 */}
+          {/* 2. 预算 */}
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">预算</h3>
             <div className="grid grid-cols-2 gap-2">
@@ -678,6 +651,33 @@ export default function JoinBlindBoxSheet({
               })}
             </div>
           </div>
+
+          {/* 3. 我的偏好 */}
+          {(selectedLanguages.length > 0 || selectedTasteIntensity.length > 0 || selectedCuisines.length > 0) && (
+            <div className="space-y-3 pb-4 border-b">
+              <h3 className="text-sm font-semibold">我的偏好</h3>
+              <div className="space-y-2 text-sm">
+                {selectedLanguages.length > 0 && (
+                  <div>
+                    <span className="text-muted-foreground">语言：</span>
+                    <span className="font-medium ml-2">{selectedLanguages.join(' · ')}</span>
+                  </div>
+                )}
+                {selectedTasteIntensity.length > 0 && (
+                  <div>
+                    <span className="text-muted-foreground">口味强度：</span>
+                    <span className="font-medium ml-2">{selectedTasteIntensity.join(' · ')}</span>
+                  </div>
+                )}
+                {selectedCuisines.length > 0 && (
+                  <div>
+                    <span className="text-muted-foreground">菜系：</span>
+                    <span className="font-medium ml-2">{selectedCuisines.join(' · ')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* 4. 提升成功率 */}
           <div className="space-y-3">
