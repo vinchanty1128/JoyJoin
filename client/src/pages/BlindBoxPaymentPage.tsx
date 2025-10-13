@@ -17,7 +17,8 @@ export default function BlindBoxPaymentPage() {
 
   const handlePayment = () => {
     // 这里处理支付逻辑
-    setLocation("/discover");
+    // 支付成功后跳转到确认页面
+    setLocation("/blindbox/confirmation");
   };
 
   return (
