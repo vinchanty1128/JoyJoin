@@ -306,88 +306,8 @@ export default function JoinBlindBoxSheet({
                 </div>
               </div>
 
-              {/* 提升成功率 */}
-              <div>
-                <div className="mb-3">
-                  <h3 className="text-base font-semibold mb-1">提升成功率</h3>
-                  <p className="text-xs text-muted-foreground">可多选，你的灵活度将影响匹配速度</p>
-                </div>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setAcceptNearby(!acceptNearby)}
-                    className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
-                    data-testid="button-accept-nearby"
-                  >
-                    <span className="font-medium text-sm">接受相邻商圈</span>
-                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      acceptNearby
-                        ? 'bg-foreground border-foreground'
-                        : 'border-foreground/30'
-                    }`}>
-                      {acceptNearby && (
-                        <CheckCircle2 className="h-4 w-4 text-background" />
-                      )}
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => setFlexibleTime(!flexibleTime)}
-                    className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
-                    data-testid="button-flexible-time"
-                  >
-                    <span className="font-medium text-sm">时间可 ±30 分钟</span>
-                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      flexibleTime
-                        ? 'bg-foreground border-foreground'
-                        : 'border-foreground/30'
-                    }`}>
-                      {flexibleTime && (
-                        <CheckCircle2 className="h-4 w-4 text-background" />
-                      )}
-                    </div>
-                  </button>
-
-                  {eventData.eventType === "饭局" && (
-                    <button
-                      onClick={() => setTypeSubstitute(!typeSubstitute)}
-                      className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
-                      data-testid="button-type-substitute"
-                    >
-                      <span className="font-medium text-sm">饭局可替代为酒局</span>
-                      <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        typeSubstitute
-                          ? 'bg-foreground border-foreground'
-                          : 'border-foreground/30'
-                      }`}>
-                        {typeSubstitute && (
-                          <CheckCircle2 className="h-4 w-4 text-background" />
-                        )}
-                      </div>
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => setNoStrictRestrictions(!noStrictRestrictions)}
-                    className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
-                    data-testid="button-no-restrictions"
-                  >
-                    <span className="font-medium text-sm">不做性别/年龄硬性限制</span>
-                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      noStrictRestrictions
-                        ? 'bg-foreground border-foreground'
-                        : 'border-foreground/30'
-                    }`}>
-                      {noStrictRestrictions && (
-                        <CheckCircle2 className="h-4 w-4 text-background" />
-                      )}
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* D. 我的偏好（可编辑） */}
-            <Collapsible open={preferencesOpen} onOpenChange={setPreferencesOpen} className="mb-6">
+              {/* C. 我的偏好（可编辑） */}
+              <Collapsible open={preferencesOpen} onOpenChange={setPreferencesOpen} className="mb-6">
               <div className="border rounded-lg">
                 <CollapsibleTrigger className="w-full p-4" data-testid="button-toggle-preferences">
                   <div className="flex items-center justify-between">
@@ -500,6 +420,33 @@ export default function JoinBlindBoxSheet({
                 </CollapsibleContent>
               </div>
             </Collapsible>
+
+            {/* D. 提升成功率 */}
+            <div className="mb-6">
+              <div className="mb-3">
+                <h3 className="text-base font-semibold mb-1">提升成功率</h3>
+                <p className="text-xs text-muted-foreground">你的灵活度将影响匹配速度</p>
+              </div>
+              <button
+                onClick={() => setAcceptNearby(!acceptNearby)}
+                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
+                data-testid="button-accept-nearby"
+              >
+                <div className="text-left">
+                  <span className="font-medium text-sm block">接受相邻商圈</span>
+                  <span className="text-xs text-muted-foreground">例如在福田的话，华侨城和南山也可以</span>
+                </div>
+                <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-2 ${
+                  acceptNearby
+                    ? 'bg-foreground border-foreground'
+                    : 'border-foreground/30'
+                }`}>
+                  {acceptNearby && (
+                    <CheckCircle2 className="h-4 w-4 text-background" />
+                  )}
+                </div>
+              </button>
+            </div>
 
             {/* E. 规则与保障 */}
             <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
