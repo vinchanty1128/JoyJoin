@@ -10,10 +10,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { getCurrencySymbol } from "@/lib/currency";
 
 export default function BlindBoxPaymentPage() {
   const [, setLocation] = useLocation();
   const [promoOpen, setPromoOpen] = useState(false);
+  const city = (localStorage.getItem("blindbox_city") || "深圳") as "香港" | "深圳";
+  const currencySymbol = getCurrencySymbol(city);
 
   const handlePayment = () => {
     // 这里处理支付逻辑
@@ -138,7 +141,7 @@ export default function BlindBoxPaymentPage() {
                       <p className="text-xs text-muted-foreground">本次活动专享</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">¥88</div>
+                      <div className="text-2xl font-bold text-primary">{currencySymbol}88</div>
                       <div className="text-xs text-muted-foreground">服务费</div>
                     </div>
                   </div>
@@ -158,8 +161,8 @@ export default function BlindBoxPaymentPage() {
                     </div>
                     <div className="text-right">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-lg line-through text-muted-foreground">¥299</span>
-                        <span className="text-2xl font-bold">¥199</span>
+                        <span className="text-lg line-through text-muted-foreground">{currencySymbol}299</span>
+                        <span className="text-2xl font-bold">{currencySymbol}199</span>
                       </div>
                       <div className="text-xs text-green-600 font-medium">省33%</div>
                     </div>
@@ -193,7 +196,7 @@ export default function BlindBoxPaymentPage() {
           <div className="pt-4 border-t space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-lg font-bold">总计</span>
-              <span className="text-3xl font-bold text-primary">¥88</span>
+              <span className="text-3xl font-bold text-primary">{currencySymbol}88</span>
             </div>
 
             {/* 支付按钮 - 超级Gamified */}

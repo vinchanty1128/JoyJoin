@@ -117,7 +117,8 @@ export default function BlindBoxEventCard({
           eventType,
           area,
           priceTier,
-          isAA
+          isAA,
+          city
         }}
       />
 
@@ -131,7 +132,8 @@ export default function BlindBoxEventCard({
           area,
           priceTier,
           isAA,
-          isGirlsNight
+          isGirlsNight,
+          city
         }}
       />
     </>

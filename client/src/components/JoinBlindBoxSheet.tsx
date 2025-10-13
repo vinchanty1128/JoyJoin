@@ -33,6 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { getCurrencySymbol } from "@/lib/currency";
 
 interface JoinBlindBoxSheetProps {
   open: boolean;
@@ -45,6 +46,7 @@ interface JoinBlindBoxSheetProps {
     priceTier?: string;
     isAA?: boolean;
     isGirlsNight?: boolean;
+    city?: "香港" | "深圳";
   };
 }
 
@@ -129,6 +131,9 @@ export default function JoinBlindBoxSheet({
     // 保存预算偏好到用户profile
     try {
       await saveBudgetMutation.mutateAsync(budgetPreference);
+      
+      // 保存城市信息到localStorage用于后续页面
+      localStorage.setItem("blindbox_city", eventData.city || "深圳");
       
       setShowConfirmDialog(false);
       onOpenChange(false);
@@ -224,7 +229,7 @@ export default function JoinBlindBoxSheet({
                       className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
                       data-testid={`button-budget-${option.value}`}
                     >
-                      <span className="font-medium text-base">¥{option.label}</span>
+                      <span className="font-medium text-base">{getCurrencySymbol(eventData.city || "深圳")}{option.label}</span>
                       <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
                         budgetPreference.includes(option.value)
                           ? 'bg-foreground border-foreground'
@@ -539,7 +544,7 @@ export default function JoinBlindBoxSheet({
                       )}
                     </div>
                     <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>
-                      ¥{option.label}
+                      {getCurrencySymbol(eventData.city || "深圳")}{option.label}
                     </span>
                     {isRecommended && (
                       <Badge variant="secondary" className="absolute -top-2 -right-2 text-[10px] h-4 px-1">

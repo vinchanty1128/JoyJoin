@@ -8,6 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { getCurrencySymbol } from "@/lib/currency";
 
 interface BlindBoxInfoSheetProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface BlindBoxInfoSheetProps {
     area: string;
     priceTier?: string;
     isAA?: boolean;
+    city?: "香港" | "深圳";
   };
 }
 
@@ -96,7 +98,7 @@ export default function BlindBoxInfoSheet({
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <DollarSign className="h-4 w-4" />
                   <span>
-                    {eventData.priceTier && `¥${eventData.priceTier}`}
+                    {eventData.priceTier && `${getCurrencySymbol(eventData.city || "深圳")}${eventData.priceTier}`}
                     {eventData.isAA && ` · AA制`}
                   </span>
                 </div>

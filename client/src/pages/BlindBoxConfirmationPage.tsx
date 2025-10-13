@@ -4,16 +4,19 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, MapPin, Users, DollarSign, Calendar, Clock, ArrowRight, Settings } from "lucide-react";
 import { motion } from "framer-motion";
+import { getCurrencySymbol } from "@/lib/currency";
 
 export default function BlindBoxConfirmationPage() {
   const [, setLocation] = useLocation();
+  const city = (localStorage.getItem("blindbox_city") || "深圳") as "香港" | "深圳";
+  const currencySymbol = getCurrencySymbol(city);
 
   // 模拟数据（实际应从状态管理或路由参数获取）
   const confirmationData = {
     date: "周三",
     time: "19:00",
     eventType: "饭局",
-    area: "深圳·南山区",
+    area: city === "香港" ? "香港·中西区" : "深圳·南山区",
     budget: ["100-200", "200-300"],
     preferences: {
       acceptNearby: true,
@@ -22,7 +25,7 @@ export default function BlindBoxConfirmationPage() {
       noStrictRestrictions: true,
     },
     inviteFriends: false,
-    serviceFee: "¥88",
+    serviceFee: `${currencySymbol}88`,
   };
 
   const handleViewProgress = () => {
@@ -93,7 +96,7 @@ export default function BlindBoxConfirmationPage() {
                 <div className="flex gap-2">
                   {confirmationData.budget.map((range) => (
                     <Badge key={range} variant="outline" className="text-xs">
-                      ¥{range}
+                      {currencySymbol}{range}
                     </Badge>
                   ))}
                 </div>
