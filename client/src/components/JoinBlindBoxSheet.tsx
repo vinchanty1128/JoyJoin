@@ -73,10 +73,11 @@ export default function JoinBlindBoxSheet({
   const [prioritizeFast, setPrioritizeFast] = useState(false);
 
   const budgetOptions = [
-    { value: "100以下", label: "¥100以下" },
-    { value: "100-200", label: "¥100-200" },
-    { value: "300-500", label: "¥300-500" },
-    { value: "500+", label: "¥500+" },
+    { value: "100以下", label: "≤100" },
+    { value: "100-200", label: "100-200" },
+    { value: "200-300", label: "200-300" },
+    { value: "300-500", label: "300-500" },
+    { value: "500+", label: "500+" },
   ];
 
   const toggleBudget = (value: string) => {
@@ -492,7 +493,7 @@ export default function JoinBlindBoxSheet({
 
     {/* 确认弹窗 */}
     <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-      <DialogContent className="max-w-md" data-testid="dialog-confirm-join">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" data-testid="dialog-confirm-join">
         <DialogHeader>
           <DialogTitle>确认参与信息</DialogTitle>
           <DialogDescription>
@@ -500,22 +501,27 @@ export default function JoinBlindBoxSheet({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* 你的预算范围 */}
+        <div className="space-y-5 py-4">
+          {/* 1. 摘要 */}
+          <div className="space-y-2 pb-4 border-b">
+            <h3 className="text-sm font-semibold text-muted-foreground">摘要</h3>
+            <div className="text-sm space-y-1">
+              <p><strong>{eventData.date} {eventData.time}</strong> · {eventData.eventType} · {eventData.area}</p>
+              <p className="text-muted-foreground">成员人数：4-6人</p>
+            </div>
+          </div>
+
+          {/* 2. 预算 */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold">你的预算范围</h3>
+            <h3 className="text-sm font-semibold">预算</h3>
             <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: "¥100以下", value: "100以下" },
-                { label: "¥100-200", value: "100-200" },
-                { label: "¥300-500", value: "300-500" },
-                { label: "¥500+", value: "500+" },
-              ].map((option) => {
+              {budgetOptions.map((option) => {
                 const isSelected = budgetPreference.includes(option.value);
+                const isRecommended = option.value === "100-200"; // 示例：100-200为本区推荐
                 return (
                   <div
                     key={option.value}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all ${
+                    className={`relative flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all ${
                       isSelected
                         ? "border-primary bg-primary/5"
                         : "border-muted bg-muted/30"
@@ -530,24 +536,31 @@ export default function JoinBlindBoxSheet({
                       )}
                     </div>
                     <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>
-                      {option.label}
+                      ¥{option.label}
                     </span>
+                    {isRecommended && (
+                      <Badge variant="secondary" className="absolute -top-2 -right-2 text-[10px] h-4 px-1">
+                        本区推荐
+                      </Badge>
+                    )}
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* 偏好选项 */}
+          {/* 3. 我的偏好 */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold">偏好选项</h3>
+            <div>
+              <h3 className="text-sm font-semibold">我的偏好</h3>
+              <p className="text-xs text-muted-foreground mt-1">可多选，你的灵活度将影响匹配速度</p>
+            </div>
             <div className="space-y-2">
               {[
-                { label: "接受相邻商圈", detail: "扩大半径至3-5km", selected: acceptNearby },
-                { label: "时间可前后±30分钟", detail: null, selected: flexibleTime },
-                { label: eventData.eventType === "饭局" ? "饭局可替代为酒局" : "酒局可替代为饭局", detail: null, selected: typeSubstitute },
-                { label: "不做性别/年龄硬性限制", detail: null, selected: noStrictRestrictions },
-                { label: "优先快成局", detail: "可能牺牲部分兴趣匹配度", selected: prioritizeFast },
+                { label: "接受相邻商圈", selected: acceptNearby },
+                { label: "时间可 ±30 分钟", selected: flexibleTime },
+                { label: eventData.eventType === "饭局" ? "饭局可替代为酒局" : "酒局可替代为饭局", selected: typeSubstitute },
+                { label: "不做性别/年龄硬性限制", selected: noStrictRestrictions },
               ].map((option, idx) => (
                 <div
                   key={idx}
@@ -565,18 +578,49 @@ export default function JoinBlindBoxSheet({
                       <CheckCircle2 className="h-4 w-4 text-background" />
                     )}
                   </div>
-                  <div className="flex-1">
-                    <span className={`text-sm ${option.selected ? "font-medium" : ""}`}>
-                      {option.label}
-                    </span>
-                    {option.detail && (
-                      <span className="text-xs text-muted-foreground ml-1">（{option.detail}）</span>
-                    )}
-                  </div>
+                  <span className={`text-sm ${option.selected ? "font-medium" : ""}`}>
+                    {option.label}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* 4. 费用说明 */}
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <h3 className="text-sm font-semibold mb-2">费用说明</h3>
+            <p className="text-xs text-muted-foreground">
+              平台服务费 + 当天AA，无二次加价
+            </p>
+          </div>
+
+          {/* 5. 规则摘要 */}
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+            <h3 className="text-sm font-semibold mb-2 text-blue-600 dark:text-blue-400">规则摘要</h3>
+            <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+              <li>• 成局条件：满4人成局，最多6人</li>
+              <li>• 退改规则：成局前可退；成局后至开局前24小时内不可退</li>
+            </ul>
+          </div>
+
+          {/* 6. 邀请朋友（可选，弱化展示） */}
+          {inviteFriends && (
+            <div className="p-3 border rounded-lg">
+              <h3 className="text-sm font-semibold mb-2">邀请朋友</h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                已邀请 {friendsCount} 位朋友
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleCopyInviteLink}
+                className="w-full"
+              >
+                <Copy className="h-3 w-3 mr-1" />
+                复制邀请链接
+              </Button>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="flex gap-2">
