@@ -65,12 +65,11 @@ export default function JoinBlindBoxSheet({
   // 确认弹窗状态
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
-  // 提升成功率选项
+  // 我的偏好选项
   const [acceptNearby, setAcceptNearby] = useState(false);
   const [flexibleTime, setFlexibleTime] = useState(false);
   const [typeSubstitute, setTypeSubstitute] = useState(false);
   const [noStrictRestrictions, setNoStrictRestrictions] = useState(false);
-  const [prioritizeFast, setPrioritizeFast] = useState(false);
 
   const budgetOptions = [
     { value: "100以下", label: "≤100" },
@@ -225,7 +224,7 @@ export default function JoinBlindBoxSheet({
                       className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
                       data-testid={`button-budget-${option.value}`}
                     >
-                      <span className="font-medium text-base">{option.label}</span>
+                      <span className="font-medium text-base">¥{option.label}</span>
                       <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
                         budgetPreference.includes(option.value)
                           ? 'bg-foreground border-foreground'
@@ -240,103 +239,12 @@ export default function JoinBlindBoxSheet({
                 </div>
               </div>
 
-              {/* 带朋友一起 */}
-              <Collapsible open={inviteFriends} onOpenChange={setInviteFriends}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="invite-friends" className="text-base font-semibold cursor-pointer">
-                      邀请朋友
-                    </Label>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <Switch 
-                    id="invite-friends" 
-                    checked={inviteFriends} 
-                    onCheckedChange={setInviteFriends}
-                    data-testid="switch-invite-friends"
-                  />
-                </div>
-                
-                <CollapsibleContent className="space-y-3">
-                  <p className="text-xs text-muted-foreground mb-3">
-                    与朋友一起报名更有安全感与话题感，同组将优先同局匹配
-                  </p>
-
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-sm mb-2 block">选择人数</Label>
-                      <div className="inline-flex rounded-lg p-1 bg-muted">
-                        <button
-                          onClick={() => setFriendsCount(1)}
-                          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                            friendsCount === 1
-                              ? "bg-background text-foreground shadow-sm"
-                              : "text-muted-foreground"
-                          }`}
-                          data-testid="button-friends-1"
-                        >
-                          1位朋友
-                        </button>
-                        <button
-                          onClick={() => setFriendsCount(2)}
-                          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                            friendsCount === 2
-                              ? "bg-background text-foreground shadow-sm"
-                              : "text-muted-foreground"
-                          }`}
-                          data-testid="button-friends-2"
-                        >
-                          2位朋友
-                        </button>
-                      </div>
-                    </div>
-
-                    {friendsCount === 2 && (
-                      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-md">
-                        <p className="text-xs text-blue-600 dark:text-blue-400">
-                          本局上限6人，系统将优先匹配3–4位陌生同伴
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <Label className="text-sm mb-2 block">邀请方式</Label>
-                      <div className="flex gap-2">
-                        <Input 
-                          placeholder="输入手机号或用户名" 
-                          className="flex-1"
-                          data-testid="input-friend-contact"
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={handleCopyInviteLink}
-                          data-testid="button-copy-invite-link"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        id="match-together" 
-                        checked={mustMatchTogether}
-                        onCheckedChange={setMustMatchTogether}
-                        data-testid="switch-match-together"
-                      />
-                      <Label htmlFor="match-together" className="text-sm cursor-pointer">
-                        同组必同局匹配
-                        <span className="text-xs text-muted-foreground ml-1">（可能延长匹配时长）</span>
-                      </Label>
-                    </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* 提升成功率 */}
+              {/* 我的偏好 */}
               <div>
-                <h3 className="text-base font-semibold mb-3">提升成功率</h3>
+                <div className="mb-3">
+                  <h3 className="text-base font-semibold">我的偏好</h3>
+                  <p className="text-xs text-muted-foreground mt-1">可多选，你的灵活度将影响匹配速度</p>
+                </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Switch 
@@ -347,8 +255,6 @@ export default function JoinBlindBoxSheet({
                     />
                     <Label htmlFor="accept-nearby" className="text-sm cursor-pointer flex-1">
                       接受相邻商圈
-                      <span className="text-xs text-muted-foreground ml-1">（扩大半径至3–5km）</span>
-                      <span className="text-xs text-primary ml-1">成功率↑</span>
                     </Label>
                   </div>
 
@@ -360,8 +266,7 @@ export default function JoinBlindBoxSheet({
                       data-testid="switch-flexible-time"
                     />
                     <Label htmlFor="flexible-time" className="text-sm cursor-pointer flex-1">
-                      时间可前后 ±30 分钟
-                      <span className="text-xs text-primary ml-1">成功率↑</span>
+                      时间可 ±30 分钟
                     </Label>
                   </div>
 
@@ -375,7 +280,6 @@ export default function JoinBlindBoxSheet({
                       />
                       <Label htmlFor="type-substitute" className="text-sm cursor-pointer flex-1">
                         饭局可替代为酒局
-                        <span className="text-xs text-primary ml-1">灵活度↑</span>
                       </Label>
                     </div>
                   )}
@@ -389,21 +293,6 @@ export default function JoinBlindBoxSheet({
                     />
                     <Label htmlFor="no-restrictions" className="text-sm cursor-pointer flex-1">
                       不做性别/年龄硬性限制
-                      <span className="text-xs text-primary ml-1">速度↑</span>
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch 
-                      id="prioritize-fast" 
-                      checked={prioritizeFast}
-                      onCheckedChange={setPrioritizeFast}
-                      data-testid="switch-prioritize-fast"
-                    />
-                    <Label htmlFor="prioritize-fast" className="text-sm cursor-pointer flex-1">
-                      优先快成局
-                      <span className="text-xs text-muted-foreground ml-1">（可能牺牲部分兴趣匹配度）</span>
-                      <span className="text-xs text-primary ml-1">更快↑</span>
                     </Label>
                   </div>
                 </div>
@@ -454,6 +343,100 @@ export default function JoinBlindBoxSheet({
                 </div>
               </div>
             </div>
+
+            {/* F. 邀请朋友（放到最后，弱化展示） */}
+            <Collapsible open={inviteFriends} onOpenChange={setInviteFriends} className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="invite-friends" className="text-base font-semibold cursor-pointer">
+                    邀请朋友
+                  </Label>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <Switch 
+                  id="invite-friends" 
+                  checked={inviteFriends} 
+                  onCheckedChange={setInviteFriends}
+                  data-testid="switch-invite-friends"
+                />
+              </div>
+              
+              <CollapsibleContent className="space-y-3">
+                <p className="text-xs text-muted-foreground mb-3">
+                  与朋友一起报名更有安全感与话题感，同组将优先同局匹配
+                </p>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm mb-2 block">选择人数</Label>
+                    <div className="inline-flex rounded-lg p-1 bg-muted">
+                      <button
+                        onClick={() => setFriendsCount(1)}
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                          friendsCount === 1
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground"
+                        }`}
+                        data-testid="button-friends-1"
+                      >
+                        1位朋友
+                      </button>
+                      <button
+                        onClick={() => setFriendsCount(2)}
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                          friendsCount === 2
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground"
+                        }`}
+                        data-testid="button-friends-2"
+                      >
+                        2位朋友
+                      </button>
+                    </div>
+                  </div>
+
+                  {friendsCount === 2 && (
+                    <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-md">
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        本局上限6人，系统将优先匹配3–4位陌生同伴
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <Label className="text-sm mb-2 block">邀请方式</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="输入手机号或用户名" 
+                        className="flex-1"
+                        data-testid="input-friend-contact"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={handleCopyInviteLink}
+                        data-testid="button-copy-invite-link"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="match-together" 
+                      checked={mustMatchTogether}
+                      onCheckedChange={setMustMatchTogether}
+                      data-testid="switch-match-together"
+                    />
+                    <Label htmlFor="match-together" className="text-sm cursor-pointer">
+                      同组必同局匹配
+                      <span className="text-xs text-muted-foreground ml-1">（可能延长匹配时长）</span>
+                    </Label>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
 
           {/* F. 底部操作区 */}
