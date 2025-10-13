@@ -73,6 +73,12 @@ export default function JoinBlindBoxSheet({
   const [typeSubstitute, setTypeSubstitute] = useState(false);
   const [noStrictRestrictions, setNoStrictRestrictions] = useState(false);
 
+  // 用户偏好 - 语言和口味
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [selectedTasteIntensity, setSelectedTasteIntensity] = useState<string[]>([]);
+  const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
+
   const budgetOptions = [
     { value: "100以下", label: "≤100" },
     { value: "100-200", label: "100-200" },
@@ -81,12 +87,63 @@ export default function JoinBlindBoxSheet({
     { value: "500+", label: "500+" },
   ];
 
+  const languageOptions = [
+    { value: "中文（国语）", label: "中文（国语）" },
+    { value: "中文（粤语）", label: "中文（粤语）" },
+    { value: "英语", label: "英语" },
+  ];
+
+  const tasteIntensityOptions = [
+    { value: "爱吃辣", label: "爱吃辣" },
+    { value: "不辣/清淡为主", label: "不辣/清淡为主" },
+  ];
+
+  const cuisineOptions = [
+    { value: "中餐", label: "中餐" },
+    { value: "川菜", label: "川菜" },
+    { value: "粤菜", label: "粤菜" },
+    { value: "火锅", label: "火锅" },
+    { value: "烧烤", label: "烧烤" },
+    { value: "西餐", label: "西餐" },
+    { value: "日料", label: "日料" },
+  ];
+
   const toggleBudget = (value: string) => {
     setBudgetPreference(prev => 
       prev.includes(value) 
         ? prev.filter(v => v !== value)
         : [...prev, value]
     );
+  };
+
+  const toggleLanguage = (value: string) => {
+    setSelectedLanguages(prev => 
+      prev.includes(value) 
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    );
+  };
+
+  const toggleTasteIntensity = (value: string) => {
+    setSelectedTasteIntensity(prev => 
+      prev.includes(value) 
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    );
+  };
+
+  const toggleCuisine = (value: string) => {
+    setSelectedCuisines(prev => 
+      prev.includes(value) 
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    );
+  };
+
+  const clearAllPreferences = () => {
+    setSelectedLanguages([]);
+    setSelectedTasteIntensity([]);
+    setSelectedCuisines([]);
   };
 
   const saveBudgetMutation = useMutation({
@@ -132,8 +189,13 @@ export default function JoinBlindBoxSheet({
     try {
       await saveBudgetMutation.mutateAsync(budgetPreference);
       
-      // 保存城市信息到localStorage用于后续页面
+      // 保存城市信息和用户偏好到localStorage用于后续页面
       localStorage.setItem("blindbox_city", eventData.city || "深圳");
+      localStorage.setItem("blindbox_preferences", JSON.stringify({
+        languages: selectedLanguages,
+        tasteIntensity: selectedTasteIntensity,
+        cuisines: selectedCuisines,
+      }));
       
       setShowConfirmDialog(false);
       onOpenChange(false);
@@ -324,35 +386,120 @@ export default function JoinBlindBoxSheet({
               </div>
             </div>
 
-            {/* D. 偏好快捷查看 */}
-            <div className="mb-6 p-4 border rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold">我的偏好</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 px-2 text-xs text-primary"
-                  data-testid="button-edit-preferences"
-                >
-                  编辑偏好
-                  <ChevronRight className="h-3 w-3 ml-1" />
-                </Button>
+            {/* D. 我的偏好（可编辑） */}
+            <Collapsible open={preferencesOpen} onOpenChange={setPreferencesOpen} className="mb-6">
+              <div className="border rounded-lg">
+                <CollapsibleTrigger className="w-full p-4" data-testid="button-toggle-preferences">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold">我的偏好（可多选）</h3>
+                      {(selectedLanguages.length > 0 || selectedTasteIntensity.length > 0 || selectedCuisines.length > 0) && (
+                        <Badge variant="secondary" className="text-xs">
+                          已设置
+                        </Badge>
+                      )}
+                    </div>
+                    <ChevronRight className={`h-4 w-4 transition-transform ${preferencesOpen ? 'rotate-90' : ''}`} />
+                  </div>
+                  
+                  {/* 快捷预览 */}
+                  {!preferencesOpen && (selectedLanguages.length > 0 || selectedTasteIntensity.length > 0 || selectedCuisines.length > 0) && (
+                    <div className="mt-2 text-xs text-muted-foreground text-left space-y-1">
+                      {selectedLanguages.length > 0 && (
+                        <div>语言: {selectedLanguages.join(' · ')}</div>
+                      )}
+                      {(selectedTasteIntensity.length > 0 || selectedCuisines.length > 0) && (
+                        <div>口味: {[...selectedTasteIntensity, ...selectedCuisines].join(' · ')}</div>
+                      )}
+                    </div>
+                  )}
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent>
+                  <div className="px-4 pb-4 space-y-4 border-t pt-4">
+                    {/* 一键清空 - 始终显示，无选择时禁用 */}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={clearAllPreferences}
+                      disabled={selectedLanguages.length === 0 && selectedTasteIntensity.length === 0 && selectedCuisines.length === 0}
+                      className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid="button-clear-preferences"
+                    >
+                      一键清空所有偏好
+                    </Button>
+
+                    {/* 语言偏好 */}
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">语言</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {languageOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => toggleLanguage(option.value)}
+                            className={`px-3 py-2 rounded-lg border-2 text-sm transition-all hover-elevate ${
+                              selectedLanguages.includes(option.value)
+                                ? 'border-primary bg-primary/5 font-medium'
+                                : 'border-muted bg-muted/30'
+                            }`}
+                            data-testid={`button-language-${option.value}`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 口味偏好 */}
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">口味偏好（用于匹配餐厅）</h4>
+                      
+                      {/* 口味强度 */}
+                      <div className="mb-3">
+                        <p className="text-xs text-muted-foreground mb-2">口味强度</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {tasteIntensityOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => toggleTasteIntensity(option.value)}
+                              className={`px-3 py-2 rounded-lg border-2 text-sm transition-all hover-elevate ${
+                                selectedTasteIntensity.includes(option.value)
+                                  ? 'border-primary bg-primary/5 font-medium'
+                                  : 'border-muted bg-muted/30'
+                              }`}
+                              data-testid={`button-taste-${option.value}`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 主流菜系 */}
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-2">主流菜系</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {cuisineOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => toggleCuisine(option.value)}
+                              className={`px-3 py-2 rounded-lg border-2 text-sm transition-all hover-elevate ${
+                                selectedCuisines.includes(option.value)
+                                  ? 'border-primary bg-primary/5 font-medium'
+                                  : 'border-muted bg-muted/30'
+                              }`}
+                              data-testid={`button-cuisine-${option.value}`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
               </div>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <div className="flex justify-between">
-                  <span>口味/忌口：</span>
-                  <span className="text-foreground">无</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>语言：</span>
-                  <span className="text-foreground">中文 · 粤语</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>社交偏好：</span>
-                  <span className="text-foreground">都可</span>
-                </div>
-              </div>
-            </div>
+            </Collapsible>
 
             {/* E. 规则与保障 */}
             <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
@@ -594,7 +741,34 @@ export default function JoinBlindBoxSheet({
             </div>
           </div>
 
-          {/* 4. 费用说明 */}
+          {/* 4. 我的偏好 */}
+          {(selectedLanguages.length > 0 || selectedTasteIntensity.length > 0 || selectedCuisines.length > 0) && (
+            <div className="space-y-3 pb-4 border-b">
+              <h3 className="text-sm font-semibold">我的偏好</h3>
+              <div className="space-y-2 text-sm">
+                {selectedLanguages.length > 0 && (
+                  <div>
+                    <span className="text-muted-foreground">语言：</span>
+                    <span className="font-medium ml-2">{selectedLanguages.join(' · ')}</span>
+                  </div>
+                )}
+                {selectedTasteIntensity.length > 0 && (
+                  <div>
+                    <span className="text-muted-foreground">口味强度：</span>
+                    <span className="font-medium ml-2">{selectedTasteIntensity.join(' · ')}</span>
+                  </div>
+                )}
+                {selectedCuisines.length > 0 && (
+                  <div>
+                    <span className="text-muted-foreground">菜系：</span>
+                    <span className="font-medium ml-2">{selectedCuisines.join(' · ')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 5. 费用说明 */}
           <div className="p-3 bg-muted/50 rounded-lg">
             <h3 className="text-sm font-semibold mb-2">费用说明</h3>
             <p className="text-xs text-muted-foreground">
@@ -602,7 +776,7 @@ export default function JoinBlindBoxSheet({
             </p>
           </div>
 
-          {/* 5. 规则摘要 */}
+          {/* 6. 规则摘要 */}
           <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
             <h3 className="text-sm font-semibold mb-2 text-blue-600 dark:text-blue-400">规则摘要</h3>
             <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
