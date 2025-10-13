@@ -99,11 +99,11 @@ export default function BlindBoxConfirmationPage() {
                 </div>
               </div>
 
-              {/* 我的偏好 */}
+              {/* 提升成功率 */}
               <div className="pb-4 border-b">
                 <div className="flex items-center gap-2 mb-2">
                   <Settings className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold">我的偏好</h3>
+                  <h3 className="text-sm font-semibold">提升成功率</h3>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center justify-between">
