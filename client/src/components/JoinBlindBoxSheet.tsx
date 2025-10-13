@@ -149,7 +149,7 @@ export default function JoinBlindBoxSheet({
   };
 
   return (
-    <React.Fragment>
+    <>
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
@@ -624,6 +624,6 @@ export default function JoinBlindBoxSheet({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  </React.Fragment>
+  </>
   );
 }
