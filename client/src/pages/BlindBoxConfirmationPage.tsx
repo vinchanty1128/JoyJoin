@@ -95,6 +95,35 @@ export default function BlindBoxConfirmationPage() {
                 </div>
               </div>
 
+              {/* 我的偏好 */}
+              {(confirmationData.userPreferences.languages.length > 0 || 
+                confirmationData.userPreferences.tasteIntensity.length > 0 || 
+                confirmationData.userPreferences.cuisines.length > 0) && (
+                <div className="pb-4 border-b">
+                  <h3 className="text-sm font-semibold mb-2">我的偏好</h3>
+                  <div className="space-y-2 text-sm">
+                    {confirmationData.userPreferences.languages.length > 0 && (
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-muted-foreground">语言：</span>
+                        <span className="font-medium text-right">{confirmationData.userPreferences.languages.join(' · ')}</span>
+                      </div>
+                    )}
+                    {confirmationData.userPreferences.tasteIntensity.length > 0 && (
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-muted-foreground">口味强度：</span>
+                        <span className="font-medium text-right">{confirmationData.userPreferences.tasteIntensity.join(' · ')}</span>
+                      </div>
+                    )}
+                    {confirmationData.userPreferences.cuisines.length > 0 && (
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-muted-foreground">菜系：</span>
+                        <span className="font-medium text-right">{confirmationData.userPreferences.cuisines.join(' · ')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* 预算范围 */}
               <div className="pb-4 border-b">
                 <div className="flex items-center gap-2 mb-2">
@@ -145,35 +174,6 @@ export default function BlindBoxConfirmationPage() {
                   </div>
                 </div>
               </div>
-
-              {/* 我的偏好 */}
-              {(confirmationData.userPreferences.languages.length > 0 || 
-                confirmationData.userPreferences.tasteIntensity.length > 0 || 
-                confirmationData.userPreferences.cuisines.length > 0) && (
-                <div className="pb-4 border-b">
-                  <h3 className="text-sm font-semibold mb-2">我的偏好</h3>
-                  <div className="space-y-2 text-sm">
-                    {confirmationData.userPreferences.languages.length > 0 && (
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-muted-foreground">语言：</span>
-                        <span className="font-medium text-right">{confirmationData.userPreferences.languages.join(' · ')}</span>
-                      </div>
-                    )}
-                    {confirmationData.userPreferences.tasteIntensity.length > 0 && (
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-muted-foreground">口味强度：</span>
-                        <span className="font-medium text-right">{confirmationData.userPreferences.tasteIntensity.join(' · ')}</span>
-                      </div>
-                    )}
-                    {confirmationData.userPreferences.cuisines.length > 0 && (
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-muted-foreground">菜系：</span>
-                        <span className="font-medium text-right">{confirmationData.userPreferences.cuisines.join(' · ')}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* 费用信息 */}
               <div>
