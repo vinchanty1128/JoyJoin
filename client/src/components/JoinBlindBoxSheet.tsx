@@ -221,7 +221,7 @@ export default function JoinBlindBoxSheet({
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
         <Drawer.Content 
-          className="bg-background flex flex-col rounded-t-[10px] h-[70vh] mt-24 fixed bottom-0 left-0 right-0 z-50 outline-none"
+          className="bg-background flex flex-col rounded-t-[10px] h-[80vh] mt-24 fixed bottom-0 left-0 right-0 z-50 outline-none"
           data-testid="drawer-join-blindbox"
         >
           {/* 拖拽指示器 */}
