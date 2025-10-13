@@ -20,6 +20,7 @@ export default function HeroWelcome({
   onLocationClick 
 }: HeroWelcomeProps) {
   const displayArea = selectedArea || areaDisplay[selectedCity];
+  const displayLocation = `${selectedCity}•${displayArea}`;
   
   return (
     <div className="px-4 py-6 space-y-3">
@@ -37,7 +38,7 @@ export default function HeroWelcome({
           data-testid="button-location-chip"
         >
           <MapPin className="h-4 w-4 text-primary" />
-          <span className="text-primary font-semibold">{displayArea}</span>
+          <span className="text-primary font-semibold">{displayLocation}</span>
           <svg 
             className="h-3.5 w-3.5 text-primary/70" 
             fill="none" 

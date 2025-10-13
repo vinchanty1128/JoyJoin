@@ -447,6 +447,7 @@ export default function JoinBlindBoxSheet({
                 </div>
               </button>
             </div>
+            </div>
 
             {/* E. 规则与保障 */}
             <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
