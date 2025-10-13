@@ -195,3 +195,7 @@ Preferred communication style: Simple, everyday language.
   - Circular checkboxes (filled on selection)
   - Simple "(必填)" label instead of lengthy explanations
   - Increased spacing between options for better readability
+- **Discover Page Cleanup:** Removed unnecessary UI elements:
+  - Removed search bar (not needed for current flow)
+  - Removed "玩法说明" (gameplay instructions) button
+  - Cleaner, more focused interface with just tab switching between 盲盒模式 and 活动精选
