@@ -167,6 +167,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blind Box Event routes
+  app.get('/api/my-events', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const events = await storage.getUserBlindBoxEvents(userId);
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching blind box events:", error);
+      res.status(500).json({ message: "Failed to fetch blind box events" });
+    }
+  });
+
+  app.get('/api/blind-box-events/:eventId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { eventId } = req.params;
+      const event = await storage.getBlindBoxEventById(eventId, userId);
+      
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      res.json(event);
+    } catch (error) {
+      console.error("Error fetching blind box event:", error);
+      res.status(500).json({ message: "Failed to fetch blind box event" });
+    }
+  });
+
+  app.post('/api/blind-box-events/:eventId/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { eventId } = req.params;
+      const event = await storage.cancelBlindBoxEvent(eventId, userId);
+      res.json(event);
+    } catch (error) {
+      console.error("Error canceling blind box event:", error);
+      res.status(500).json({ message: "Failed to cancel blind box event" });
+    }
+  });
+
+  // Icebreaker routes
+  const icebreakerQuestions = {
+    intro: [
+      "分享你最近一次让自己骄傲的事",
+      "如果用三个词描述你，会是哪三个？",
+      "你目前最感兴趣的一件事是什么？",
+      "最近在学什么新技能或知识？",
+      "你的职业是什么？最喜欢工作中的哪个部分？",
+    ],
+    interests: [
+      "最近沉迷的一项运动或爱好是什么？",
+      "有没有最近读过印象深刻的书？",
+      "最近在追什么剧或电影？",
+      "周末通常怎么度过？",
+      "有什么一直想尝试但还没开始的事情？",
+    ],
+    city_life: [
+      "在这座城市最爱的一个小店是哪里？",
+      "推荐一个你觉得被低估的城市角落",
+      "你最喜欢这个城市的哪个季节？",
+      "如果要带朋友游览，会带去哪里？",
+      "这个城市让你最惊喜的发现是什么？",
+    ],
+    dining: [
+      "今天最想点的一道菜是什么？",
+      "有什么特别的饮食偏好或禁忌吗？",
+      "分享一个你难忘的用餐体验",
+      "最近发现的好吃的店铺",
+      "如果只能选一种菜系吃一辈子，会选什么？",
+    ],
+    drinks: [
+      "最喜欢的一杯酒是什么？背后有故事吗？",
+      "今晚想尝试什么特调？",
+      "你是更喜欢清爽的还是浓烈的？",
+      "有没有特别的品酒经历？",
+      "如果用一种饮品代表你的性格，会是什么？",
+    ]
+  };
+
+  app.get('/api/icebreakers/random', isAuthenticated, async (req: any, res) => {
+    try {
+      const { topic } = req.query;
+      let questions: string[] = [];
+      
+      if (topic && topic in icebreakerQuestions) {
+        questions = icebreakerQuestions[topic as keyof typeof icebreakerQuestions];
+      } else {
+        // General: mix all questions
+        questions = Object.values(icebreakerQuestions).flat();
+      }
+      
+      const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+      res.json({ question: randomQuestion });
+    } catch (error) {
+      console.error("Error fetching icebreaker:", error);
+      res.status(500).json({ message: "Failed to fetch icebreaker question" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

@@ -1,8 +1,8 @@
 import { 
   type User, type UpsertUser, type UpdateProfile, type UpdatePersonality, type UpdateBudgetPreference,
-  type Event, type EventAttendance, type ChatMessage, type EventFeedback,
+  type Event, type EventAttendance, type ChatMessage, type EventFeedback, type BlindBoxEvent,
   type InsertEventAttendance, type InsertChatMessage, type InsertEventFeedback,
-  users, events, eventAttendance, chatMessages, eventFeedback
+  users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -28,6 +28,11 @@ export interface IStorage {
   // Feedback operations
   getUserFeedback(userId: string, eventId: string): Promise<EventFeedback | undefined>;
   createEventFeedback(userId: string, feedback: InsertEventFeedback): Promise<EventFeedback>;
+
+  // Blind Box Event operations
+  getUserBlindBoxEvents(userId: string): Promise<Array<BlindBoxEvent>>;
+  getBlindBoxEventById(eventId: string, userId: string): Promise<BlindBoxEvent | undefined>;
+  cancelBlindBoxEvent(eventId: string, userId: string): Promise<BlindBoxEvent>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -218,6 +223,52 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newFeedback;
+  }
+
+  // Blind Box Event operations
+  async getUserBlindBoxEvents(userId: string): Promise<Array<BlindBoxEvent>> {
+    const events = await db
+      .select()
+      .from(blindBoxEvents)
+      .where(eq(blindBoxEvents.userId, userId))
+      .orderBy(desc(blindBoxEvents.dateTime));
+    return events;
+  }
+
+  async getBlindBoxEventById(eventId: string, userId: string): Promise<BlindBoxEvent | undefined> {
+    const [event] = await db
+      .select()
+      .from(blindBoxEvents)
+      .where(
+        and(
+          eq(blindBoxEvents.id, eventId),
+          eq(blindBoxEvents.userId, userId)
+        )
+      );
+    return event;
+  }
+
+  async cancelBlindBoxEvent(eventId: string, userId: string): Promise<BlindBoxEvent> {
+    const [event] = await db
+      .update(blindBoxEvents)
+      .set({
+        status: 'canceled',
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(blindBoxEvents.id, eventId),
+          eq(blindBoxEvents.userId, userId),
+          eq(blindBoxEvents.status, 'pending_match') // Only can cancel pending events
+        )
+      )
+      .returning();
+    
+    if (!event) {
+      throw new Error('Event not found or cannot be canceled');
+    }
+    
+    return event;
   }
 }
 
