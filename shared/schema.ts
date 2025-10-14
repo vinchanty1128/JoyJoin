@@ -162,6 +162,64 @@ export const insertEventFeedbackSchema = createInsertSchema(eventFeedback).pick(
   energyMatch: z.number().min(1).max(5),
 });
 
+// Blind Box Events table
+export const blindBoxEvents = pgTable("blind_box_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  
+  // Basic info
+  title: varchar("title").notNull(), // e.g., "周三 19:00 · 饭局"
+  eventType: varchar("event_type").notNull(), // 饭局/酒局
+  city: varchar("city").notNull(), // 深圳/香港
+  district: varchar("district").notNull(), // 南山区
+  dateTime: timestamp("date_time").notNull(),
+  
+  // Budget and preferences
+  budgetTier: varchar("budget_tier").notNull(), // "100-200"
+  selectedLanguages: text("selected_languages").array(),
+  selectedTasteIntensity: text("selected_taste_intensity").array(),
+  selectedCuisines: text("selected_cuisines").array(),
+  acceptNearby: boolean("accept_nearby").default(false),
+  
+  // Matching status
+  status: varchar("status").notNull().default("pending_match"), // pending_match, matched, completed, canceled
+  progress: integer("progress").default(0), // 0-100
+  etaMinutes: integer("eta_minutes"), // Estimated time to match
+  
+  // Matched event details (populated when status = matched)
+  restaurantName: varchar("restaurant_name"),
+  restaurantAddress: varchar("restaurant_address"),
+  restaurantLat: varchar("restaurant_lat"),
+  restaurantLng: varchar("restaurant_lng"),
+  cuisineTags: text("cuisine_tags").array(),
+  
+  // Participant info (populated when status = matched)
+  totalParticipants: integer("total_participants"),
+  maleCount: integer("male_count"),
+  femaleCount: integer("female_count"),
+  isGirlsNight: boolean("is_girls_night").default(false),
+  
+  // Invite info
+  invitedCount: integer("invited_count").default(0),
+  invitedJoined: integer("invited_joined").default(0),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Insert schema for blind box events
+export const insertBlindBoxEventSchema = createInsertSchema(blindBoxEvents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  title: z.string().min(1, "活动标题不能为空"),
+  eventType: z.string().min(1, "活动类型不能为空"),
+  city: z.string().min(1, "城市不能为空"),
+  district: z.string().min(1, "商圈不能为空"),
+  budgetTier: z.string().min(1, "预算档位不能为空"),
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -173,7 +231,9 @@ export type Event = typeof events.$inferSelect;
 export type EventAttendance = typeof eventAttendance.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type EventFeedback = typeof eventFeedback.$inferSelect;
+export type BlindBoxEvent = typeof blindBoxEvents.$inferSelect;
 
 export type InsertEventAttendance = z.infer<typeof insertEventAttendanceSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertEventFeedback = z.infer<typeof insertEventFeedbackSchema>;
+export type InsertBlindBoxEvent = z.infer<typeof insertBlindBoxEventSchema>;
