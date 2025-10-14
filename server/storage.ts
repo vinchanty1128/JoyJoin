@@ -43,6 +43,15 @@ export interface IStorage {
     selectedLanguages?: string[];
     selectedTasteIntensity?: string[];
     selectedCuisines?: string[];
+    inviteFriends?: boolean;
+    friendsCount?: number;
+  }): Promise<BlindBoxEvent>;
+  updateBlindBoxEventPreferences(eventId: string, userId: string, preferences: {
+    budget?: string[];
+    acceptNearby?: boolean;
+    selectedLanguages?: string[];
+    selectedTasteIntensity?: string[];
+    selectedCuisines?: string[];
   }): Promise<BlindBoxEvent>;
   cancelBlindBoxEvent(eventId: string, userId: string): Promise<BlindBoxEvent>;
 }
@@ -374,6 +383,60 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return newEvent;
+  }
+
+  async updateBlindBoxEventPreferences(
+    eventId: string, 
+    userId: string, 
+    preferences: {
+      budget?: string[];
+      acceptNearby?: boolean;
+      selectedLanguages?: string[];
+      selectedTasteIntensity?: string[];
+      selectedCuisines?: string[];
+    }
+  ): Promise<BlindBoxEvent> {
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (preferences.budget && preferences.budget.length > 0) {
+      updateData.budgetTier = preferences.budget.join('/');
+    }
+    
+    if (preferences.acceptNearby !== undefined) {
+      updateData.acceptNearby = preferences.acceptNearby;
+    }
+    
+    if (preferences.selectedLanguages !== undefined) {
+      updateData.selectedLanguages = preferences.selectedLanguages.length > 0 ? preferences.selectedLanguages : null;
+    }
+    
+    if (preferences.selectedTasteIntensity !== undefined) {
+      updateData.selectedTasteIntensity = preferences.selectedTasteIntensity.length > 0 ? preferences.selectedTasteIntensity : null;
+    }
+    
+    if (preferences.selectedCuisines !== undefined) {
+      updateData.selectedCuisines = preferences.selectedCuisines.length > 0 ? preferences.selectedCuisines : null;
+    }
+
+    const [event] = await db
+      .update(blindBoxEvents)
+      .set(updateData)
+      .where(
+        and(
+          eq(blindBoxEvents.id, eventId),
+          eq(blindBoxEvents.userId, userId),
+          eq(blindBoxEvents.status, 'pending_match') // Only can update pending events
+        )
+      )
+      .returning();
+    
+    if (!event) {
+      throw new Error('Event not found or cannot be updated');
+    }
+    
+    return event;
   }
 
   async cancelBlindBoxEvent(eventId: string, userId: string): Promise<BlindBoxEvent> {

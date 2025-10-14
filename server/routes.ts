@@ -227,6 +227,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/blind-box-events/:eventId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { eventId } = req.params;
+      const { budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines } = req.body;
+      
+      const event = await storage.updateBlindBoxEventPreferences(eventId, userId, {
+        budget,
+        acceptNearby,
+        selectedLanguages,
+        selectedTasteIntensity,
+        selectedCuisines,
+      });
+      
+      res.json(event);
+    } catch (error) {
+      console.error("Error updating blind box event:", error);
+      res.status(500).json({ message: "Failed to update blind box event" });
+    }
+  });
+
   app.post('/api/blind-box-events/:eventId/cancel', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
