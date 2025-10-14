@@ -182,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/blind-box-events', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { date, time, eventType, city, area, budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines } = req.body;
+      const { date, time, eventType, city, area, budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines, inviteFriends, friendsCount } = req.body;
       
       if (!date || !time || !eventType || !area || !budget || budget.length === 0) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -199,6 +199,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedLanguages,
         selectedTasteIntensity,
         selectedCuisines,
+        inviteFriends,
+        friendsCount,
       });
       
       res.json(event);

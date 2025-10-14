@@ -206,6 +206,8 @@ export default function JoinBlindBoxSheet({
         selectedLanguages,
         selectedTasteIntensity,
         selectedCuisines,
+        inviteFriends,
+        friendsCount,
       }));
       
       setShowConfirmDialog(false);
