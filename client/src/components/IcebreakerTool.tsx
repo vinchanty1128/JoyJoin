@@ -9,6 +9,15 @@ export default function IcebreakerTool() {
 
   const { data, isLoading } = useQuery<{ question: string }>({
     queryKey: ["/api/icebreakers/random", refreshKey],
+    queryFn: async () => {
+      const res = await fetch("/api/icebreakers/random", {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      return await res.json();
+    },
   });
 
   const handleRefresh = () => {
