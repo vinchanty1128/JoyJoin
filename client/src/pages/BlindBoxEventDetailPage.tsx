@@ -169,27 +169,6 @@ export default function BlindBoxEventDetailPage() {
           </Card>
         )}
 
-        {/* 规则与到场指南 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">规则与到场指南</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <p>请提前10分钟到场</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <p>开局前24小时内不可退</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <p>迟到/缺席将影响信用分</p>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* 预算与菜式 */}
         <Card>
           <CardHeader className="pb-3">
@@ -213,6 +192,27 @@ export default function BlindBoxEventDetailPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* 规则与到场指南 */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">规则与到场指南</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <p>请提前10分钟到场</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <p>开局前24小时内不可退</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <p>迟到/缺席将影响信用分</p>
+            </div>
           </CardContent>
         </Card>
 
