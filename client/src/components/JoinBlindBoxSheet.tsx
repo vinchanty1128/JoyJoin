@@ -403,25 +403,93 @@ export default function JoinBlindBoxSheet({
                 <h3 className="text-base font-semibold mb-1">提升成功率</h3>
                 <p className="text-xs text-muted-foreground">你的灵活度将影响匹配速度</p>
               </div>
-              <button
-                onClick={() => setAcceptNearby(!acceptNearby)}
-                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
-                data-testid="button-accept-nearby"
-              >
-                <div className="text-left">
-                  <span className="font-medium text-sm block">接受相邻商圈</span>
-                  <span className="text-xs text-muted-foreground">例如在福田的话，华侨城和南山也可以</span>
-                </div>
-                <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-2 ${
-                  acceptNearby
-                    ? 'bg-foreground border-foreground'
-                    : 'border-foreground/30'
-                }`}>
-                  {acceptNearby && (
-                    <CheckCircle2 className="h-4 w-4 text-background" />
-                  )}
-                </div>
-              </button>
+              <div className="space-y-2">
+                {/* 接受相邻商圈 */}
+                <button
+                  onClick={() => setAcceptNearby(!acceptNearby)}
+                  className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
+                  data-testid="button-accept-nearby"
+                >
+                  <div className="text-left">
+                    <span className="font-medium text-sm block">接受相邻商圈</span>
+                    <span className="text-xs text-muted-foreground">例如在福田的话，华侨城和南山也可以</span>
+                  </div>
+                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-2 ${
+                    acceptNearby
+                      ? 'bg-foreground border-foreground'
+                      : 'border-foreground/30'
+                  }`}>
+                    {acceptNearby && (
+                      <CheckCircle2 className="h-4 w-4 text-background" />
+                    )}
+                  </div>
+                </button>
+
+                {/* 时间可 ±30 分钟 */}
+                <button
+                  onClick={() => setFlexibleTime(!flexibleTime)}
+                  className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
+                  data-testid="button-flexible-time"
+                >
+                  <div className="text-left">
+                    <span className="font-medium text-sm block">时间可 ±30 分钟</span>
+                    <span className="text-xs text-muted-foreground">匹配时间前后半小时内的场次</span>
+                  </div>
+                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-2 ${
+                    flexibleTime
+                      ? 'bg-foreground border-foreground'
+                      : 'border-foreground/30'
+                  }`}>
+                    {flexibleTime && (
+                      <CheckCircle2 className="h-4 w-4 text-background" />
+                    )}
+                  </div>
+                </button>
+
+                {/* 饭局/酒局可替代 */}
+                <button
+                  onClick={() => setTypeSubstitute(!typeSubstitute)}
+                  className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
+                  data-testid="button-type-substitute"
+                >
+                  <div className="text-left">
+                    <span className="font-medium text-sm block">
+                      {eventData.eventType === "饭局" ? "饭局可替代为酒局" : "酒局可替代为饭局"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">扩大匹配范围，更快成局</span>
+                  </div>
+                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-2 ${
+                    typeSubstitute
+                      ? 'bg-foreground border-foreground'
+                      : 'border-foreground/30'
+                  }`}>
+                    {typeSubstitute && (
+                      <CheckCircle2 className="h-4 w-4 text-background" />
+                    )}
+                  </div>
+                </button>
+
+                {/* 不做性别/年龄硬性限制 */}
+                <button
+                  onClick={() => setNoStrictRestrictions(!noStrictRestrictions)}
+                  className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border bg-background transition-all hover-elevate"
+                  data-testid="button-no-restrictions"
+                >
+                  <div className="text-left">
+                    <span className="font-medium text-sm block">不做性别/年龄硬性限制</span>
+                    <span className="text-xs text-muted-foreground">接受更多元的组合方式</span>
+                  </div>
+                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-2 ${
+                    noStrictRestrictions
+                      ? 'bg-foreground border-foreground'
+                      : 'border-foreground/30'
+                  }`}>
+                    {noStrictRestrictions && (
+                      <CheckCircle2 className="h-4 w-4 text-background" />
+                    )}
+                  </div>
+                </button>
+              </div>
             </div>
             </div>
 
