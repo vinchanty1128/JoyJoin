@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+
+interface IcebreakerResponse {
+  question: string;
+  category: string;
+  categoryColor: string;
+}
 
 export default function IcebreakerTool() {
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { data, isLoading } = useQuery<{ question: string }>({
+  const { data, isLoading } = useQuery<IcebreakerResponse>({
     queryKey: ["/api/icebreakers/random", refreshKey],
     queryFn: async () => {
       const res = await fetch("/api/icebreakers/random", {
@@ -24,12 +31,30 @@ export default function IcebreakerTool() {
     setRefreshKey(prev => prev + 1);
   };
 
+  const getCategoryVariant = (color: string): "default" | "secondary" | "destructive" | "outline" => {
+    // Map color to badge variants for visual distinction
+    if (color === "red" || color === "orange") return "destructive";
+    if (color === "green" || color === "blue" || color === "purple") return "default";
+    return "secondary";
+  };
+
   return (
     <Card className="border bg-gradient-to-br from-primary/5 to-transparent">
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold">今天开场聊点啥？</h3>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">今天开场聊点啥？</h3>
+          </div>
+          {data?.category && (
+            <Badge 
+              variant={getCategoryVariant(data.categoryColor)}
+              className="text-xs"
+              data-testid="badge-question-category"
+            >
+              {data.category}
+            </Badge>
+          )}
         </div>
 
         <div className="bg-background rounded-lg p-4 min-h-[60px] flex items-center justify-center">

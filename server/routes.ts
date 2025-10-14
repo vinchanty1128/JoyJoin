@@ -358,20 +358,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ],
   };
 
+  // Category labels for UI display
+  const categoryLabels: Record<string, { name: string, color: string }> = {
+    lighthearted: { name: "轻松愉快", color: "green" },
+    passions: { name: "兴趣爱好", color: "blue" },
+    travel: { name: "旅行探险", color: "purple" },
+    creativity: { name: "艺术创意", color: "pink" },
+    innovation: { name: "创新科技", color: "cyan" },
+    personal: { name: "个人成长", color: "orange" },
+    values: { name: "共同价值观", color: "red" },
+    dining: { name: "美食话题", color: "yellow" },
+    city_life: { name: "城市生活", color: "teal" },
+  };
+
   app.get('/api/icebreakers/random', isAuthenticated, async (req: any, res) => {
     try {
       const { topic } = req.query;
-      let questions: string[] = [];
+      let selectedCategory: string;
+      let questions: string[];
       
       if (topic && topic in icebreakerQuestions) {
+        selectedCategory = topic;
         questions = icebreakerQuestions[topic as keyof typeof icebreakerQuestions];
       } else {
-        // General: mix all questions
-        questions = Object.values(icebreakerQuestions).flat();
+        // General: randomly select a category
+        const categories = Object.keys(icebreakerQuestions);
+        selectedCategory = categories[Math.floor(Math.random() * categories.length)];
+        questions = icebreakerQuestions[selectedCategory as keyof typeof icebreakerQuestions];
       }
       
       const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
-      res.json({ question: randomQuestion });
+      const categoryInfo = categoryLabels[selectedCategory] || { name: "破冰问题", color: "gray" };
+      
+      res.json({ 
+        question: randomQuestion,
+        category: categoryInfo.name,
+        categoryColor: categoryInfo.color
+      });
     } catch (error) {
       console.error("Error fetching icebreaker:", error);
       res.status(500).json({ message: "Failed to fetch icebreaker question" });
