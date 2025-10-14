@@ -1,7 +1,7 @@
 import { Drawer } from "vaul";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Sparkles, ChevronDown, Shield, Users, Clock, HelpCircle, DollarSign } from "lucide-react";
+import { Calendar, MapPin, Sparkles, ChevronDown, Users, HelpCircle, DollarSign } from "lucide-react";
 import { useState } from "react";
 import {
   Collapsible,
@@ -36,14 +36,6 @@ export default function BlindBoxInfoSheet({
   };
 
   const faqs = [
-    {
-      q: "会不会分配到不同类型？",
-      a: "默认不会，除非你勾选\"可替代\"选项。"
-    },
-    {
-      q: "价格会变化吗？",
-      a: "不会，最终以成局页为准。"
-    },
     {
       q: "我能带朋友吗？",
       a: "可在报名后添加 1–2 位同行，统一匹配。"
@@ -170,42 +162,7 @@ export default function BlindBoxInfoSheet({
               </div>
             </div>
 
-            {/* 4. 安全与隐私 */}
-            <div className="mb-6">
-              <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
-                安全与隐私
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                  <p>实名与主理人审核</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                  <p>场地风控与紧急联系人</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                  <p>仅在成局后对同局成员展示必要信息</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 5. 可选项提升成功率 */}
-            <div className="mb-6">
-              <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                提升成功率小贴士
-              </h3>
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <p>• 勾选"接受相邻商圈"，成功率 ↑</p>
-                <p>• 时间可前后±30分钟，成功率 ↑</p>
-                <p>• 饭局可替代为酒局（仅当你勾选时）</p>
-              </div>
-            </div>
-
-            {/* 6. 常见问题 */}
+            {/* 4. 常见问题 */}
             <div className="mb-6">
               <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
                 <HelpCircle className="h-5 w-5 text-primary" />
