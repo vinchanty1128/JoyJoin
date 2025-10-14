@@ -81,7 +81,14 @@ export default function BlindBoxEventDetailPage() {
 
   const handleNavigation = () => {
     if (event.restaurantLat && event.restaurantLng) {
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.restaurantLat},${event.restaurantLng}`, '_blank');
+      const restaurantName = encodeURIComponent(event.restaurantName || '目的地');
+      
+      // 深圳使用高德地图，香港使用Google Maps
+      if (event.city === '深圳') {
+        window.open(`https://uri.amap.com/navigation?to=${event.restaurantLng},${event.restaurantLat},${restaurantName}&mode=car&coordinate=gaode`, '_blank');
+      } else {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.restaurantLat},${event.restaurantLng}`, '_blank');
+      }
     }
   };
 
