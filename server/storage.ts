@@ -301,21 +301,55 @@ export class DatabaseStorage implements IStorage {
     selectedLanguages?: string[];
     selectedTasteIntensity?: string[];
     selectedCuisines?: string[];
+    inviteFriends?: boolean;
+    friendsCount?: number;
   }): Promise<BlindBoxEvent> {
     // Parse area to get district (e.g., "深圳•南山区" -> "南山区")
     const district = eventData.area.includes('•') 
       ? eventData.area.split('•')[1] 
       : eventData.area;
     
-    // Combine date and time to create datetime
-    // This is simplified - in production, would parse date/time properly
-    const dateTime = new Date();
+    // Parse date (e.g., "周三") to get next occurrence of that weekday
+    const parseWeekday = (weekdayStr: string): number => {
+      const weekdayMap: { [key: string]: number } = {
+        '周日': 0, '周一': 1, '周二': 2, '周三': 3, 
+        '周四': 4, '周五': 5, '周六': 6
+      };
+      return weekdayMap[weekdayStr] ?? 0;
+    };
+    
+    const getNextWeekdayDate = (weekdayStr: string, timeStr: string): Date => {
+      const targetWeekday = parseWeekday(weekdayStr);
+      const now = new Date();
+      const currentWeekday = now.getDay();
+      
+      // Calculate days until target weekday
+      let daysUntil = targetWeekday - currentWeekday;
+      if (daysUntil <= 0) {
+        daysUntil += 7; // Next week if target day has passed
+      }
+      
+      // Parse time (e.g., "19:00")
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      
+      // Create target date
+      const targetDate = new Date(now);
+      targetDate.setDate(now.getDate() + daysUntil);
+      targetDate.setHours(hours, minutes, 0, 0);
+      
+      return targetDate;
+    };
+    
+    const dateTime = getNextWeekdayDate(eventData.date, eventData.time);
     
     // Create title
     const title = `${eventData.date} ${eventData.time} · ${eventData.eventType}`;
     
-    // Use first budget as primary budget tier
-    const budgetTier = eventData.budget[0] || "100-200";
+    // Join all budget tiers with "/"
+    const budgetTier = eventData.budget.join('/');
+    
+    // Calculate invited count
+    const invitedCount = eventData.inviteFriends ? (eventData.friendsCount || 1) : 0;
     
     const [newEvent] = await db
       .insert(blindBoxEvents)
@@ -331,6 +365,8 @@ export class DatabaseStorage implements IStorage {
         selectedTasteIntensity: eventData.selectedTasteIntensity || null,
         selectedCuisines: eventData.selectedCuisines || null,
         acceptNearby: eventData.acceptNearby || false,
+        invitedCount,
+        invitedJoined: 0,
         status: 'pending_match',
         progress: 0,
         etaMinutes: 120, // Default 2 hours ETA
