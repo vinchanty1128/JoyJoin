@@ -184,6 +184,7 @@ export const blindBoxEvents = pgTable("blind_box_events", {
   // Matching status
   status: varchar("status").notNull().default("pending_match"), // pending_match, matched, completed, canceled
   progress: integer("progress").default(0), // 0-100
+  currentParticipants: integer("current_participants").default(1), // Includes creator + joined invites
   etaMinutes: integer("eta_minutes"), // Estimated time to match
   
   // Matched event details (populated when status = matched)

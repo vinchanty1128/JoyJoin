@@ -27,7 +27,12 @@ interface PendingMatchCardProps {
 
 export default function PendingMatchCard({ event, onCancel }: PendingMatchCardProps) {
   const currencySymbol = getCurrencySymbol(event.city as "香港" | "深圳");
-  const progress = event.progress || 0;
+  
+  // Progress based on minimum 4 people needed to start
+  const currentParticipants = event.currentParticipants || 1;
+  const minParticipants = 4;
+  const progress = Math.min((currentParticipants / minParticipants) * 100, 100);
+  
   const etaText = event.etaMinutes 
     ? `预计${Math.floor(event.etaMinutes / 60)}-${Math.floor(event.etaMinutes / 60) + 1}小时`
     : "预计1-3小时";
@@ -149,9 +154,10 @@ export default function PendingMatchCard({ event, onCancel }: PendingMatchCardPr
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">正在为你匹配同频伙伴…</span>
-              <span className="text-xs text-muted-foreground">{etaText}</span>
+              <span className="text-xs font-medium">{currentParticipants}/{minParticipants}人</span>
             </div>
             <Progress value={progress} className="h-2" />
+            <div className="text-xs text-muted-foreground text-right">{etaText}</div>
           </div>
 
           {/* 操作按钮 */}
