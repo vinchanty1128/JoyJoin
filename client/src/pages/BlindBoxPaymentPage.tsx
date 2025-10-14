@@ -11,17 +11,61 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { getCurrencySymbol } from "@/lib/currency";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BlindBoxPaymentPage() {
   const [, setLocation] = useLocation();
   const [promoOpen, setPromoOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const city = (localStorage.getItem("blindbox_city") || "深圳") as "香港" | "深圳";
   const currencySymbol = getCurrencySymbol(city);
 
-  const handlePayment = () => {
-    // 这里处理支付逻辑
-    // 支付成功后跳转到确认页面
-    setLocation("/blindbox/confirmation");
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: any) => {
+      return await apiRequest("POST", "/api/blind-box-events", eventData);
+    },
+    onSuccess: () => {
+      // 立即刷新Event Tab数据
+      queryClient.invalidateQueries({ queryKey: ["/api/my-events"] });
+      // 清除临时数据
+      localStorage.removeItem("blindbox_event_data");
+      // 跳转到活动页面
+      setLocation("/events");
+    },
+    onError: (error) => {
+      toast({
+        title: "创建活动失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePayment = async () => {
+    // 模拟支付成功
+    try {
+      // 从localStorage获取盲盒事件数据
+      const eventDataStr = localStorage.getItem("blindbox_event_data");
+      if (!eventDataStr) {
+        toast({
+          title: "数据错误",
+          description: "未找到活动数据，请重新报名",
+          variant: "destructive",
+        });
+        setLocation("/discover");
+        return;
+      }
+      
+      const eventData = JSON.parse(eventDataStr);
+      
+      // 创建盲盒事件
+      await createEventMutation.mutateAsync(eventData);
+    } catch (error) {
+      console.error("Payment error:", error);
+    }
   };
 
   return (

@@ -179,6 +179,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/blind-box-events', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { date, time, eventType, city, area, budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines } = req.body;
+      
+      if (!date || !time || !eventType || !area || !budget || budget.length === 0) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const event = await storage.createBlindBoxEvent(userId, {
+        date,
+        time,
+        eventType,
+        city: city || "深圳",
+        area,
+        budget,
+        acceptNearby,
+        selectedLanguages,
+        selectedTasteIntensity,
+        selectedCuisines,
+      });
+      
+      res.json(event);
+    } catch (error) {
+      console.error("Error creating blind box event:", error);
+      res.status(500).json({ message: "Failed to create blind box event" });
+    }
+  });
+
   app.get('/api/blind-box-events/:eventId', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

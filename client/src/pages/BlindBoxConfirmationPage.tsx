@@ -145,33 +145,11 @@ export default function BlindBoxConfirmationPage() {
                   <Settings className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold">提升成功率</h3>
                 </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">接受相邻商圈</span>
-                    <Badge variant={confirmationData.preferences.acceptNearby ? "default" : "outline"} className="text-xs">
-                      {confirmationData.preferences.acceptNearby ? "已开启" : "未开启"}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">时间可 ±30 分钟</span>
-                    <Badge variant={confirmationData.preferences.flexibleTime ? "default" : "outline"} className="text-xs">
-                      {confirmationData.preferences.flexibleTime ? "已开启" : "未开启"}
-                    </Badge>
-                  </div>
-                  {confirmationData.eventType === "饭局" && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">饭局可替代为酒局</span>
-                      <Badge variant={confirmationData.preferences.typeSubstitute ? "default" : "outline"} className="text-xs">
-                        {confirmationData.preferences.typeSubstitute ? "已开启" : "未开启"}
-                      </Badge>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">不做性别/年龄硬性限制</span>
-                    <Badge variant={confirmationData.preferences.noStrictRestrictions ? "default" : "outline"} className="text-xs">
-                      {confirmationData.preferences.noStrictRestrictions ? "已开启" : "未开启"}
-                    </Badge>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">相邻商圈</span>
+                  <Badge variant={confirmationData.preferences.acceptNearby ? "default" : "outline"} className="text-xs">
+                    {confirmationData.preferences.acceptNearby ? "已开启" : "未开启"}
+                  </Badge>
                 </div>
               </div>
 

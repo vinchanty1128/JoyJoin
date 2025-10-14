@@ -32,6 +32,18 @@ export interface IStorage {
   // Blind Box Event operations
   getUserBlindBoxEvents(userId: string): Promise<Array<BlindBoxEvent>>;
   getBlindBoxEventById(eventId: string, userId: string): Promise<BlindBoxEvent | undefined>;
+  createBlindBoxEvent(userId: string, eventData: { 
+    date: string; 
+    time: string; 
+    eventType: string; 
+    city: string;
+    area: string; 
+    budget: string[]; 
+    acceptNearby?: boolean;
+    selectedLanguages?: string[];
+    selectedTasteIntensity?: string[];
+    selectedCuisines?: string[];
+  }): Promise<BlindBoxEvent>;
   cancelBlindBoxEvent(eventId: string, userId: string): Promise<BlindBoxEvent>;
 }
 
@@ -276,6 +288,56 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return event;
+  }
+
+  async createBlindBoxEvent(userId: string, eventData: { 
+    date: string; 
+    time: string; 
+    eventType: string; 
+    city: string;
+    area: string; 
+    budget: string[]; 
+    acceptNearby?: boolean;
+    selectedLanguages?: string[];
+    selectedTasteIntensity?: string[];
+    selectedCuisines?: string[];
+  }): Promise<BlindBoxEvent> {
+    // Parse area to get district (e.g., "深圳•南山区" -> "南山区")
+    const district = eventData.area.includes('•') 
+      ? eventData.area.split('•')[1] 
+      : eventData.area;
+    
+    // Combine date and time to create datetime
+    // This is simplified - in production, would parse date/time properly
+    const dateTime = new Date();
+    
+    // Create title
+    const title = `${eventData.date} ${eventData.time} · ${eventData.eventType}`;
+    
+    // Use first budget as primary budget tier
+    const budgetTier = eventData.budget[0] || "100-200";
+    
+    const [newEvent] = await db
+      .insert(blindBoxEvents)
+      .values({
+        userId,
+        title,
+        eventType: eventData.eventType,
+        city: eventData.city,
+        district,
+        dateTime,
+        budgetTier,
+        selectedLanguages: eventData.selectedLanguages || null,
+        selectedTasteIntensity: eventData.selectedTasteIntensity || null,
+        selectedCuisines: eventData.selectedCuisines || null,
+        acceptNearby: eventData.acceptNearby || false,
+        status: 'pending_match',
+        progress: 0,
+        etaMinutes: 120, // Default 2 hours ETA
+      })
+      .returning();
+    
+    return newEvent;
   }
 
   async cancelBlindBoxEvent(eventId: string, userId: string): Promise<BlindBoxEvent> {
