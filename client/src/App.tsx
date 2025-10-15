@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import LandingPage from "@/pages/LandingPage";
+import RegistrationPage from "@/pages/RegistrationPage";
+import PersonalityTestPage from "@/pages/PersonalityTestPage";
 import ProfileSetupPage from "@/pages/ProfileSetupPage";
 import OnboardingQuizPage from "@/pages/OnboardingQuizPage";
 import DiscoverPage from "@/pages/DiscoverPage";
@@ -18,6 +20,22 @@ import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
 import BlindBoxConfirmationPage from "@/pages/BlindBoxConfirmationPage";
 import BlindBoxEventDetailPage from "@/pages/BlindBoxEventDetailPage";
 import NotFound from "@/pages/not-found";
+
+function RedirectToRegistration() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/registration");
+  }, [setLocation]);
+  return null;
+}
+
+function RedirectToPersonalityTest() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/personality-test");
+  }, [setLocation]);
+  return null;
+}
 
 function RedirectToSetup() {
   const [, setLocation] = useLocation();
@@ -36,7 +54,25 @@ function RedirectToQuiz() {
 }
 
 function AuthenticatedRouter() {
-  const { needsProfileSetup, needsVoiceQuiz } = useAuth();
+  const { needsRegistration, needsPersonalityTest, needsProfileSetup, needsVoiceQuiz } = useAuth();
+
+  if (needsRegistration) {
+    return (
+      <Switch>
+        <Route path="/registration" component={RegistrationPage} />
+        <Route path="*" component={RedirectToRegistration} />
+      </Switch>
+    );
+  }
+
+  if (needsPersonalityTest) {
+    return (
+      <Switch>
+        <Route path="/personality-test" component={PersonalityTestPage} />
+        <Route path="*" component={RedirectToPersonalityTest} />
+      </Switch>
+    );
+  }
 
   if (needsProfileSetup) {
     return (

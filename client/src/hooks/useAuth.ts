@@ -11,7 +11,9 @@ export function useAuth() {
     user,
     isLoading,
     isAuthenticated: !!user,
-    needsProfileSetup: user && !user.hasCompletedProfileSetup,
+    needsRegistration: user && !user.hasCompletedRegistration,
+    needsPersonalityTest: user && user.hasCompletedRegistration && !user.hasCompletedPersonalityTest,
+    needsProfileSetup: user && user.hasCompletedPersonalityTest && !user.hasCompletedProfileSetup,
     needsVoiceQuiz: user && user.hasCompletedProfileSetup && !user.hasCompletedVoiceQuiz,
   };
 }

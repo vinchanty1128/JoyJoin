@@ -2,7 +2,161 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertEventFeedbackSchema } from "@shared/schema";
+import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertEventFeedbackSchema, registerUserSchema } from "@shared/schema";
+
+// Role mapping based on question responses
+const roleMapping: Record<string, Record<string, string>> = {
+  "1": { "A": "火花塞", "B": "连接者", "C": "连接者", "D": "氛围组" },
+  "2": { "A": "探索者", "B": "挑战者", "C": "故事家", "D": "肯定者" },
+  "3": { "A": "故事家", "B": "探索者", "C": "连接者", "D": "氛围组" },
+  "4": { "A": "挑战者", "B": "协调者", "C": "连接者", "D": "氛围组" },
+  "5": { "A": "挑战者", "B": "协调者", "C": "故事家", "D": "肯定者" },
+  "6": { "A": "探索者", "B": "挑战者", "C": "故事家", "D": "肯定者" },
+  "7": { "A": "探索者", "B": "火花塞", "C": "故事家", "D": "协调者" },
+  "8": { "A": "探索者", "B": "协调者", "C": "连接者", "D": "火花塞" },
+  "9": { "A": "协调者", "B": "协调者", "C": "连接者", "D": "连接者" },
+  "10": { "A": "探索者", "B": "氛围组", "C": "连接者", "D": "挑战者" },
+};
+
+function calculateRoleScores(responses: Record<number, any>): Record<string, number> {
+  const scores: Record<string, number> = {
+    "火花塞": 0,
+    "探索者": 0,
+    "故事家": 0,
+    "挑战者": 0,
+    "连接者": 0,
+    "协调者": 0,
+    "氛围组": 0,
+    "肯定者": 0,
+  };
+
+  Object.entries(responses).forEach(([questionId, answer]) => {
+    if (answer.type === "single") {
+      const role = roleMapping[questionId]?.[answer.value];
+      if (role) {
+        scores[role] = (scores[role] || 0) + 2;
+      }
+    } else if (answer.type === "dual") {
+      const mostLikeRole = roleMapping[questionId]?.[answer.mostLike];
+      const secondLikeRole = roleMapping[questionId]?.[answer.secondLike];
+      if (mostLikeRole) {
+        scores[mostLikeRole] = (scores[mostLikeRole] || 0) + 2;
+      }
+      if (secondLikeRole) {
+        scores[secondLikeRole] = (scores[secondLikeRole] || 0) + 1;
+      }
+    }
+  });
+
+  return scores;
+}
+
+function determineSubtype(primaryRole: string, responses: Record<number, any>): string {
+  // Simplified subtype logic - in production, this would be more sophisticated
+  const subtypes: Record<string, string[]> = {
+    "火花塞": ["联想家", "提问者"],
+    "探索者": ["专家型", "考证派"],
+    "故事家": ["情感共鸣者", "经历叙述者"],
+    "挑战者": ["逻辑型", "视角型"],
+    "连接者": ["观察者", "牵线者"],
+    "协调者": ["共识推动者", "流程维护者"],
+    "氛围组": ["幽默破冰者", "积极呼应者"],
+    "肯定者": ["赞美者", "鼓励者"],
+  };
+
+  const roleSubtypes = subtypes[primaryRole] || [];
+  return roleSubtypes[0] || "";
+}
+
+function calculateTraitScores(primaryRole: string, secondaryRole: string | null): {
+  affinityScore: number;
+  opennessScore: number;
+  conscientiousnessScore: number;
+  emotionalStabilityScore: number;
+  extraversionScore: number;
+  positivityScore: number;
+} {
+  // Base trait profiles for each role (0-10 scale)
+  const roleTraits: Record<string, any> = {
+    "火花塞": { affinity: 7, openness: 9, conscientiousness: 5, emotionalStability: 7, extraversion: 9, positivity: 8 },
+    "探索者": { affinity: 6, openness: 9, conscientiousness: 8, emotionalStability: 7, extraversion: 6, positivity: 7 },
+    "故事家": { affinity: 9, openness: 7, conscientiousness: 6, emotionalStability: 6, extraversion: 8, positivity: 7 },
+    "挑战者": { affinity: 5, openness: 9, conscientiousness: 8, emotionalStability: 8, extraversion: 7, positivity: 6 },
+    "连接者": { affinity: 10, openness: 7, conscientiousness: 7, emotionalStability: 8, extraversion: 6, positivity: 8 },
+    "协调者": { affinity: 7, openness: 6, conscientiousness: 9, emotionalStability: 9, extraversion: 7, positivity: 7 },
+    "氛围组": { affinity: 8, openness: 7, conscientiousness: 6, emotionalStability: 7, extraversion: 10, positivity: 10 },
+    "肯定者": { affinity: 10, openness: 6, conscientiousness: 7, emotionalStability: 8, extraversion: 7, positivity: 10 },
+  };
+
+  const primary = roleTraits[primaryRole] || roleTraits["连接者"];
+  const secondary = secondaryRole ? roleTraits[secondaryRole] : null;
+
+  // Blend primary and secondary (70% primary, 30% secondary)
+  const blend = (p: number, s: number | null) => {
+    if (s === null) return p;
+    return Math.round(p * 0.7 + s * 0.3);
+  };
+
+  return {
+    affinityScore: blend(primary.affinity, secondary?.affinity || null),
+    opennessScore: blend(primary.openness, secondary?.openness || null),
+    conscientiousnessScore: blend(primary.conscientiousness, secondary?.conscientiousness || null),
+    emotionalStabilityScore: blend(primary.emotionalStability, secondary?.emotionalStability || null),
+    extraversionScore: blend(primary.extraversion, secondary?.extraversion || null),
+    positivityScore: blend(primary.positivity, secondary?.positivity || null),
+  };
+}
+
+function generateInsights(primaryRole: string, secondaryRole: string | null): {
+  strengths: string;
+  challenges: string;
+  idealFriendTypes: string[];
+} {
+  const insights: Record<string, any> = {
+    "火花塞": {
+      strengths: "你擅长打开话题、带动气氛，思维活跃，能快速将不同领域的想法联系起来，为聚会注入创意和活力。",
+      challenges: "有时可能会跳跃太快，让他人难以跟上；需要注意倾听和给予他人发言空间。",
+      idealFriendTypes: ["协调者", "连接者", "探索者"],
+    },
+    "探索者": {
+      strengths: "你善于深入挖掘话题，提供专业见解和细节信息，能将对话引向更有深度的方向。",
+      challenges: "可能过于专注细节，有时需要平衡深度与趣味性；注意不要让讨论过于学术化。",
+      idealFriendTypes: ["火花塞", "故事家", "协调者"],
+    },
+    "故事家": {
+      strengths: "你擅长通过个人经历和情感共鸣连接他人，能让抽象话题变得生动具体，创造温暖的氛围。",
+      challenges: "有时可能过于感性，需要平衡情感表达与理性分析；注意时间管理，避免故事过长。",
+      idealFriendTypes: ["探索者", "肯定者", "连接者"],
+    },
+    "挑战者": {
+      strengths: "你善于批判性思考，能发现问题盲点，提出新颖视角，推动群体进行更深入的思考。",
+      challenges: "可能显得过于挑剔或对抗性；需要注意表达方式，确保建设性而非破坏性。",
+      idealFriendTypes: ["协调者", "连接者", "探索者"],
+    },
+    "连接者": {
+      strengths: "你善于观察和理解他人，能照顾到每个人的感受，促进群体和谐，帮助边缘化的人融入。",
+      challenges: "有时可能过于关注他人而忽视自己的需求；需要平衡倾听与表达。",
+      idealFriendTypes: ["火花塞", "挑战者", "氛围组"],
+    },
+    "协调者": {
+      strengths: "你擅长管理讨论节奏，化解冲突，推动群体达成共识，确保对话有方向和产出。",
+      challenges: "可能过于追求效率而忽视过程中的乐趣；有时需要允许一些「混乱」和自由发挥。",
+      idealFriendTypes: ["火花塞", "挑战者", "故事家"],
+    },
+    "氛围组": {
+      strengths: "你善于活跃气氛，用幽默化解尴尬，为聚会带来欢乐和轻松感，让每个人都感到舒适。",
+      challenges: "可能过于追求表面的欢乐而回避深层话题；需要平衡娱乐性与实质性。",
+      idealFriendTypes: ["探索者", "协调者", "连接者"],
+    },
+    "肯定者": {
+      strengths: "你善于发现和赞美他人的优点，提供情绪价值，创造包容和支持的环境，让害羞的人也能发声。",
+      challenges: "可能过于避免冲突而缺乏自己的立场；需要在肯定他人的同时也表达真实想法。",
+      idealFriendTypes: ["挑战者", "火花塞", "故事家"],
+    },
+  };
+
+  return insights[primaryRole] || insights["连接者"];
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -17,6 +171,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Registration routes
+  app.post('/api/user/register', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = registerUserSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      const user = await storage.registerUser(userId, result.data);
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error registering user:", error);
+      res.status(500).json({ message: "Failed to register user" });
+    }
+  });
+
+  // Personality test routes
+  app.post('/api/personality-test/submit', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { responses } = req.body;
+
+      // Calculate role scores
+      const roleScores = calculateRoleScores(responses);
+      
+      // Determine primary and secondary roles
+      const sortedRoles = Object.entries(roleScores)
+        .sort(([, a], [, b]) => b - a);
+      
+      const primaryRole = sortedRoles[0][0];
+      const primaryRoleScore = sortedRoles[0][1];
+      const secondaryRole = sortedRoles[1]?.[0] || null;
+      const secondaryRoleScore = sortedRoles[1]?.[1] || 0;
+
+      // Determine subtype (simplified - based on highest scoring items)
+      const roleSubtype = determineSubtype(primaryRole, responses);
+
+      // Calculate six-dimensional trait scores
+      const traitScores = calculateTraitScores(primaryRole, secondaryRole);
+
+      // Generate insights
+      const insights = generateInsights(primaryRole, secondaryRole);
+
+      // Save responses and result
+      await storage.saveTestResponses(userId, responses);
+      const roleResult = await storage.saveRoleResult(userId, {
+        primaryRole,
+        primaryRoleScore,
+        secondaryRole,
+        secondaryRoleScore,
+        roleSubtype,
+        roleScores,
+        ...traitScores,
+        ...insights,
+        testVersion: 1,
+      });
+
+      // Mark personality test as complete
+      await storage.markPersonalityTestComplete(userId);
+
+      res.json(roleResult);
+    } catch (error) {
+      console.error("Error submitting personality test:", error);
+      res.status(500).json({ message: "Failed to submit personality test" });
+    }
+  });
+
+  app.get('/api/personality-test/results', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = await storage.getRoleResult(userId);
+      
+      if (!result) {
+        return res.status(404).json({ message: "No test results found" });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching test results:", error);
+      res.status(500).json({ message: "Failed to fetch test results" });
     }
   });
 
