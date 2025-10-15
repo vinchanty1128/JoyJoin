@@ -240,7 +240,8 @@ export default function PersonalityTestPage() {
 
           {currentQ.questionType === "single" ? (
             <RadioGroup
-              value={answers[currentQ.id]?.value}
+              key={`single-${currentQ.id}`}
+              value={answers[currentQ.id]?.value || ""}
               onValueChange={handleSingleChoice}
               className="space-y-3"
             >
@@ -269,7 +270,8 @@ export default function PersonalityTestPage() {
               <div>
                 <div className="text-sm font-medium mb-3">最像我的（2分）</div>
                 <RadioGroup
-                  value={answers[currentQ.id]?.mostLike}
+                  key={`most-${currentQ.id}`}
+                  value={answers[currentQ.id]?.mostLike || ""}
                   onValueChange={(value) => handleDualChoice("most", value)}
                   className="space-y-3"
                 >
@@ -301,7 +303,8 @@ export default function PersonalityTestPage() {
               <div>
                 <div className="text-sm font-medium mb-3">其次像我的（1分）</div>
                 <RadioGroup
-                  value={answers[currentQ.id]?.secondLike}
+                  key={`second-${currentQ.id}`}
+                  value={answers[currentQ.id]?.secondLike || ""}
                   onValueChange={(value) => handleDualChoice("second", value)}
                   className="space-y-3"
                 >
