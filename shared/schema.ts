@@ -37,11 +37,28 @@ export const users = pgTable("users", {
   hasCompletedProfileSetup: boolean("has_completed_profile_setup").default(false),
   hasCompletedVoiceQuiz: boolean("has_completed_voice_quiz").default(false),
   
+  // Registration fields (new)
+  age: integer("age"),
+  gender: varchar("gender"), // Male, Female, Non-binary, Prefer not to say
+  relationshipStatus: varchar("relationship_status"), // Single, In a relationship, Married, Prefer not to say
+  hasKids: boolean("has_kids"),
+  industry: varchar("industry"), // 大厂, 金融, 科技, AI, etc.
+  placeOfOrigin: varchar("place_of_origin"), // 籍贯
+  longTermBase: varchar("long_term_base"), // 长期base (city)
+  wechatId: varchar("wechat_id"), // WeChat ID
+  hasCompletedRegistration: boolean("has_completed_registration").default(false),
+  hasCompletedPersonalityTest: boolean("has_completed_personality_test").default(false),
+  
   // Personality data
   personalityTraits: jsonb("personality_traits"),
   personalityChallenges: text("personality_challenges").array(),
   idealMatch: text("ideal_match"),
   energyLevel: integer("energy_level"),
+  
+  // Social role (from personality test)
+  primaryRole: varchar("primary_role"), // 8 core roles
+  secondaryRole: varchar("secondary_role"),
+  roleSubtype: varchar("role_subtype"),
   
   // Budget preference
   budgetPreference: text("budget_preference").array(),
@@ -221,20 +238,111 @@ export const insertBlindBoxEventSchema = createInsertSchema(blindBoxEvents).omit
   budgetTier: z.string().min(1, "预算档位不能为空"),
 });
 
+// Personality test questions table
+export const personalityQuestions = pgTable("personality_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  questionNumber: integer("question_number").notNull(),
+  category: varchar("category").notNull(), // "基础行为模式", "反应偏好", "自我认知"
+  questionText: text("question_text").notNull(),
+  questionType: varchar("question_type").notNull(), // "single" or "dual"
+  options: jsonb("options").notNull(), // Array of {value: string, text: string, roleMapping: string}
+  testVersion: integer("test_version").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Test responses table (stores user answers)
+export const testResponses = pgTable("test_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  questionId: varchar("question_id").notNull().references(() => personalityQuestions.id),
+  selectedOption: varchar("selected_option"), // For single choice
+  mostLikeOption: varchar("most_like_option"), // For dual choice (2 points)
+  secondLikeOption: varchar("second_like_option"), // For dual choice (1 point)
+  testVersion: integer("test_version").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Role results table (stores personality test results)
+export const roleResults = pgTable("role_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  
+  // Role scores (8 core roles)
+  primaryRole: varchar("primary_role").notNull(), // Highest scoring role
+  primaryRoleScore: integer("primary_role_score").notNull(),
+  secondaryRole: varchar("secondary_role"), // Second highest scoring role
+  secondaryRoleScore: integer("secondary_role_score"),
+  roleSubtype: varchar("role_subtype"), // Subtype based on answer patterns
+  
+  // Role score breakdown
+  roleScores: jsonb("role_scores").notNull(), // {火花塞: 5, 探索者: 3, ...}
+  
+  // Six-dimensional trait scores (0-10 scale)
+  affinityScore: integer("affinity_score").notNull(), // 亲和力
+  opennessScore: integer("openness_score").notNull(), // 开放性
+  conscientiousnessScore: integer("conscientiousness_score").notNull(), // 责任心
+  emotionalStabilityScore: integer("emotional_stability_score").notNull(), // 情绪稳定性
+  extraversionScore: integer("extraversion_score").notNull(), // 外向性
+  positivityScore: integer("positivity_score").notNull(), // 正能量性
+  
+  // Insights (generated text)
+  strengths: text("strengths"),
+  challenges: text("challenges"),
+  idealFriendTypes: text("ideal_friend_types").array(),
+  
+  testVersion: integer("test_version").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Registration schema
+export const registerUserSchema = z.object({
+  firstName: z.string().min(1, "请输入名字"),
+  age: z.number().min(16, "年龄必须在16岁以上").max(80, "年龄必须在80岁以下"),
+  gender: z.enum(["Male", "Female", "Non-binary", "Prefer not to say"], {
+    errorMap: () => ({ message: "请选择性别" }),
+  }),
+  relationshipStatus: z.enum(["Single", "In a relationship", "Married", "Prefer not to say"], {
+    errorMap: () => ({ message: "请选择关系状态" }),
+  }),
+  hasKids: z.boolean(),
+  industry: z.string().min(1, "请选择行业"),
+  placeOfOrigin: z.string().min(1, "请输入籍贯"),
+  longTermBase: z.string().min(1, "请选择长期base"),
+  wechatId: z.string().optional(),
+});
+
+// Test response schema
+export const insertTestResponseSchema = createInsertSchema(testResponses).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Role result schema
+export const insertRoleResultSchema = createInsertSchema(roleResults).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export type UpdatePersonality = z.infer<typeof updatePersonalitySchema>;
 export type UpdateBudgetPreference = z.infer<typeof updateBudgetPreferenceSchema>;
+export type RegisterUser = z.infer<typeof registerUserSchema>;
 
 export type Event = typeof events.$inferSelect;
 export type EventAttendance = typeof eventAttendance.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type EventFeedback = typeof eventFeedback.$inferSelect;
 export type BlindBoxEvent = typeof blindBoxEvents.$inferSelect;
+export type PersonalityQuestion = typeof personalityQuestions.$inferSelect;
+export type TestResponse = typeof testResponses.$inferSelect;
+export type RoleResult = typeof roleResults.$inferSelect;
 
 export type InsertEventAttendance = z.infer<typeof insertEventAttendanceSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertEventFeedback = z.infer<typeof insertEventFeedbackSchema>;
 export type InsertBlindBoxEvent = z.infer<typeof insertBlindBoxEventSchema>;
+export type InsertTestResponse = z.infer<typeof insertTestResponseSchema>;
+export type InsertRoleResult = z.infer<typeof insertRoleResultSchema>;
