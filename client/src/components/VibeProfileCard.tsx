@@ -6,7 +6,6 @@ import VibePill from "./VibePill";
 interface VibeProfileCardProps {
   name: string;
   initials: string;
-  vibes: string[];
   eventsAttended: number;
   matchesMade: number;
 }
@@ -14,7 +13,6 @@ interface VibeProfileCardProps {
 export default function VibeProfileCard({ 
   name, 
   initials, 
-  vibes, 
   eventsAttended, 
   matchesMade 
 }: VibeProfileCardProps) {
@@ -30,23 +28,13 @@ export default function VibeProfileCard({
           <div className="flex-1">
             <CardTitle className="text-xl">{name}</CardTitle>
             <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-              <span>{eventsAttended} events</span>
+              <span>{eventsAttended} 场活动</span>
               <span>•</span>
-              <span>{matchesMade} matches</span>
+              <span>{matchesMade} 个匹配</span>
             </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div>
-          <p className="text-sm font-medium mb-2">My Vibe</p>
-          <div className="flex flex-wrap gap-1.5">
-            {vibes.map((vibe, i) => (
-              <VibePill key={i} label={vibe} variant="secondary" />
-            ))}
-          </div>
-        </div>
-      </CardContent>
     </Card>
   );
 }

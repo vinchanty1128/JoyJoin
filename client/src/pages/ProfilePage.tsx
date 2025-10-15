@@ -40,17 +40,33 @@ export default function ProfilePage() {
     setLocation("/onboarding/quiz");
   };
 
+  const getUserName = () => {
+    if (user?.displayName) return user.displayName;
+    if (user?.firstName && user?.lastName) return `${user.firstName} ${user.lastName}`;
+    if (user?.firstName) return user.firstName;
+    return "用户";
+  };
+
+  const getInitials = () => {
+    const name = getUserName();
+    if (name === "用户") return "U";
+    const nameParts = name.split(" ");
+    if (nameParts.length >= 2) {
+      return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   return (
     <div className="min-h-screen bg-background pb-16">
       <MobileHeader title="我的" showSettings={true} />
       
       <div className="px-4 py-4 space-y-4">
         <VibeProfileCard
-          name="Alex Rivera"
-          initials="AR"
-          vibes={["咖啡爱好者", "内向", "创意", "书虫", "夜猫子"]}
-          eventsAttended={12}
-          matchesMade={8}
+          name={getUserName()}
+          initials={getInitials()}
+          eventsAttended={user?.eventsAttended || 0}
+          matchesMade={user?.matchesMade || 0}
         />
 
         {!hasCompletedQuiz ? (

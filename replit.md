@@ -201,6 +201,9 @@ Preferred communication style: Simple, everyday language.
 - Fixed PersonalityRadarChart props to extract individual scores from traits array
 - Added proper TypeScript type handling with `<any>` for query data
 - Resolved NaN errors in radar chart rendering
+- Updated ProfilePage to display real user data from registration (displayName, firstName, lastName)
+- Removed "My Vibe" section from VibeProfileCard (was displaying hobby-like tags instead of personality traits)
+- Changed stats text to Chinese: "场活动" and "个匹配"
 
 **Key Features:**
 - Single-choice and dual-choice question types
