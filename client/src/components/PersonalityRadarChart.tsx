@@ -1,8 +1,29 @@
 interface PersonalityRadarChartProps {
-  traits: Array<{ name: string; score: number; maxScore: number }>;
+  affinityScore: number;
+  opennessScore: number;
+  conscientiousnessScore: number;
+  emotionalStabilityScore: number;
+  extraversionScore: number;
+  positivityScore: number;
 }
 
-export default function PersonalityRadarChart({ traits }: PersonalityRadarChartProps) {
+export default function PersonalityRadarChart({
+  affinityScore,
+  opennessScore,
+  conscientiousnessScore,
+  emotionalStabilityScore,
+  extraversionScore,
+  positivityScore,
+}: PersonalityRadarChartProps) {
+  const traits = [
+    { name: '亲和力', score: affinityScore, maxScore: 10 },
+    { name: '开放性', score: opennessScore, maxScore: 10 },
+    { name: '责任心', score: conscientiousnessScore, maxScore: 10 },
+    { name: '情绪稳定性', score: emotionalStabilityScore, maxScore: 10 },
+    { name: '外向性', score: extraversionScore, maxScore: 10 },
+    { name: '正能量性', score: positivityScore, maxScore: 10 },
+  ];
+
   const centerX = 150;
   const centerY = 150;
   const maxRadius = 100;

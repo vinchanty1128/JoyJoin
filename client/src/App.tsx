@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import LandingPage from "@/pages/LandingPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import PersonalityTestPage from "@/pages/PersonalityTestPage";
+import PersonalityTestResultPage from "@/pages/PersonalityTestResultPage";
 import ProfileSetupPage from "@/pages/ProfileSetupPage";
 import OnboardingQuizPage from "@/pages/OnboardingQuizPage";
 import DiscoverPage from "@/pages/DiscoverPage";
@@ -69,6 +70,7 @@ function AuthenticatedRouter() {
     return (
       <Switch>
         <Route path="/personality-test" component={PersonalityTestPage} />
+        <Route path="/personality-test/results" component={PersonalityTestResultPage} />
         <Route path="*" component={RedirectToPersonalityTest} />
       </Switch>
     );
