@@ -194,12 +194,21 @@ Preferred communication style: Simple, everyday language.
 - Added PersonalityTestResultPage displaying primary/secondary roles, strengths, challenges, ideal friend types
 - Fixed routing flow to ensure users see their results before proceeding to next onboarding step
 
+**Profile Integration (Fixed):**
+- Fixed ProfilePage to correctly fetch and display personality test results
+- Corrected field name from `personalityTest` to `hasCompletedPersonalityTest`
+- Fixed API response mapping to use direct score fields (`affinityScore`, `opennessScore`, etc.)
+- Fixed PersonalityRadarChart props to extract individual scores from traits array
+- Added proper TypeScript type handling with `<any>` for query data
+- Resolved NaN errors in radar chart rendering
+
 **Key Features:**
 - Single-choice and dual-choice question types
-- Real-time progress tracking
+- Real-time progress tracking with unique RadioGroup keys per question
 - Six dimensions: 亲和力, 开放性, 责任心, 情绪稳定性, 外向性, 正能量性
 - 8 social engine roles: 火花塞, 探索者, 故事家, 挑战者, 连接者, 协调者, 氛围组, 肯定者
 - Intelligent query invalidation to control onboarding flow progression
+- Results synced to ProfilePage (/profile) after test completion
 
 ## Recent Changes (October 12, 2025)
 

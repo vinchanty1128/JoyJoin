@@ -53,7 +53,14 @@ export default function PersonalityProfile({
             )}
           </div>
 
-          <PersonalityRadarChart traits={traits} />
+          <PersonalityRadarChart 
+            affinityScore={traits.find(t => t.name === "亲和力")?.score || 0}
+            opennessScore={traits.find(t => t.name === "开放性")?.score || 0}
+            conscientiousnessScore={traits.find(t => t.name === "责任心")?.score || 0}
+            emotionalStabilityScore={traits.find(t => t.name === "情绪稳定性")?.score || 0}
+            extraversionScore={traits.find(t => t.name === "外向性")?.score || 0}
+            positivityScore={traits.find(t => t.name === "正能量性")?.score || 0}
+          />
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
             {traits.map((trait, index) => (

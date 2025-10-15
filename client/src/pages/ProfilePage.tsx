@@ -8,27 +8,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit, LogOut, Shield, HelpCircle, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const [showQuizIntro, setShowQuizIntro] = useState(false);
   
-  const hasCompletedQuiz = true;
+  const { data: user } = useQuery<any>({ queryKey: ["/api/auth/user"] });
+  const { data: personalityResults } = useQuery<any>({
+    queryKey: ["/api/personality-test/results"],
+    enabled: !!user?.hasCompletedPersonalityTest,
+  });
+
+  const hasCompletedQuiz = !!user?.hasCompletedPersonalityTest;
   
-  const personalityData = hasCompletedQuiz ? {
+  const personalityData = hasCompletedQuiz && personalityResults ? {
     traits: [
-      { name: "亲和力", score: 8, maxScore: 10 },
-      { name: "开放性", score: 7, maxScore: 10 },
-      { name: "责任心", score: 6, maxScore: 10 },
-      { name: "外向性", score: 5, maxScore: 10 },
-      { name: "情绪稳定性", score: 8, maxScore: 10 }
+      { name: "亲和力", score: personalityResults.affinityScore || 0, maxScore: 10 },
+      { name: "开放性", score: personalityResults.opennessScore || 0, maxScore: 10 },
+      { name: "责任心", score: personalityResults.conscientiousnessScore || 0, maxScore: 10 },
+      { name: "外向性", score: personalityResults.extraversionScore || 0, maxScore: 10 },
+      { name: "情绪稳定性", score: personalityResults.emotionalStabilityScore || 0, maxScore: 10 },
+      { name: "正能量性", score: personalityResults.positivityScore || 0, maxScore: 10 }
     ],
-    challenges: [
-      "可能对突然的计划变更感到不适应",
-      "在大型社交场合中可能需要独处时间恢复能量"
-    ],
-    idealMatch: "你会在与同样重视深度对话、欣赏计划性活动但也能享受偶尔即兴时刻的朋友相处中感到愉快。寻找那些能理解你需要独处时间、同时也享受有意义社交互动的人。",
-    energyLevel: 75
+    challenges: personalityResults.challenges ? [personalityResults.challenges] : [],
+    idealMatch: personalityResults.idealFriendTypes?.join('、') || personalityResults.idealFriendTypes?.[0] || "",
+    energyLevel: 75 // Default energy level for now
   } : null;
 
   const handleStartQuiz = () => {
