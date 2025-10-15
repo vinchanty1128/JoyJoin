@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import PersonalityRadarChart from '@/components/PersonalityRadarChart';
 import { Sparkles, Users, TrendingUp, AlertTriangle } from 'lucide-react';
 import type { RoleResult } from '@shared/schema';
+import { queryClient } from '@/lib/queryClient';
 
 export default function PersonalityTestResultPage() {
   const [, setLocation] = useLocation();
@@ -164,7 +165,11 @@ export default function PersonalityTestResultPage() {
           <Button
             data-testid="button-continue"
             className="flex-1"
-            onClick={() => setLocation('/')}
+            onClick={async () => {
+              // Invalidate auth query to trigger next onboarding step
+              await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+              setLocation('/');
+            }}
           >
             开始探索活动
           </Button>

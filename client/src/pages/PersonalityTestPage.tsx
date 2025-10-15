@@ -158,10 +158,8 @@ export default function PersonalityTestPage() {
         responses,
       });
     },
-    onSuccess: async (data) => {
-      // Invalidate auth query to refresh user data
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      
+    onSuccess: (data) => {
+      // Don't invalidate auth query yet - let user see results first
       // Redirect to results page with the role result
       setLocation(`/personality-test/results`);
     },
