@@ -205,6 +205,24 @@ Preferred communication style: Simple, everyday language.
 - Removed "My Vibe" section from VibeProfileCard (was displaying hobby-like tags instead of personality traits)
 - Changed stats text to Chinese: "场活动" and "个匹配"
 
+**Social Role Card (New - Fun & Funky UI):**
+- Created SocialRoleCard component with playful, engaging design
+- Large emoji avatar (96x96) for each of 8 social roles with colorful gradients
+- Interactive hover animation on avatar (scale effect)
+- Role-specific color schemes:
+  - 火花塞 ⚡: Yellow to orange gradient
+  - 探索者 🔍: Blue to cyan gradient
+  - 故事家 📖: Purple to pink gradient
+  - 挑战者 🎯: Red to rose gradient
+  - 连接者 🤝: Green to emerald gradient
+  - 协调者 ⚖️: Indigo to blue gradient
+  - 氛围组 🎉: Pink to fuchsia gradient
+  - 肯定者 👍: Teal to green gradient
+- Displays primary role with score badge and description
+- Shows secondary role (if exists) with smaller emoji and score
+- Fun fact section at bottom with role-specific encouragement
+- Card positioned between user profile and personality traits for visual flow
+
 **Key Features:**
 - Single-choice and dual-choice question types
 - Real-time progress tracking with unique RadioGroup keys per question

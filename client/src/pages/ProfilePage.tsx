@@ -2,6 +2,7 @@ import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import VibeProfileCard from "@/components/VibeProfileCard";
 import PersonalityProfile from "@/components/PersonalityProfile";
+import SocialRoleCard from "@/components/SocialRoleCard";
 import QuizIntro from "@/components/QuizIntro";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,6 +69,16 @@ export default function ProfilePage() {
           eventsAttended={user?.eventsAttended || 0}
           matchesMade={user?.matchesMade || 0}
         />
+
+        {/* Social Role Card - Show if test completed */}
+        {hasCompletedQuiz && personalityResults && (
+          <SocialRoleCard
+            primaryRole={personalityResults.primaryRole}
+            secondaryRole={personalityResults.secondaryRole}
+            primaryRoleScore={personalityResults.primaryRoleScore}
+            secondaryRoleScore={personalityResults.secondaryRoleScore}
+          />
+        )}
 
         {!hasCompletedQuiz ? (
           <Card className="border shadow-sm bg-gradient-to-br from-primary/10 to-transparent cursor-pointer hover-elevate active-elevate-2" onClick={() => setShowQuizIntro(true)}>
