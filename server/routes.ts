@@ -187,9 +187,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.registerUser(userId, result.data);
       
       res.json(user);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error registering user:", error);
-      res.status(500).json({ message: "Failed to register user" });
+      // Return detailed error message for debugging
+      const errorMessage = error?.message || "Failed to register user";
+      res.status(500).json({ 
+        message: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error?.stack : undefined 
+      });
     }
   });
 

@@ -162,6 +162,45 @@ Preferred communication style: Simple, everyday language.
 
 6. **Explainable Matching:** Two-part scoring (My Fit + Group Spark) with transparent reasoning addresses trust and helps users understand why they're matched with specific events.
 
+## Recent Changes
+
+### Database Connection Improvements (October 15, 2025)
+
+**Fixed Neon Database Autosuspend Issue:**
+- Added database warmup function that runs on server startup to prevent "endpoint disabled" errors
+- Configured database pool with proper timeout settings:
+  - `connectionTimeoutMillis: 10000` - 10 second connection timeout
+  - `idleTimeoutMillis: 30000` - 30 second idle timeout  
+- Implemented automatic retry mechanism if initial warmup fails
+- Improved error handling in registration endpoint to return detailed error messages in development mode
+
+**Error Handling Enhancements:**
+- Registration endpoint now returns actual database error messages for easier debugging
+- Added stack traces in development mode for error diagnosis
+- Better error messaging to distinguish between validation errors and database errors
+
+**Technical Details:**
+- Database warmup runs after server starts listening on port 5000
+- Uses simple `SELECT 1` query to wake up Neon database from autosuspend state
+- Retry logic with 2-second delay if initial connection fails
+- All changes in `server/db.ts` and `server/index.ts`
+
+### Personality Assessment System (October 15, 2025)
+
+**Complete Onboarding Flow:**
+- Implemented full personality test infrastructure with 10-question assessment
+- Built scoring engine with role mapping algorithms (8 social roles)
+- Created PersonalityRadarChart component for six-dimensional trait visualization
+- Added PersonalityTestResultPage displaying primary/secondary roles, strengths, challenges, ideal friend types
+- Fixed routing flow to ensure users see their results before proceeding to next onboarding step
+
+**Key Features:**
+- Single-choice and dual-choice question types
+- Real-time progress tracking
+- Six dimensions: 亲和力, 开放性, 责任心, 情绪稳定性, 外向性, 正能量性
+- 8 social engine roles: 火花塞, 探索者, 故事家, 挑战者, 连接者, 协调者, 氛围组, 肯定者
+- Intelligent query invalidation to control onboarding flow progression
+
 ## Recent Changes (October 12, 2025)
 
 ### Budget-Based Matching System
