@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -158,7 +158,10 @@ export default function PersonalityTestPage() {
         responses,
       });
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Invalidate auth query to refresh user data
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
       // Redirect to results page with the role result
       setLocation(`/personality-test/results`);
     },
@@ -186,17 +189,21 @@ export default function PersonalityTestPage() {
       mostLike: type === "most" ? value : current.mostLike,
       secondLike: type === "second" ? value : current.secondLike,
     };
+    console.log("handleDualChoice", { type, value, current, updated });
     setAnswers({ ...answers, [currentQ.id]: updated });
   };
 
   const canProceed = () => {
     const answer = answers[currentQ.id];
+    console.log("canProceed check", { questionId: currentQ.id, answer, questionType: currentQ.questionType });
     if (!answer) return false;
     
     if (currentQ.questionType === "single") {
       return !!answer.value;
     } else {
-      return !!answer.mostLike && !!answer.secondLike && answer.mostLike !== answer.secondLike;
+      const result = !!answer.mostLike && !!answer.secondLike && answer.mostLike !== answer.secondLike;
+      console.log("Dual choice validation", { mostLike: answer.mostLike, secondLike: answer.secondLike, result });
+      return result;
     }
   };
 

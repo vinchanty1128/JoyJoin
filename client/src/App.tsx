@@ -107,6 +107,7 @@ function AuthenticatedRouter() {
       <Route path="/profile" component={ProfilePage} />
       <Route path="/event/:id" component={EventDetailPage} />
       <Route path="/onboarding/quiz" component={OnboardingQuizPage} />
+      <Route path="/personality-test/results" component={PersonalityTestResultPage} />
       <Route component={NotFound} />
     </Switch>
   );

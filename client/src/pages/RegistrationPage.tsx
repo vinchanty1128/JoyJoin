@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { registerUserSchema, type RegisterUser } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,11 +45,15 @@ export default function RegistrationPage() {
     mutationFn: async (data: RegisterUser) => {
       return await apiRequest("POST", "/api/user/register", data);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate auth query to refresh user data
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
       toast({
         title: "注册成功！",
         description: "现在让我们来了解你的社交风格",
       });
+      
       // Redirect to personality test
       setLocation("/personality-test");
     },
