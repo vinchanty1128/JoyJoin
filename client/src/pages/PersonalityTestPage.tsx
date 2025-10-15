@@ -189,21 +189,17 @@ export default function PersonalityTestPage() {
       mostLike: type === "most" ? value : current.mostLike,
       secondLike: type === "second" ? value : current.secondLike,
     };
-    console.log("handleDualChoice", { type, value, current, updated });
     setAnswers({ ...answers, [currentQ.id]: updated });
   };
 
   const canProceed = () => {
     const answer = answers[currentQ.id];
-    console.log("canProceed check", { questionId: currentQ.id, answer, questionType: currentQ.questionType });
     if (!answer) return false;
     
     if (currentQ.questionType === "single") {
       return !!answer.value;
     } else {
-      const result = !!answer.mostLike && !!answer.secondLike && answer.mostLike !== answer.secondLike;
-      console.log("Dual choice validation", { mostLike: answer.mostLike, secondLike: answer.secondLike, result });
-      return result;
+      return !!answer.mostLike && !!answer.secondLike && answer.mostLike !== answer.secondLike;
     }
   };
 
