@@ -1,5 +1,4 @@
 import { Drawer } from "vaul";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Sparkles, ChevronDown, Users, HelpCircle, DollarSign } from "lucide-react";
 import { useState } from "react";
@@ -193,26 +192,6 @@ export default function BlindBoxInfoSheet({
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* 底部按钮区 */}
-          <div className="border-t p-4 space-y-2 flex-shrink-0 bg-background">
-            <Button 
-              className="w-full" 
-              size="lg"
-              data-testid="button-start-blindbox"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              开始抽盲盒
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full" 
-              size="sm"
-              data-testid="button-refund-policy"
-            >
-              查看退款规则
-            </Button>
           </div>
         </Drawer.Content>
       </Drawer.Portal>

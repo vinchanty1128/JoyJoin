@@ -572,12 +572,6 @@ export default function JoinBlindBoxSheet({
             >
               仅保存设置（不报名）
             </Button>
-            <button 
-              className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="button-view-rules"
-            >
-              查看完整规则
-            </button>
           </div>
         </Drawer.Content>
       </Drawer.Portal>
