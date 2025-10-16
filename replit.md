@@ -207,21 +207,22 @@ Preferred communication style: Simple, everyday language.
 
 **Social Role Card (New - Fun & Funky UI):**
 - Created SocialRoleCard component with playful, engaging design
-- Large emoji avatar (96x96) for each of 8 social roles with colorful gradients
+- Large human-form emoji avatars (96x96) for vivid character representation
 - Interactive hover animation on avatar (scale effect)
-- Role-specific color schemes:
-  - 火花塞 ⚡: Yellow to orange gradient
-  - 探索者 🔍: Blue to cyan gradient
-  - 故事家 📖: Purple to pink gradient
-  - 挑战者 🎯: Red to rose gradient
-  - 连接者 🤝: Green to emerald gradient
-  - 协调者 ⚖️: Indigo to blue gradient
-  - 氛围组 🎉: Pink to fuchsia gradient
-  - 肯定者 👍: Teal to green gradient
+- Role-specific human-action emojis and color schemes:
+  - 火花塞 🙌 (Hands raised): Yellow to orange gradient - energetic celebration
+  - 探索者 🧭 (Compass person): Blue to cyan gradient - adventurous explorer
+  - 故事家 🗣️ (Speaking): Purple to pink gradient - expressive storyteller
+  - 挑战者 💪 (Flexed bicep): Red to rose gradient - strong challenger
+  - 连接者 🤗 (Hugging): Green to emerald gradient - warm connector
+  - 协调者 🧘 (Meditation): Indigo to blue gradient - balanced coordinator
+  - 氛围组 🕺 (Dancing): Pink to fuchsia gradient - fun party-maker
+  - 肯定者 🙏 (Folded hands): Teal to green gradient - supportive affirmer
 - Displays primary role with score badge and description
 - Shows secondary role (if exists) with smaller emoji and score
 - Fun fact section at bottom with role-specific encouragement
 - Card positioned between user profile and personality traits for visual flow
+- Human-form emojis make characters more relatable and lively than abstract symbols
 
 **Key Features:**
 - Single-choice and dual-choice question types

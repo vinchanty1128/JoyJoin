@@ -11,49 +11,49 @@ interface SocialRoleCardProps {
 
 const roleConfig: Record<string, { emoji: string; color: string; bgGradient: string; description: string }> = {
   '火花塞': {
-    emoji: '⚡',
+    emoji: '🙌',
     color: 'from-yellow-400 to-orange-500',
     bgGradient: 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30',
     description: '点燃活动氛围的能量源'
   },
   '探索者': {
-    emoji: '🔍',
+    emoji: '🧭',
     color: 'from-blue-400 to-cyan-500',
     bgGradient: 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30',
     description: '发现新鲜事物的冒险家'
   },
   '故事家': {
-    emoji: '📖',
+    emoji: '🗣️',
     color: 'from-purple-400 to-pink-500',
     bgGradient: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30',
     description: '用故事连接人心'
   },
   '挑战者': {
-    emoji: '🎯',
+    emoji: '💪',
     color: 'from-red-400 to-rose-500',
     bgGradient: 'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30',
     description: '推动团队突破边界'
   },
   '连接者': {
-    emoji: '🤝',
+    emoji: '🤗',
     color: 'from-green-400 to-emerald-500',
     bgGradient: 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30',
     description: '搭建友谊的桥梁'
   },
   '协调者': {
-    emoji: '⚖️',
+    emoji: '🧘',
     color: 'from-indigo-400 to-blue-500',
     bgGradient: 'bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30',
     description: '平衡关系的智者'
   },
   '氛围组': {
-    emoji: '🎉',
+    emoji: '🕺',
     color: 'from-pink-400 to-fuchsia-500',
     bgGradient: 'bg-gradient-to-br from-pink-50 to-fuchsia-50 dark:from-pink-950/30 dark:to-fuchsia-950/30',
     description: '制造欢乐的魔法师'
   },
   '肯定者': {
-    emoji: '👍',
+    emoji: '🙏',
     color: 'from-teal-400 to-green-500',
     bgGradient: 'bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-950/30 dark:to-green-950/30',
     description: '传递正能量的太阳'
