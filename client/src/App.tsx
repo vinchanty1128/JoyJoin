@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import LandingPage from "@/pages/LandingPage";
 import RegistrationPage from "@/pages/RegistrationPage";
+import InterestsTopicsPage from "@/pages/InterestsTopicsPage";
 import PersonalityTestPage from "@/pages/PersonalityTestPage";
 import PersonalityTestResultPage from "@/pages/PersonalityTestResultPage";
 import ProfileSetupPage from "@/pages/ProfileSetupPage";
@@ -26,6 +27,14 @@ function RedirectToRegistration() {
   const [, setLocation] = useLocation();
   useEffect(() => {
     setLocation("/registration");
+  }, [setLocation]);
+  return null;
+}
+
+function RedirectToInterestsTopics() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/interests-topics");
   }, [setLocation]);
   return null;
 }
@@ -55,13 +64,22 @@ function RedirectToQuiz() {
 }
 
 function AuthenticatedRouter() {
-  const { needsRegistration, needsPersonalityTest, needsProfileSetup, needsVoiceQuiz } = useAuth();
+  const { needsRegistration, needsInterestsTopics, needsPersonalityTest, needsProfileSetup, needsVoiceQuiz } = useAuth();
 
   if (needsRegistration) {
     return (
       <Switch>
         <Route path="/registration" component={RegistrationPage} />
         <Route path="*" component={RedirectToRegistration} />
+      </Switch>
+    );
+  }
+
+  if (needsInterestsTopics) {
+    return (
+      <Switch>
+        <Route path="/interests-topics" component={InterestsTopicsPage} />
+        <Route path="*" component={RedirectToInterestsTopics} />
       </Switch>
     );
   }

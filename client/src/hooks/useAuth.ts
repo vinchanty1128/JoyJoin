@@ -12,7 +12,8 @@ export function useAuth() {
     isLoading,
     isAuthenticated: !!user,
     needsRegistration: user && !user.hasCompletedRegistration,
-    needsPersonalityTest: user && user.hasCompletedRegistration && !user.hasCompletedPersonalityTest,
+    needsInterestsTopics: user && user.hasCompletedRegistration && !user.hasCompletedInterestsTopics,
+    needsPersonalityTest: user && user.hasCompletedRegistration && user.hasCompletedInterestsTopics && !user.hasCompletedPersonalityTest,
     needsProfileSetup: user && user.hasCompletedPersonalityTest && !user.hasCompletedProfileSetup,
     needsVoiceQuiz: user && user.hasCompletedProfileSetup && !user.hasCompletedVoiceQuiz,
   };

@@ -2,7 +2,7 @@ import {
   type User, type UpsertUser, type UpdateProfile, type UpdatePersonality, type UpdateBudgetPreference,
   type Event, type EventAttendance, type ChatMessage, type EventFeedback, type BlindBoxEvent,
   type InsertEventAttendance, type InsertChatMessage, type InsertEventFeedback,
-  type RegisterUser, type InsertTestResponse, type InsertRoleResult, type RoleResult,
+  type RegisterUser, type InsertTestResponse, type InsertRoleResult, type RoleResult, type InterestsTopics,
   users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents, testResponses, roleResults
 } from "@shared/schema";
 import { db } from "./db";
@@ -20,6 +20,7 @@ export interface IStorage {
   registerUser(id: string, data: RegisterUser): Promise<User>;
   markRegistrationComplete(id: string): Promise<void>;
   markPersonalityTestComplete(id: string): Promise<void>;
+  updateInterestsTopics(id: string, data: InterestsTopics): Promise<User>;
   
   // Personality test operations
   saveTestResponses(userId: string, responses: Record<number, any>): Promise<void>;
@@ -177,16 +178,46 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({
-        firstName: data.firstName,
-        age: data.age,
+        displayName: data.displayName,
+        ageBand: data.ageBand,
+        ageVisibility: data.ageVisibility,
         gender: data.gender,
+        pronouns: data.pronouns,
         relationshipStatus: data.relationshipStatus,
-        hasKids: data.hasKids,
+        children: data.children,
+        educationLevel: data.educationLevel,
+        studyLocale: data.studyLocale,
+        overseasRegions: data.overseasRegions,
+        fieldOfStudy: data.fieldOfStudy,
+        educationVisibility: data.educationVisibility,
         industry: data.industry,
-        placeOfOrigin: data.placeOfOrigin,
-        longTermBase: data.longTermBase,
+        roleTitleShort: data.roleTitleShort,
+        seniority: data.seniority,
+        workVisibility: data.workVisibility,
+        hometownCountry: data.hometownCountry,
+        hometownRegionCity: data.hometownRegionCity,
+        hometownAffinityOptin: data.hometownAffinityOptin,
+        languagesComfort: data.languagesComfort,
+        accessibilityNeeds: data.accessibilityNeeds,
+        safetyNoteHost: data.safetyNoteHost,
         wechatId: data.wechatId,
         hasCompletedRegistration: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateInterestsTopics(id: string, data: InterestsTopics): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        interestsTop: data.interestsTop,
+        interestsRankedTop3: data.interestsRankedTop3,
+        topicsHappy: data.topicsHappy,
+        topicsAvoid: data.topicsAvoid,
+        hasCompletedInterestsTopics: true,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))

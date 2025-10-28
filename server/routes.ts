@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertEventFeedbackSchema, registerUserSchema } from "@shared/schema";
+import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema } from "@shared/schema";
 
 // Role mapping based on question responses
 const roleMapping: Record<string, Record<string, string>> = {
@@ -282,6 +282,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  app.post('/api/user/interests-topics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = interestsTopicsSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      const user = await storage.updateInterestsTopics(userId, result.data);
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating interests and topics:", error);
+      res.status(500).json({ message: "Failed to update interests and topics" });
     }
   });
 
