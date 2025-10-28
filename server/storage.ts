@@ -415,12 +415,13 @@ export class DatabaseStorage implements IStorage {
     const [event] = await db
       .select()
       .from(blindBoxEvents)
-      .where(
-        and(
-          eq(blindBoxEvents.id, eventId),
-          eq(blindBoxEvents.userId, userId)
-        )
-      );
+      .where(eq(blindBoxEvents.id, eventId));
+    
+    // Allow viewing matched events (for demo/preview), but only allow owner to view pending events
+    if (event && event.status !== 'matched' && event.userId !== userId) {
+      return undefined;
+    }
+    
     return event;
   }
 
