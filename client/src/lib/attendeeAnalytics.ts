@@ -367,6 +367,22 @@ export function generateSparkPredictions(
     }
   }
   
+  // Priority 10: Epic-level compound matches (multi-dimensional alignment)
+  // These require 3+ factors to align - extremely rare
+  
+  // Triple match: Industry + Education + Study Locale (EPIC)
+  if (userContext.userIndustry && attendee.industry &&
+      userContext.userEducationLevel && attendee.educationLevel &&
+      userContext.userStudyLocale && attendee.studyLocale &&
+      userContext.userIndustry === attendee.industry &&
+      userContext.userEducationLevel === "Master's" && attendee.educationLevel === "Master's" &&
+      userContext.userStudyLocale === "Overseas" && attendee.studyLocale === "Overseas") {
+    predictions.push({ 
+      text: `同为${userContext.userIndustry}圈的硕士海归`,
+      rarity: 'epic'
+    });
+  }
+  
   // Return top 6 predictions - perfect for 3x2 grid layout
   return predictions.slice(0, 6);
 }

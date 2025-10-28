@@ -205,6 +205,9 @@ export default function MeetYourTable({
               } else if (predictionText.includes("科技圈") || predictionText.includes("金融圈") || predictionText.includes("艺术领域") || predictionText.includes("医疗行业") || predictionText.includes("教育行业")) {
                 icon = "🏢";
                 type = "experience";
+              } else if (predictionText.includes("硕士海归") || predictionText.includes("博士海归")) {
+                icon = "💎";
+                type = "background";
               } else {
                 icon = "✨";
                 type = "experience";
