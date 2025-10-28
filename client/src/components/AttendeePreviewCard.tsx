@@ -76,13 +76,12 @@ export default function AttendeePreviewCard({
 
   return (
     <div
-      className="min-w-[180px] flex-shrink-0 perspective-1000"
+      className="min-w-[180px] w-[180px] flex-shrink-0 perspective-1000"
+      style={{ perspective: "1000px" }}
       data-testid={`card-attendee-${attendee.userId}`}
     >
       <div
-        className={`relative w-full transition-transform duration-500 transform-style-3d ${
-          isFlipped ? "rotate-y-180" : ""
-        }`}
+        className="relative w-full h-full"
         style={{
           transformStyle: "preserve-3d",
           transition: "transform 0.5s",
@@ -90,14 +89,15 @@ export default function AttendeePreviewCard({
         }}
       >
         <Card
-          className="w-full cursor-pointer hover-elevate transition-all backface-hidden"
+          className="w-full cursor-pointer hover-elevate transition-all backface-hidden bg-gradient-to-br from-background via-background to-primary/5"
           onClick={handleFlip}
           style={{
+            position: "absolute",
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
           }}
         >
-          <CardContent className="p-4 space-y-3 min-h-[180px] flex flex-col">
+          <CardContent className="p-4 space-y-3 h-[240px] flex flex-col">
             <div className="flex items-start justify-between">
               <div className="space-y-1 flex-1">
                 <div
@@ -147,15 +147,16 @@ export default function AttendeePreviewCard({
         </Card>
 
         <Card
-          className="absolute inset-0 w-full cursor-pointer hover-elevate transition-all backface-hidden"
+          className="absolute inset-0 w-full cursor-pointer hover-elevate transition-all backface-hidden bg-gradient-to-br from-background via-accent/10 to-accent/20"
           onClick={handleFlip}
           style={{
+            position: "absolute",
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
           }}
         >
-          <CardContent className="p-4 space-y-3 min-h-[180px]">
+          <CardContent className="p-4 space-y-3 h-[240px]">
             <div className="flex items-start justify-between">
               <div className="space-y-1 flex-1">
                 <div className="font-semibold text-base">
