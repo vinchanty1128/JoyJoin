@@ -140,6 +140,25 @@ const sparkPredictions: Record<string, string> = {
   "Fitness": "Gym Buddies",
   "Photography": "Photo Pals",
   "Gaming": "Gaming Partners",
+  // English interest keys
+  "film_entertainment": "共同影迷",
+  "travel_exploration": "旅行搭子",
+  "food_dining": "美食探店搭档",
+  "music_concerts": "音乐知音",
+  "reading_books": "书友",
+  "art_culture": "艺术鉴赏伙伴",
+  "sports_fitness": "运动伙伴",
+  "fitness_health": "健身搭子",
+  "photography": "摄影同好",
+  "gaming": "游戏战友",
+  "technology": "科技发烧友",
+  "entrepreneurship": "创业搭档",
+  "networking": "社交达人",
+  "outdoor_activities": "户外探险伙伴",
+  "yoga_meditation": "身心修炼伙伴",
+  "wine_spirits": "品酒搭子",
+  "coffee_tea": "咖啡/茶友",
+  "cooking_baking": "下厨搭档",
 };
 
 export function generateSparkPredictions(
