@@ -42,7 +42,7 @@ export default function MysteryBadge({
 
   return (
     <motion.div
-      className="relative w-24 h-28 cursor-pointer"
+      className="relative w-full aspect-[4/5] cursor-pointer"
       style={{ perspective: "1000px" }}
       initial={{ scale: 0, y: 20, opacity: 0 }}
       animate={{
@@ -60,7 +60,7 @@ export default function MysteryBadge({
       onClick={!isRevealed ? onReveal : undefined}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      whileHover={!isRevealed ? { y: -4 } : {}}
+      whileHover={!isRevealed ? { y: -2 } : {}}
       data-testid={`mystery-badge-${label}`}
     >
       <motion.div
@@ -109,9 +109,9 @@ export default function MysteryBadge({
                 ease: "easeInOut",
               }}
             >
-              <HelpCircle className="w-8 h-8 text-muted-foreground" />
+              <HelpCircle className="w-6 h-6 text-muted-foreground" />
             </motion.div>
-            <div className="text-xs text-muted-foreground font-medium">
+            <div className="text-[10px] text-muted-foreground font-medium">
               点击揭晓
             </div>
           </motion.div>
@@ -127,12 +127,12 @@ export default function MysteryBadge({
           }}
         >
           <motion.div
-            className={`w-full h-full rounded-lg border-2 ${colors.border} bg-gradient-to-br ${colors.bg} flex flex-col items-center justify-center gap-2 p-2`}
+            className={`w-full h-full rounded-lg border-2 ${colors.border} bg-gradient-to-br ${colors.bg} flex flex-col items-center justify-center gap-1 p-2`}
             initial={{ scale: 1 }}
             animate={
               isRevealed
                 ? {
-                    scale: [1, 1.1, 1],
+                    scale: [1, 1.05, 1],
                   }
                 : {}
             }
@@ -142,8 +142,8 @@ export default function MysteryBadge({
               stiffness: 300,
             }}
           >
-            <div className="text-2xl">{icon}</div>
-            <div className={`text-xs font-medium text-center ${colors.text} leading-tight`}>
+            <div className="text-xl">{icon}</div>
+            <div className={`text-[10px] font-medium text-center ${colors.text} leading-tight px-1`}>
               {label}
             </div>
           </motion.div>

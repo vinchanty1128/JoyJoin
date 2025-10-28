@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ChevronDown } from "lucide-react";
+import { User, GraduationCap, Briefcase, MapPin } from "lucide-react";
 import EnergyRing from "./EnergyRing";
 import MysteryBadge from "./MysteryBadge";
 import type { AttendeeData } from "@/lib/attendeeAnalytics";
@@ -30,125 +29,137 @@ export default function UserConnectionCard({
   attendee,
   connectionTags,
 }: UserConnectionCardProps) {
-  const [isUnlocking, setIsUnlocking] = useState(false);
   const [revealedBadges, setRevealedBadges] = useState<Set<number>>(new Set());
 
   const archetypeIcon = attendee.archetype
     ? archetypeIcons[attendee.archetype] || "✨"
     : "✨";
 
-  const quickTags = connectionTags.slice(0, 3);
-  const mysteryBadges = connectionTags;
   const connectionStrength = Math.min(connectionTags.length, 8);
-
-  const handleUnlock = () => {
-    setIsUnlocking(true);
-  };
 
   const handleBadgeReveal = (index: number) => {
     setRevealedBadges((prev) => new Set(prev).add(index));
   };
 
-  const allRevealed = revealedBadges.size === mysteryBadges.length;
+  const allRevealed = revealedBadges.size === connectionTags.length;
+
+  // Format display values
+  const genderDisplay = attendee.gender === "Woman" ? "女" : 
+                       attendee.gender === "Man" ? "男" : 
+                       attendee.gender || "";
+  
+  const educationDisplay = attendee.educationLevel === "Bachelor's" ? "本科" :
+                          attendee.educationLevel === "Master's" ? "硕士" :
+                          attendee.educationLevel === "Doctorate" ? "博士" :
+                          attendee.educationLevel || "";
 
   return (
     <div
-      className="min-w-[200px] w-[200px] flex-shrink-0"
+      className="min-w-[240px] w-[240px] flex-shrink-0"
       data-testid={`connection-card-${attendee.userId}`}
     >
-      <Card className="h-full overflow-hidden border-2 hover-elevate transition-all">
-        <CardContent className="p-4 space-y-3 h-full flex flex-col">
-          {/* Energy Ring with Archetype */}
-          <div className="flex justify-center">
-            <EnergyRing strength={connectionStrength} maxStrength={8} size={120}>
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-4xl">{archetypeIcon}</div>
-                <div className="text-xs font-medium text-muted-foreground">
-                  {attendee.archetype}
+      <Card className="overflow-hidden border-2 hover-elevate transition-all">
+        <CardContent className="p-4 space-y-4">
+          {/* 上区：身份信息面板 */}
+          <div className="flex gap-3 items-start">
+            {/* 左侧：能量环 + 原型 */}
+            <div className="flex-shrink-0">
+              <EnergyRing strength={connectionStrength} maxStrength={8} size={90} strokeWidth={6}>
+                <div className="flex flex-col items-center">
+                  <div className="text-3xl">{archetypeIcon}</div>
+                  <div className="text-xs font-medium text-muted-foreground mt-0.5">
+                    {attendee.archetype}
+                  </div>
                 </div>
-              </div>
-            </EnergyRing>
-          </div>
+              </EnergyRing>
+            </div>
 
-          {/* Name */}
-          <div className="text-center">
-            <div className="font-bold text-lg" data-testid={`text-name-${attendee.userId}`}>
-              {attendee.displayName}
+            {/* 右侧：个人信息两栏布局 */}
+            <div className="flex-1 space-y-2 pt-1">
+              <div className="font-bold text-base" data-testid={`text-name-${attendee.userId}`}>
+                {attendee.displayName}
+              </div>
+
+              <div className="space-y-1.5 text-xs">
+                {/* 性别 · 年龄 */}
+                {(genderDisplay || attendee.age || attendee.ageBand) && (
+                  <div className="flex items-center gap-1.5 text-foreground">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    <span>
+                      {genderDisplay && <span>{genderDisplay}</span>}
+                      {(genderDisplay && (attendee.age || attendee.ageBand)) && <span> · </span>}
+                      {attendee.age && <span>{attendee.age}岁</span>}
+                      {!attendee.age && attendee.ageBand && <span>{attendee.ageBand}</span>}
+                    </span>
+                  </div>
+                )}
+
+                {/* 学历 · 行业 */}
+                {(educationDisplay || attendee.industry) && (
+                  <div className="flex items-center gap-1.5 text-foreground">
+                    {educationDisplay && (
+                      <>
+                        <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                        <span>{educationDisplay}</span>
+                      </>
+                    )}
+                    {educationDisplay && attendee.industry && <span className="text-muted-foreground">·</span>}
+                    {attendee.industry && (
+                      <>
+                        {!educationDisplay && <Briefcase className="h-3 w-3 text-muted-foreground" />}
+                        <span>{attendee.industry}</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* 家乡 */}
+                {attendee.hometown && (
+                  <div className="flex items-center gap-1.5 text-foreground">
+                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                    <span>{attendee.hometown}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Quick Tags or Mystery Badges */}
-          <AnimatePresence mode="wait">
-            {!isUnlocking ? (
-              <motion.div
-                key="quick-tags"
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-3 flex-1 flex flex-col justify-end"
-              >
-                <div className="flex flex-wrap gap-1.5 justify-center">
-                  {quickTags.map((tag, idx) => (
-                    <Badge
-                      key={idx}
-                      variant="secondary"
-                      className="text-xs gap-1 no-default-active-elevate bg-primary/10 text-primary"
-                      data-testid={`quick-tag-${idx}`}
-                    >
-                      <span>{tag.icon}</span>
-                      <span>{tag.label}</span>
-                    </Badge>
-                  ))}
-                </div>
+          {/* 下区：盲盒探索区 */}
+          {connectionTags.length > 0 && (
+            <div className="space-y-3 pt-2 border-t">
+              <div className="text-xs font-medium text-center text-muted-foreground">
+                ✨ 我们的潜在契合点
+              </div>
 
-                {connectionTags.length > 0 && (
-                  <motion.button
-                    onClick={handleUnlock}
-                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1 py-2 rounded-md hover-elevate active-elevate-2 cursor-pointer"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    data-testid="button-unlock"
-                  >
-                    <span className="font-medium">
-                      {connectionTags.length > 3 ? "轻点探索更多默契" : "轻点解锁盲盒"}
-                    </span>
-                    <ChevronDown className="w-3 h-3" />
-                  </motion.button>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="mystery-badges"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3 flex-1 flex flex-col justify-center"
-              >
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {mysteryBadges.map((badge, idx) => (
-                    <MysteryBadge
-                      key={idx}
-                      icon={badge.icon}
-                      label={badge.label}
-                      type={badge.type}
-                      isRevealed={revealedBadges.has(idx)}
-                      onReveal={() => handleBadgeReveal(idx)}
-                      delay={idx * 0.1}
-                    />
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                {connectionTags.map((badge, idx) => (
+                  <MysteryBadge
+                    key={idx}
+                    icon={badge.icon}
+                    label={badge.label}
+                    type={badge.type}
+                    isRevealed={revealedBadges.has(idx)}
+                    onReveal={() => handleBadgeReveal(idx)}
+                    delay={idx * 0.1}
+                  />
+                ))}
+              </div>
 
+              <AnimatePresence>
                 {allRevealed && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-center text-xs text-primary font-medium py-2"
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: 0.3, duration: 0.4 }}
+                    className="text-center text-xs text-primary font-medium py-1"
                   >
-                    ✨ 全部解锁完成！
+                    🎉 全部解锁完成！
                   </motion.div>
                 )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </AnimatePresence>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
