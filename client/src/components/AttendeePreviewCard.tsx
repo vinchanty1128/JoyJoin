@@ -49,11 +49,23 @@ const interestIcons: Record<string, string> = {
 interface AttendeePreviewCardProps {
   attendee: AttendeeData;
   userInterests?: string[];
+  userEducationLevel?: string;
+  userIndustry?: string;
+  userAgeBand?: string;
+  userRelationshipStatus?: string;
+  userStudyLocale?: string;
+  userSeniority?: string;
 }
 
 export default function AttendeePreviewCard({
   attendee,
   userInterests = [],
+  userEducationLevel,
+  userIndustry,
+  userAgeBand,
+  userRelationshipStatus,
+  userStudyLocale,
+  userSeniority,
 }: AttendeePreviewCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const archetypeIcon = attendee.archetype
@@ -70,8 +82,16 @@ export default function AttendeePreviewCard({
     : "";
 
   const sparkPredictions = generateSparkPredictions(
-    userInterests,
-    attendee.topInterests || []
+    {
+      userInterests,
+      userEducationLevel,
+      userIndustry,
+      userAgeBand,
+      userRelationshipStatus,
+      userStudyLocale,
+      userSeniority,
+    },
+    attendee
   );
 
   const genderDisplay = attendee.gender === "Woman" ? "女" : 
@@ -94,7 +114,7 @@ export default function AttendeePreviewCard({
       data-testid={`card-attendee-${attendee.userId}`}
     >
       <div
-        className="relative w-full h-[240px]"
+        className="relative w-full h-[280px]"
         style={{
           transformStyle: "preserve-3d",
           transition: "transform 0.5s",
@@ -110,7 +130,7 @@ export default function AttendeePreviewCard({
             WebkitBackfaceVisibility: "hidden",
           }}
         >
-          <CardContent className="p-3 space-y-2 h-[240px] flex flex-col items-center justify-center text-center">
+          <CardContent className="p-3 space-y-2 h-[280px] flex flex-col items-center justify-center text-center">
             <div className="absolute top-2 right-2">
               <RotateCw className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -192,7 +212,7 @@ export default function AttendeePreviewCard({
             transform: "rotateY(180deg)",
           }}
         >
-          <CardContent className="p-3 space-y-2 h-[240px] flex flex-col">
+          <CardContent className="p-3 space-y-2 h-[280px] flex flex-col">
             <div className="flex items-start justify-between">
               <div className="font-semibold text-lg">
                 {attendee.displayName}

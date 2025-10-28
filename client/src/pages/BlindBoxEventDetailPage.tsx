@@ -187,6 +187,12 @@ export default function BlindBoxEventDetailPage() {
             }>}
             matchExplanation={event.matchExplanation || undefined}
             userInterests={(user?.interestsRankedTop3 as string[] | undefined) || []}
+            userEducationLevel={user?.educationLevel || undefined}
+            userIndustry={user?.industry || undefined}
+            userAgeBand={user?.ageBand || undefined}
+            userRelationshipStatus={user?.relationshipStatus || undefined}
+            userStudyLocale={user?.studyLocale || undefined}
+            userSeniority={user?.seniority || undefined}
           />
         )}
 

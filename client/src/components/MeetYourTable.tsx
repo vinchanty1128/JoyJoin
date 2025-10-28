@@ -6,11 +6,23 @@ import type { AttendeeData } from "@/lib/attendeeAnalytics";
 interface MeetYourTableProps {
   attendees: AttendeeData[];
   userInterests?: string[];
+  userEducationLevel?: string;
+  userIndustry?: string;
+  userAgeBand?: string;
+  userRelationshipStatus?: string;
+  userStudyLocale?: string;
+  userSeniority?: string;
 }
 
 export default function MeetYourTable({
   attendees,
   userInterests = [],
+  userEducationLevel,
+  userIndustry,
+  userAgeBand,
+  userRelationshipStatus,
+  userStudyLocale,
+  userSeniority,
 }: MeetYourTableProps) {
   if (!attendees || attendees.length === 0) {
     return null;
@@ -34,6 +46,12 @@ export default function MeetYourTable({
               key={attendee.userId}
               attendee={attendee}
               userInterests={userInterests}
+              userEducationLevel={userEducationLevel}
+              userIndustry={userIndustry}
+              userAgeBand={userAgeBand}
+              userRelationshipStatus={userRelationshipStatus}
+              userStudyLocale={userStudyLocale}
+              userSeniority={userSeniority}
             />
           ))}
         </div>

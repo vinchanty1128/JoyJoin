@@ -12,6 +12,9 @@ export interface AttendeeData {
   educationLevel?: string;
   hometown?: string;
   educationVisible?: boolean;
+  relationshipStatus?: string;
+  studyLocale?: string;
+  seniority?: string;
 }
 
 export interface CommonInterest {
@@ -161,21 +164,95 @@ const sparkPredictions: Record<string, string> = {
   "cooking_baking": "下厨搭档",
 };
 
+export interface SparkPredictionContext {
+  userInterests?: string[];
+  userEducationLevel?: string;
+  userIndustry?: string;
+  userAgeBand?: string;
+  userRelationshipStatus?: string;
+  userStudyLocale?: string;
+  userSeniority?: string;
+}
+
 export function generateSparkPredictions(
-  userInterests: string[],
-  attendeeInterests: string[]
+  userContext: SparkPredictionContext,
+  attendee: AttendeeData
 ): string[] {
-  if (!userInterests || !attendeeInterests) return [];
+  const predictions: string[] = [];
   
-  const userSet = new Set(userInterests);
-  const commonInterests = attendeeInterests.filter((interest) =>
-    userSet.has(interest)
-  );
+  // Interest-based predictions
+  if (userContext.userInterests && attendee.topInterests) {
+    const userSet = new Set(userContext.userInterests);
+    const commonInterests = attendee.topInterests.filter((interest) =>
+      userSet.has(interest)
+    );
+    
+    const interestPredictions = commonInterests
+      .map((interest) => sparkPredictions[interest])
+      .filter((prediction): prediction is string => !!prediction)
+      .slice(0, 2);
+    
+    predictions.push(...interestPredictions);
+  }
   
-  const predictions = commonInterests
-    .map((interest) => sparkPredictions[interest])
-    .filter((prediction): prediction is string => !!prediction)
-    .slice(0, 2);
+  // Education-based predictions
+  if (userContext.userEducationLevel && attendee.educationLevel) {
+    if (userContext.userEducationLevel === attendee.educationLevel) {
+      if (userContext.userEducationLevel === "Master's" || userContext.userEducationLevel === "Doctorate") {
+        predictions.push("同为高学历人群");
+      }
+    }
+  }
   
-  return predictions;
+  // Study locale - Overseas experience
+  if (userContext.userStudyLocale === "Overseas" && attendee.studyLocale === "Overseas") {
+    predictions.push("都有海外留学经历");
+  } else if (userContext.userStudyLocale === "Both" && attendee.studyLocale === "Both") {
+    predictions.push("都有海外留学经历");
+  }
+  
+  // Industry-based predictions
+  if (userContext.userIndustry && attendee.industry) {
+    if (userContext.userIndustry === attendee.industry) {
+      predictions.push(`同为${attendee.industry}从业者`);
+    }
+  }
+  
+  // Seniority-based predictions (career stage)
+  if (userContext.userSeniority && attendee.seniority) {
+    if (userContext.userSeniority === "Founder" && attendee.seniority === "Founder") {
+      predictions.push("同为创业者");
+    } else if (
+      (userContext.userSeniority === "Senior" || userContext.userSeniority === "Executive") &&
+      (attendee.seniority === "Senior" || attendee.seniority === "Executive")
+    ) {
+      predictions.push("职场资深人士");
+    } else if (
+      (userContext.userSeniority === "Junior" || userContext.userSeniority === "Mid") &&
+      (attendee.seniority === "Junior" || attendee.seniority === "Mid")
+    ) {
+      predictions.push("职场同龄人");
+    }
+  }
+  
+  // Relationship status
+  if (userContext.userRelationshipStatus && attendee.relationshipStatus) {
+    if (userContext.userRelationshipStatus === "Married/Partnered" && 
+        attendee.relationshipStatus === "Married/Partnered") {
+      predictions.push("同为已婚/伴侣状态");
+    } else if (userContext.userRelationshipStatus === "Single" && 
+               attendee.relationshipStatus === "Single") {
+      predictions.push("同为单身");
+    }
+  }
+  
+  // Age band similarity
+  if (userContext.userAgeBand && attendee.ageBand) {
+    if (userContext.userAgeBand === attendee.ageBand) {
+      predictions.push("同龄人");
+    }
+  }
+  
+  // Return top 3 predictions to avoid overcrowding
+  return predictions.slice(0, 3);
 }
