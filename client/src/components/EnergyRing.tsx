@@ -34,15 +34,18 @@ export default function EnergyRing({
         className="transform -rotate-90"
       >
         <defs>
+          {/* Warm gradient: orange to pink for energy field effect */}
           <linearGradient id="energyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
-            <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="1" />
+            <stop offset="0%" stopColor="#FF6B35" stopOpacity="1" />
+            <stop offset="50%" stopColor="#FF8C42" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#FF7BA9" stopOpacity="1" />
           </linearGradient>
           
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          {/* Breathing glow effect - softer and more organic */}
+          <filter id="breathingGlow">
+            <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
             <feMerge>
+              <feMergeNode in="coloredBlur"/>
               <feMergeNode in="coloredBlur"/>
               <feMergeNode in="SourceGraphic"/>
             </feMerge>
@@ -65,17 +68,24 @@ export default function EnergyRing({
               strokeDasharray={`${activeSegmentLength} ${circumference - activeSegmentLength}`}
               strokeDashoffset={-offset}
               strokeLinecap="round"
-              opacity={isActive ? 1 : 0.2}
-              filter={isActive ? "url(#glow)" : "none"}
+              opacity={isActive ? 1 : 0.15}
+              filter={isActive ? "url(#breathingGlow)" : "none"}
               initial={{ opacity: 0 }}
               animate={{
-                opacity: isActive ? [0.6, 1, 0.6] : 0.2,
+                opacity: isActive ? [0.7, 1, 0.7] : 0.15,
+                filter: isActive 
+                  ? [
+                      "url(#breathingGlow) drop-shadow(0 0 8px rgba(255, 107, 53, 0.4))",
+                      "url(#breathingGlow) drop-shadow(0 0 12px rgba(255, 107, 53, 0.6))",
+                      "url(#breathingGlow) drop-shadow(0 0 8px rgba(255, 107, 53, 0.4))"
+                    ]
+                  : "none"
               }}
               transition={{
-                duration: 2,
+                duration: 2.5,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: index * 0.1,
+                delay: index * 0.08,
               }}
               data-testid={`energy-segment-${index}`}
             />
@@ -86,19 +96,6 @@ export default function EnergyRing({
       <div className="absolute inset-0 flex items-center justify-center">
         {children}
       </div>
-
-      {progressPercentage > 0 && (
-        <motion.div
-          className="absolute -top-1 left-1/2 -translate-x-1/2"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, type: "spring" }}
-        >
-          <div className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
-            {Math.round(progressPercentage)}%
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }

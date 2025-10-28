@@ -132,9 +132,6 @@ export default function MeetYourTable({
         >
           {attendees.map((attendee) => {
             const sparkPredictions = generateSparkPredictions(userContext, attendee);
-            console.log('[MeetYourTable] User context:', userContext);
-            console.log('[MeetYourTable] Attendee:', attendee.displayName, attendee);
-            console.log('[MeetYourTable] Spark predictions:', sparkPredictions);
             
             const connectionTags = sparkPredictions.map((prediction) => {
               let icon = "✨";
