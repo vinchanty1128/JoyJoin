@@ -171,9 +171,18 @@ export default function BlindBoxEventDetailPage() {
         )}
 
         {/* Post-Match Event Card: Attendee Insights & Match Explanation */}
-        {event.status === "matched" && event.matchedAttendees && (
+        {event.status === "matched" && event.matchedAttendees && Array.isArray(event.matchedAttendees) && (
           <PostMatchEventCard 
-            matchedAttendees={event.matchedAttendees as any}
+            matchedAttendees={event.matchedAttendees as Array<{
+              userId: string;
+              displayName: string;
+              archetype?: string;
+              topInterests?: string[];
+              ageBand?: string;
+              industry?: string;
+              ageVisible?: boolean;
+              industryVisible?: boolean;
+            }>}
             matchExplanation={event.matchExplanation || undefined}
           />
         )}
