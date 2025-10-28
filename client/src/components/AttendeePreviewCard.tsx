@@ -5,6 +5,7 @@ import { User, Briefcase, RotateCw, GraduationCap, MapPin } from "lucide-react";
 import {
   calculateCommonInterestsWithUser,
   archetypeDescriptions,
+  generateSparkPredictions,
   type AttendeeData,
 } from "@/lib/attendeeAnalytics";
 
@@ -68,6 +69,11 @@ export default function AttendeePreviewCard({
     ? archetypeDescriptions[attendee.archetype] || ""
     : "";
 
+  const sparkPredictions = generateSparkPredictions(
+    userInterests,
+    attendee.topInterests || []
+  );
+
   const genderDisplay = attendee.gender === "Woman" ? "女" : 
                        attendee.gender === "Man" ? "男" : 
                        attendee.gender || "";
@@ -104,18 +110,18 @@ export default function AttendeePreviewCard({
             WebkitBackfaceVisibility: "hidden",
           }}
         >
-          <CardContent className="p-4 space-y-3 h-[240px] flex flex-col items-center justify-center text-center">
-            <div className="absolute top-3 right-3">
+          <CardContent className="p-3 space-y-2 h-[240px] flex flex-col items-center justify-center text-center">
+            <div className="absolute top-2 right-2">
               <RotateCw className="h-4 w-4 text-muted-foreground" />
             </div>
 
             {attendee.archetype && (
-              <div className="text-6xl mb-2">{archetypeIcon}</div>
+              <div className="text-6xl mb-1">{archetypeIcon}</div>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div
-                className="font-semibold text-lg"
+                className="font-semibold text-xl"
                 data-testid={`text-attendee-name-${attendee.userId}`}
               >
                 {attendee.displayName}
@@ -124,13 +130,13 @@ export default function AttendeePreviewCard({
               {attendee.archetype && (
                 <div className="space-y-1">
                   <div
-                    className="text-sm font-medium text-primary"
+                    className="text-base font-medium text-primary"
                     data-testid={`text-attendee-archetype-${attendee.userId}`}
                   >
                     {attendee.archetype}
                   </div>
                   {archetypeDescription && (
-                    <div className="text-xs text-muted-foreground px-2">
+                    <div className="text-sm text-muted-foreground px-1">
                       {archetypeDescription}
                     </div>
                   )}
@@ -138,9 +144,24 @@ export default function AttendeePreviewCard({
               )}
             </div>
 
+            {sparkPredictions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 justify-center">
+                {sparkPredictions.map((prediction, idx) => (
+                  <Badge
+                    key={idx}
+                    variant="secondary"
+                    className="text-xs no-default-active-elevate bg-primary/10 text-primary border-primary/20"
+                    data-testid={`badge-spark-${attendee.userId}-${idx}`}
+                  >
+                    ✨ {prediction}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
             {commonInterestsCount > 0 && (
               <div
-                className="flex items-center gap-1 text-xs text-muted-foreground mt-auto"
+                className="flex items-center gap-1 text-sm text-muted-foreground mt-auto"
                 data-testid={`text-common-interests-${attendee.userId}`}
               >
                 <span>与你有{commonInterestsCount}个共同点</span>
@@ -171,19 +192,19 @@ export default function AttendeePreviewCard({
             transform: "rotateY(180deg)",
           }}
         >
-          <CardContent className="p-4 space-y-3 h-[240px] flex flex-col">
+          <CardContent className="p-3 space-y-2 h-[240px] flex flex-col">
             <div className="flex items-start justify-between">
-              <div className="font-semibold text-base">
+              <div className="font-semibold text-lg">
                 {attendee.displayName}
               </div>
               <RotateCw className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
+            <div className="space-y-1.5 text-sm">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-foreground">
                 {genderDisplay && (
                   <div className="flex items-center gap-1">
-                    <User className="h-3 w-3" />
+                    <User className="h-3.5 w-3.5" />
                     <span>{genderDisplay}</span>
                   </div>
                 )}
@@ -195,45 +216,36 @@ export default function AttendeePreviewCard({
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-foreground">
                 {educationDisplay && (
                   <div className="flex items-center gap-1">
-                    <GraduationCap className="h-3 w-3" />
+                    <GraduationCap className="h-3.5 w-3.5" />
                     <span>{educationDisplay}</span>
                   </div>
                 )}
                 {attendee.industry && (
                   <div className="flex items-center gap-1">
-                    <Briefcase className="h-3 w-3" />
+                    <Briefcase className="h-3.5 w-3.5" />
                     <span>{attendee.industry}</span>
                   </div>
                 )}
               </div>
 
               {attendee.hometown && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
+                <div className="flex items-center gap-1 text-foreground">
+                  <MapPin className="h-3.5 w-3.5" />
                   <span>{attendee.hometown}</span>
                 </div>
               )}
             </div>
 
-            {attendee.archetype && (
-              <div className="flex items-center gap-1.5 text-sm">
-                <span className="text-base">{archetypeIcon}</span>
-                <span className="text-muted-foreground">
-                  {attendee.archetype}
-                </span>
-              </div>
-            )}
-
             {topInterests.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 mt-auto">
                 {topInterests.map((interest, idx) => (
                   <Badge
                     key={idx}
                     variant="secondary"
-                    className="text-xs gap-1 no-default-active-elevate"
+                    className="text-sm gap-1 no-default-active-elevate"
                   >
                     <span>{interestIcons[interest] || "·"}</span>
                     <span>{interest}</span>

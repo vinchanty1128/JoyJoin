@@ -117,3 +117,46 @@ export function generatePersonalizedDescription(
   const hash = attendee.userId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return templates[hash % templates.length];
 }
+
+const sparkPredictions: Record<string, string> = {
+  "电影": "共同影迷",
+  "旅行": "旅行搭子",
+  "美食": "美食探店搭档",
+  "音乐": "音乐知音",
+  "阅读": "书友",
+  "艺术": "艺术鉴赏伙伴",
+  "运动": "运动伙伴",
+  "健身": "健身搭子",
+  "摄影": "摄影同好",
+  "游戏": "游戏战友",
+  "科技": "科技发烧友",
+  "Film": "Movie Buddies",
+  "Travel": "Travel Companions",
+  "Food": "Foodie Friends",
+  "Music": "Music Lovers",
+  "Reading": "Book Club",
+  "Art": "Art Enthusiasts",
+  "Sports": "Sports Partners",
+  "Fitness": "Gym Buddies",
+  "Photography": "Photo Pals",
+  "Gaming": "Gaming Partners",
+};
+
+export function generateSparkPredictions(
+  userInterests: string[],
+  attendeeInterests: string[]
+): string[] {
+  if (!userInterests || !attendeeInterests) return [];
+  
+  const userSet = new Set(userInterests);
+  const commonInterests = attendeeInterests.filter((interest) =>
+    userSet.has(interest)
+  );
+  
+  const predictions = commonInterests
+    .map((interest) => sparkPredictions[interest])
+    .filter((prediction): prediction is string => !!prediction)
+    .slice(0, 2);
+  
+  return predictions;
+}
