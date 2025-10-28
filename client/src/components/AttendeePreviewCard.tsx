@@ -198,7 +198,7 @@ export default function AttendeePreviewCard({
             transform: "rotateY(180deg)",
           }}
         >
-          <CardContent className="p-3 space-y-2 h-[320px] flex flex-col">
+          <CardContent className="p-3 space-y-2.5 h-[320px] flex flex-col">
             <div className="flex items-start justify-between">
               <div className="font-semibold text-lg">
                 {attendee.displayName}
@@ -245,36 +245,47 @@ export default function AttendeePreviewCard({
               )}
             </div>
 
-            {sparkPredictions.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {sparkPredictions.map((prediction, idx) => (
-                  <Badge
-                    key={idx}
-                    variant="secondary"
-                    className="text-xs no-default-active-elevate bg-primary/10 text-primary border-primary/20"
-                    data-testid={`badge-spark-back-${attendee.userId}-${idx}`}
-                  >
-                    ✨ {prediction}
-                  </Badge>
-                ))}
+            {topInterests.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="text-xs font-medium text-muted-foreground">
+                  个人兴趣
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {topInterests.map((interest, idx) => {
+                    const normalizedInterest = normalizeInterestName(interest);
+                    return (
+                      <Badge
+                        key={idx}
+                        variant="secondary"
+                        className="text-xs gap-1 no-default-active-elevate bg-accent/30"
+                        data-testid={`badge-interest-${attendee.userId}-${idx}`}
+                      >
+                        <span>{interestIcons[normalizedInterest] || interestIcons[interest] || "·"}</span>
+                        <span>{normalizedInterest}</span>
+                      </Badge>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
-            {topInterests.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-auto">
-                {topInterests.map((interest, idx) => {
-                  const normalizedInterest = normalizeInterestName(interest);
-                  return (
+            {sparkPredictions.length > 0 && (
+              <div className="space-y-1.5 mt-auto">
+                <div className="text-xs font-medium text-muted-foreground">
+                  我们之间的契合点
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {sparkPredictions.map((prediction, idx) => (
                     <Badge
                       key={idx}
                       variant="secondary"
-                      className="text-sm gap-1 no-default-active-elevate"
+                      className="text-xs no-default-active-elevate bg-primary/10 text-primary border-primary/30"
+                      data-testid={`badge-spark-back-${attendee.userId}-${idx}`}
                     >
-                      <span>{interestIcons[normalizedInterest] || interestIcons[interest] || "·"}</span>
-                      <span>{normalizedInterest}</span>
+                      ✨ {prediction}
                     </Badge>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>

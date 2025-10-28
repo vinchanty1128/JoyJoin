@@ -4,6 +4,18 @@
 
 This social networking platform connects people through small, curated micro-events (5-10 attendees) using AI-driven matchmaking. It emphasizes psychological safety, inclusivity, and meaningful connections through a warm, approachable design. The core purpose is to help users build local communities by matching them with events and people aligned with their social vibe, interests, and energy levels.
 
+## Recent Changes
+
+### October 28, 2025 - Attendee Card UX Enhancement
+- **Information Categorization:** Separated "个人兴趣" (Personal Interests) and "我们之间的契合点" (Connection Points) into distinct sections on card back
+- **Visual Differentiation:** 
+  - Personal interest badges use neutral/lighter colors (`bg-accent/30`)
+  - Connection prediction badges use primary color styling (`bg-primary/10 text-primary border-primary/30`)
+  - Each section has a clear label for improved scanability
+- **Content Quality:** All interest tags now display in Chinese (e.g., "电影娱乐", "旅行探索") using `normalizeInterestName()` function
+- **Card Dimensions:** Increased card height from 280px to 320px for better content visibility
+- **Layout Optimization:** Moved spark predictions from front to back for better visual balance
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -41,6 +53,7 @@ Preferred communication style: Simple, everyday language.
 - **Mobile-First, Bilingual Design:** Caters to target market and use cases.
 - **Explainable Matching:** Builds user trust through transparent matching logic.
 - **Personality Assessment System:** Implements a 10-question test, scoring engine with 8 social roles, and a PersonalityRadarChart for visualization.
+- **Information Categorization in Attendee Cards:** Clearly separates "personal interests" from "connection predictions" with distinct visual styles and section labels for better UX clarity.
 
 ## External Dependencies
 
