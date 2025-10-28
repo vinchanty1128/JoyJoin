@@ -263,6 +263,10 @@ export const blindBoxEvents = pgTable("blind_box_events", {
   femaleCount: integer("female_count"),
   isGirlsNight: boolean("is_girls_night").default(false),
   
+  // Matched attendee data (populated when status = matched)
+  matchedAttendees: jsonb("matched_attendees"), // Array of {userId, displayName, archetype, topInterests, ageBand, industry, ageVisible, industryVisible}
+  matchExplanation: text("match_explanation"), // "Why This Table?" auto-generated narrative
+  
   // Invite info
   invitedCount: integer("invited_count").default(0),
   invitedJoined: integer("invited_joined").default(0),

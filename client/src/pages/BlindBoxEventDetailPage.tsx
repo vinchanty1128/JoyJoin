@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, MapPin, DollarSign, Users, Phone, Navigation, AlertCi
 import type { BlindBoxEvent } from "@shared/schema";
 import { getCurrencySymbol } from "@/lib/currency";
 import IcebreakerTool from "@/components/IcebreakerTool";
+import PostMatchEventCard from "@/components/PostMatchEventCard";
 
 export default function BlindBoxEventDetailPage() {
   const { eventId } = useParams();
@@ -167,6 +168,14 @@ export default function BlindBoxEventDetailPage() {
               </Button>
             </CardContent>
           </Card>
+        )}
+
+        {/* Post-Match Event Card: Attendee Insights & Match Explanation */}
+        {event.status === "matched" && event.matchedAttendees && (
+          <PostMatchEventCard 
+            matchedAttendees={event.matchedAttendees as any}
+            matchExplanation={event.matchExplanation || undefined}
+          />
         )}
 
         {/* 预算与菜式 */}
