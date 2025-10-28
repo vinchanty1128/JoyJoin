@@ -14,29 +14,41 @@ interface MysteryBadgeProps {
 
 const rarityStyles = {
   common: {
-    unrevealedBg: "from-muted to-muted/50",
-    unrevealedBorder: "border-muted-foreground/20",
-    revealedBg: "from-gray-500/15 to-gray-400/15",
-    revealedBorder: "border-gray-500/30",
-    revealedText: "text-gray-700 dark:text-gray-300",
-    glow: "rgba(156, 163, 175, 0.3)",
-    iconColor: "text-gray-500",
+    // Common (常见) - 灰色系
+    unrevealedBg: "bg-gray-100",
+    unrevealedBorder: "border-gray-300",
+    unrevealedBorderWidth: "border",
+    revealedBg: "bg-[#F3F4F6]",
+    revealedBorder: "border-[#D1D5DB]",
+    revealedBorderWidth: "border",
+    revealedText: "text-[#6B7280]",
+    revealedShadow: "shadow-none",
+    glow: "rgba(209, 213, 219, 0)",
+    iconColor: "text-gray-400",
   },
   rare: {
-    unrevealedBg: "from-blue-500/10 to-cyan-500/10",
-    unrevealedBorder: "border-blue-500/20",
-    revealedBg: "from-blue-500/20 to-cyan-500/20",
-    revealedBorder: "border-blue-500/40",
-    revealedText: "text-blue-700 dark:text-blue-300",
-    glow: "rgba(59, 130, 246, 0.5)",
-    iconColor: "text-blue-500",
+    // Rare (稀有) - 紫色系
+    unrevealedBg: "bg-purple-50",
+    unrevealedBorder: "border-purple-300",
+    unrevealedBorderWidth: "border-2",
+    revealedBg: "bg-gradient-to-br from-[#EDE9FE] to-[#F5F3FF]",
+    revealedBorder: "border-[#8B5CF6]",
+    revealedBorderWidth: "border-2",
+    revealedText: "text-[#8B5CF6]",
+    revealedShadow: "shadow-[0_0_12px_rgba(139,92,246,0.4)]",
+    glow: "rgba(139, 92, 246, 0.5)",
+    iconColor: "text-purple-500",
   },
   epic: {
-    unrevealedBg: "from-amber-500/10 to-orange-500/10",
-    unrevealedBorder: "border-amber-500/20",
-    revealedBg: "from-amber-500/25 to-orange-500/25",
-    revealedBorder: "border-amber-500/50",
-    revealedText: "text-amber-700 dark:text-amber-300",
+    // Epic (珍贵) - 金色系
+    unrevealedBg: "bg-amber-50",
+    unrevealedBorder: "border-amber-300",
+    unrevealedBorderWidth: "border-2",
+    revealedBg: "bg-gradient-to-br from-[#FEF3C7] to-[#FDE68A]",
+    revealedBorder: "border-[#F59E0B]",
+    revealedBorderWidth: "border-[3px]",
+    revealedText: "text-[#F59E0B]",
+    revealedShadow: "shadow-[0_0_20px_rgba(245,158,11,0.6)]",
     glow: "rgba(245, 158, 11, 0.7)",
     iconColor: "text-amber-500",
   },
@@ -99,7 +111,7 @@ export default function MysteryBadge({
           }}
         >
           <motion.div
-            className={`w-full h-full rounded-lg border-2 ${styles.unrevealedBorder} bg-gradient-to-br ${styles.unrevealedBg} flex flex-col items-center justify-center gap-2 ${
+            className={`w-full h-full rounded-lg ${styles.unrevealedBorderWidth} ${styles.unrevealedBorder} ${styles.unrevealedBg} flex flex-col items-center justify-center gap-2 ${
               !isRevealed ? "hover-elevate" : ""
             }`}
             animate={
@@ -148,33 +160,51 @@ export default function MysteryBadge({
           }}
         >
           <motion.div
-            className={`w-full h-full rounded-lg border-2 ${styles.revealedBorder} bg-gradient-to-br ${styles.revealedBg} flex flex-col items-center justify-center gap-1 p-2 relative overflow-hidden`}
+            className={`w-full h-full rounded-lg ${styles.revealedBorderWidth} ${styles.revealedBorder} ${styles.revealedBg} ${styles.revealedShadow} flex flex-col items-center justify-center gap-1 p-2 relative overflow-hidden`}
             initial={{ scale: 1 }}
             animate={
               isRevealed
-                ? {
-                    scale: [1, rarity === "epic" ? 1.08 : 1.05, 1],
-                  }
+                ? rarity === "epic"
+                  ? {
+                      // Epic: Pre-vibration effect
+                      scale: [1, 0.95, 1.08, 1],
+                      rotate: [0, -2, 2, 0],
+                    }
+                  : {
+                      // Rare: Smooth appearance
+                      scale: [1, 1.05, 1],
+                    }
                 : {}
             }
             transition={{
               delay: 0.6,
+              duration: rarity === "epic" ? 0.8 : 0.5,
               type: "spring",
               stiffness: rarity === "epic" ? 400 : 300,
             }}
           >
-            {/* Epic glow effect */}
+            {/* Rare: Purple glow pulse */}
+            {rarity === "rare" && isRevealed && (
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-purple-200/40 via-purple-300/20 to-transparent rounded-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+
+            {/* Epic: Continuous gold glow */}
             {rarity === "epic" && isRevealed && (
               <motion.div
-                className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-orange-400/20 to-transparent"
+                className="absolute inset-0 bg-gradient-to-br from-amber-300/30 via-amber-400/20 to-transparent rounded-lg"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                animate={{ opacity: [0.4, 0.7, 0.4] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               />
             )}
 
             <div className="text-xl relative z-10">{icon}</div>
-            <div className={`text-[10px] font-medium text-center ${styles.revealedText} leading-tight px-1 relative z-10`}>
+            <div className={`text-[10px] font-semibold text-center ${styles.revealedText} leading-tight px-1 relative z-10`}>
               {label}
             </div>
 
@@ -192,17 +222,20 @@ export default function MysteryBadge({
       <AnimatePresence>
         {isRevealed && (
           <>
-            <motion.div
-              className="absolute -top-2 -right-2"
-              initial={{ scale: 0, rotate: -45 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ delay: 0.5, type: "spring" }}
-            >
-              <Sparkles className={`w-4 h-4 ${styles.iconColor}`} />
-            </motion.div>
+            {/* Only show sparkle for rare and epic */}
+            {rarity !== "common" && (
+              <motion.div
+                className="absolute -top-2 -right-2"
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1, rotate: 0 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ delay: 0.5, type: "spring" }}
+              >
+                <Sparkles className={`w-4 h-4 ${styles.iconColor}`} />
+              </motion.div>
+            )}
 
-            {/* Epic celebration effect */}
+            {/* Epic: Gold burst with particle orbit */}
             {rarity === "epic" && (
               <>
                 {[...Array(6)].map((_, i) => (
@@ -216,17 +249,17 @@ export default function MysteryBadge({
                     initial={{ scale: 0, x: "-50%", y: "-50%" }}
                     animate={{
                       scale: [0, 1, 0],
-                      x: ["-50%", `${Math.cos((i * Math.PI) / 3) * 40}px`],
-                      y: ["-50%", `${Math.sin((i * Math.PI) / 3) * 40}px`],
+                      x: ["-50%", `${Math.cos((i * Math.PI) / 3) * 50}px`],
+                      y: ["-50%", `${Math.sin((i * Math.PI) / 3) * 50}px`],
                       opacity: [1, 0.8, 0],
                     }}
                     transition={{
-                      duration: 1.2,
-                      delay: 0.6 + i * 0.05,
+                      duration: 1.5,
+                      delay: 0.6 + i * 0.08,
                       ease: "easeOut",
                     }}
                   >
-                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <Sparkles className="w-3 h-3 text-[#F59E0B]" />
                   </motion.div>
                 ))}
               </>
