@@ -529,47 +529,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { eventId } = req.params;
       
-      // Demo matched attendees data
+      // Demo matched attendees data with rich hidden attributes for interesting connections
       const demoMatchedAttendees = [
         {
           userId: "demo1",
           displayName: "Alex",
           archetype: "探索者",
-          topInterests: ["电影", "旅行"],
-          ageBand: "28-34",
+          topInterests: ["film_entertainment", "travel_exploration", "photography"],
+          age: 29,
+          gender: "Man",
           industry: "科技",
+          educationLevel: "Master's",
+          hometown: "北京",
+          studyLocale: "Overseas",
+          seniority: "Mid",
+          relationshipStatus: "Single",
           ageVisible: true,
-          industryVisible: true
+          industryVisible: true,
+          educationVisible: true
         },
         {
           userId: "demo2",
           displayName: "小明",
           archetype: "讲故事的人",
-          topInterests: ["美食", "音乐"],
-          ageBand: "25-29",
+          topInterests: ["food_dining", "music_concerts", "travel_exploration"],
+          age: 27,
+          gender: "Man",
           industry: "艺术",
+          educationLevel: "Bachelor's",
+          hometown: "上海",
+          studyLocale: "Domestic",
+          seniority: "Junior",
+          relationshipStatus: "Single",
           ageVisible: true,
-          industryVisible: false
+          industryVisible: true,
+          educationVisible: true
         },
         {
           userId: "demo3",
           displayName: "Sarah",
           archetype: "智者",
-          topInterests: ["阅读", "电影"],
-          ageBand: "30-35",
+          topInterests: ["reading_books", "film_entertainment", "coffee_tea"],
+          age: 32,
+          gender: "Woman",
           industry: "金融",
-          ageVisible: false,
-          industryVisible: true
+          educationLevel: "Master's",
+          hometown: "香港",
+          studyLocale: "Overseas",
+          seniority: "Senior",
+          relationshipStatus: "Married/Partnered",
+          ageVisible: true,
+          industryVisible: true,
+          educationVisible: true
         },
         {
           userId: "demo4",
           displayName: "李华",
           archetype: "发光体",
-          topInterests: ["健身", "旅行"],
-          ageBand: "26-30",
+          topInterests: ["fitness_health", "travel_exploration", "outdoor_activities"],
+          age: 28,
+          gender: "Woman",
           industry: "医疗",
+          educationLevel: "Doctorate",
+          hometown: "深圳",
+          studyLocale: "Both",
+          seniority: "Mid",
+          relationshipStatus: "Single",
           ageVisible: true,
-          industryVisible: true
+          industryVisible: true,
+          educationVisible: true
         }
       ];
       
