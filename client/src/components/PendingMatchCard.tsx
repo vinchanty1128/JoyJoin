@@ -81,9 +81,16 @@ export default function PendingMatchCard({ event, onCancel }: PendingMatchCardPr
 
           {/* 已邀请 */}
           {(event.invitedCount || 0) > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="text-invited">
-              <Users className="h-4 w-4" />
-              <span>已邀请{event.invitedCount}位（{event.invitedJoined}位已加入）</span>
+            <div className="flex items-center gap-2 text-sm" data-testid="text-invited">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">
+                已邀请{event.invitedCount}人
+                {(event.invitedJoined || 0) > 0 ? (
+                  <span className="text-primary"> · {event.invitedJoined}人已加入</span>
+                ) : (
+                  <span className="text-muted-foreground"> · 尚未加入</span>
+                )}
+              </span>
             </div>
           )}
 

@@ -6,7 +6,25 @@ This social networking platform connects people through small, curated micro-eve
 
 ## Recent Changes
 
-### October 28, 2025 - Attendee Card UX Enhancement
+### October 28, 2025 - Events Page Navigation & Attendee Card Enhancements
+
+#### Events Page Segmented Control
+- **New Navigation UI:** Added large segmented control (tabs) at the top of Events page for easy state filtering
+- **Three Clear Categories:**
+  - "匹配中" (Matching) - Shows pending_match events
+  - "已匹配" (Matched) - Shows successfully matched events  
+  - "已完成" (Completed) - Shows completed events
+- **Visual Design:**
+  - Full-width tabs with equal column grid (grid-cols-3)
+  - Large height (h-12) for easy mobile tapping
+  - Active tab features white background with shadow
+  - Event counts displayed in parentheses on each tab
+- **Empty States:** Each tab shows unique empty state with appropriate icon and helpful message
+- **Text Improvements:** Changed "已邀请X位（Y位已加入）" to clearer format:
+  - With joined users: "已邀请X人 · Y人已加入" (joined count in primary color)
+  - No joined users: "已邀请X人 · 尚未加入" (in muted color)
+
+#### Attendee Card UX Enhancement
 - **Information Categorization:** Separated "个人兴趣" (Personal Interests) and "我们之间的契合点" (Connection Points) into distinct sections on card back
 - **Visual Differentiation:** 
   - Personal interest badges use neutral/lighter colors (`bg-accent/30`)
