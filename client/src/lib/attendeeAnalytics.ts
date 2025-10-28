@@ -236,28 +236,29 @@ export function calculateMatchQuality(connectionPoints: SparkPrediction[]): Matc
     totalScore += weights[point.rarity];
   });
   
-  // 假设最多显示6个契合点，全部为Epic时获得满分（36分）
-  const maxPossibleScore = 6 * weights.epic; // 36分
+  // 能量环填充基于契合点数量（更宽松，更激励用户）
+  // 假设6个契合点为满分（100%）
+  const maxConnectionPoints = 6;
+  const basePercentage = Math.min((connectionPoints.length / maxConnectionPoints) * 100, 100);
   
-  const percentage = Math.min((totalScore / maxPossibleScore) * 100, 100);
-  
+  // 质量层级基于总分数（用于决定颜色和动效）
   let qualityTier: QualityTier;
   let visualBoost: number;
   
-  if (totalScore >= 20) {
-    qualityTier = 'epic';      // 56%以上 - 金色能量环
-    visualBoost = 20;           // 20%视觉加成
-  } else if (totalScore >= 12) {
-    qualityTier = 'rare';      // 33%-56% - 紫色能量环  
+  if (totalScore >= 15) {
+    qualityTier = 'epic';      // 高质量匹配 - 金色能量环
+    visualBoost = 15;           // 15%视觉加成
+  } else if (totalScore >= 8) {
+    qualityTier = 'rare';      // 优质匹配 - 紫色能量环  
     visualBoost = 10;           // 10%视觉加成
   } else {
-    qualityTier = 'common';    // 低于33% - 灰色能量环
-    visualBoost = 0;            // 无视觉加成
+    qualityTier = 'common';    // 基础匹配 - 灰色能量环
+    visualBoost = 5;            // 5%视觉加成
   }
   
   return {
     rawScore: totalScore,
-    percentage,
+    percentage: basePercentage,
     qualityTier,
     visualBoost
   };
