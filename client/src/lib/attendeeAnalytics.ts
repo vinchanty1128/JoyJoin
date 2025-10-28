@@ -28,6 +28,37 @@ export interface ArchetypeDistribution {
   percentage: number;
 }
 
+export interface GroupInsight {
+  type: 'industry' | 'interest' | 'experience';
+  label: string;
+  icon: string;
+}
+
+const interestNameMap: Record<string, string> = {
+  "film_entertainment": "电影娱乐",
+  "travel_exploration": "旅行探索",
+  "food_dining": "美食餐饮",
+  "music_concerts": "音乐演出",
+  "reading_books": "阅读书籍",
+  "art_culture": "艺术文化",
+  "sports_fitness": "运动健身",
+  "fitness_health": "健身健康",
+  "photography": "摄影",
+  "gaming": "游戏",
+  "technology": "科技",
+  "entrepreneurship": "创业",
+  "networking": "社交拓展",
+  "outdoor_activities": "户外活动",
+  "yoga_meditation": "瑜伽冥想",
+  "wine_spirits": "品酒",
+  "coffee_tea": "咖啡茶艺",
+  "cooking_baking": "烹饪烘焙",
+};
+
+export function normalizeInterestName(interest: string): string {
+  return interestNameMap[interest] || interest;
+}
+
 export function calculateCommonInterests(
   attendees: AttendeeData[]
 ): CommonInterest[] {
@@ -36,7 +67,8 @@ export function calculateCommonInterests(
   attendees.forEach((attendee) => {
     if (attendee.topInterests) {
       attendee.topInterests.forEach((interest) => {
-        interestMap.set(interest, (interestMap.get(interest) || 0) + 1);
+        const normalizedInterest = normalizeInterestName(interest);
+        interestMap.set(normalizedInterest, (interestMap.get(normalizedInterest) || 0) + 1);
       });
     }
   });
@@ -255,4 +287,150 @@ export function generateSparkPredictions(
   
   // Return top 3 predictions to avoid overcrowding
   return predictions.slice(0, 3);
+}
+
+export function calculateGroupInsights(attendees: AttendeeData[]): GroupInsight[] {
+  const insights: GroupInsight[] = [];
+  
+  // Industry diversity
+  const industries = new Set<string>();
+  attendees.forEach(attendee => {
+    if (attendee.industry) {
+      industries.add(attendee.industry);
+    }
+  });
+  
+  if (industries.size >= 3) {
+    const industryList = Array.from(industries).slice(0, 3).join("、");
+    insights.push({
+      type: 'industry',
+      label: `来自${industryList}等${industries.size}个行业`,
+      icon: '💼'
+    });
+  } else if (industries.size === 2) {
+    const industryList = Array.from(industries).join("、");
+    insights.push({
+      type: 'industry',
+      label: `跨${industryList}行业`,
+      icon: '💼'
+    });
+  }
+  
+  // Common interests
+  const interestMap = new Map<string, number>();
+  attendees.forEach(attendee => {
+    if (attendee.topInterests) {
+      attendee.topInterests.forEach(interest => {
+        const normalizedInterest = normalizeInterestName(interest);
+        interestMap.set(normalizedInterest, (interestMap.get(normalizedInterest) || 0) + 1);
+      });
+    }
+  });
+  
+  const popularInterests = Array.from(interestMap.entries())
+    .filter(([_, count]) => count >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+  
+  if (popularInterests.length > 0) {
+    const interestList = popularInterests.map(([interest]) => interest).join("、");
+    insights.push({
+      type: 'interest',
+      label: `都喜欢${interestList}`,
+      icon: '✨'
+    });
+  }
+  
+  // Overseas experience
+  const overseasCount = attendees.filter(
+    a => a.studyLocale === "Overseas" || a.studyLocale === "Both"
+  ).length;
+  
+  if (overseasCount >= 2) {
+    if (overseasCount === attendees.length) {
+      insights.push({
+        type: 'experience',
+        label: '均有海外经历',
+        icon: '🌍'
+      });
+    } else {
+      insights.push({
+        type: 'experience',
+        label: `${overseasCount}人有海外经历`,
+        icon: '🌍'
+      });
+    }
+  }
+  
+  // Career stage
+  const seniorityCount = {
+    'Founder': 0,
+    'Executive': 0,
+    'Senior': 0,
+    'Mid': 0,
+    'Junior': 0
+  };
+  
+  attendees.forEach(attendee => {
+    if (attendee.seniority && attendee.seniority in seniorityCount) {
+      seniorityCount[attendee.seniority as keyof typeof seniorityCount]++;
+    }
+  });
+  
+  if (seniorityCount.Founder >= 2) {
+    insights.push({
+      type: 'experience',
+      label: `${seniorityCount.Founder}位创业者`,
+      icon: '🚀'
+    });
+  } else if (seniorityCount.Senior + seniorityCount.Executive >= 2) {
+    insights.push({
+      type: 'experience',
+      label: '职场资深人士聚集',
+      icon: '💡'
+    });
+  } else if (seniorityCount.Mid + seniorityCount.Junior >= 3) {
+    insights.push({
+      type: 'experience',
+      label: '职场同龄人为主',
+      icon: '🤝'
+    });
+  }
+  
+  // Relationship status
+  const singleCount = attendees.filter(
+    a => a.relationshipStatus === "Single"
+  ).length;
+  const marriedCount = attendees.filter(
+    a => a.relationshipStatus === "Married/Partnered"
+  ).length;
+  
+  if (singleCount >= 3) {
+    insights.push({
+      type: 'experience',
+      label: '单身友好局',
+      icon: '💫'
+    });
+  } else if (marriedCount >= 3) {
+    insights.push({
+      type: 'experience',
+      label: '已婚/有伴侣人士',
+      icon: '💑'
+    });
+  }
+  
+  // Education level
+  const highEducation = attendees.filter(
+    a => a.educationLevel === "Master's" || a.educationLevel === "Doctorate"
+  ).length;
+  
+  if (highEducation >= 3) {
+    insights.push({
+      type: 'experience',
+      label: '高学历人群',
+      icon: '🎓'
+    });
+  }
+  
+  return insights.slice(0, 4);
 }

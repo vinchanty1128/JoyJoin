@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Target, Users } from "lucide-react";
+import { Target, Users, Sparkles } from "lucide-react";
 import {
   calculateCommonInterests,
   calculateArchetypeDistribution,
+  calculateGroupInsights,
   type AttendeeData,
 } from "@/lib/attendeeAnalytics";
 
@@ -38,6 +39,7 @@ interface GroupSummaryCardProps {
 export default function GroupSummaryCard({ attendees }: GroupSummaryCardProps) {
   const commonInterests = calculateCommonInterests(attendees);
   const archetypeDistribution = calculateArchetypeDistribution(attendees);
+  const groupInsights = calculateGroupInsights(attendees);
 
   if (attendees.length === 0) {
     return null;
@@ -72,6 +74,28 @@ export default function GroupSummaryCard({ attendees }: GroupSummaryCardProps) {
             <p className="text-sm text-muted-foreground">正在分析共同点...</p>
           )}
         </div>
+
+        {groupInsights.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>潜在契合点</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {groupInsights.map((insight, idx) => (
+                <Badge
+                  key={idx}
+                  variant="secondary"
+                  className="text-sm gap-1.5 no-default-active-elevate"
+                  data-testid={`badge-group-insight-${idx}`}
+                >
+                  <span>{insight.icon}</span>
+                  <span>{insight.label}</span>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
 
         {archetypeDistribution.length > 0 && (
           <div className="space-y-2">
