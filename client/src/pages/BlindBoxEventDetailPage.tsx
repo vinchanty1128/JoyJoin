@@ -8,10 +8,12 @@ import type { BlindBoxEvent } from "@shared/schema";
 import { getCurrencySymbol } from "@/lib/currency";
 import IcebreakerTool from "@/components/IcebreakerTool";
 import PostMatchEventCard from "@/components/PostMatchEventCard";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function BlindBoxEventDetailPage() {
   const { eventId } = useParams();
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
 
   const { data: event, isLoading } = useQuery<BlindBoxEvent>({
     queryKey: ["/api/blind-box-events", eventId],
@@ -184,6 +186,7 @@ export default function BlindBoxEventDetailPage() {
               industryVisible?: boolean;
             }>}
             matchExplanation={event.matchExplanation || undefined}
+            userInterests={(user?.interestsRanked as string[] | undefined) || []}
           />
         )}
 

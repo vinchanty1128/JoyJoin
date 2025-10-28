@@ -17,9 +17,14 @@ interface AttendeeData {
 interface PostMatchEventCardProps {
   matchedAttendees?: AttendeeData[];
   matchExplanation?: string;
+  userInterests?: string[];
 }
 
-export default function PostMatchEventCard({ matchedAttendees, matchExplanation }: PostMatchEventCardProps) {
+export default function PostMatchEventCard({ 
+  matchedAttendees, 
+  matchExplanation,
+  userInterests = []
+}: PostMatchEventCardProps) {
   if (!matchedAttendees || matchedAttendees.length === 0) {
     return null;
   }
@@ -33,7 +38,7 @@ export default function PostMatchEventCard({ matchedAttendees, matchExplanation 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <MeetYourTable attendees={matchedAttendees} />
+        <MeetYourTable attendees={matchedAttendees} userInterests={userInterests} />
         {matchExplanation && <WhyThisTable explanation={matchExplanation} />}
       </CardContent>
     </Card>
