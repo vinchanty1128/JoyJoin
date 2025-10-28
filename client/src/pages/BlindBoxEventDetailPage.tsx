@@ -186,7 +186,7 @@ export default function BlindBoxEventDetailPage() {
               industryVisible?: boolean;
             }>}
             matchExplanation={event.matchExplanation || undefined}
-            userInterests={(user?.interestsRanked as string[] | undefined) || []}
+            userInterests={(user?.interestsRankedTop3 as string[] | undefined) || []}
           />
         )}
 
