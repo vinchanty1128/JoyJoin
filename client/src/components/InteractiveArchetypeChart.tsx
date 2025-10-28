@@ -22,8 +22,8 @@ export default function InteractiveArchetypeChart({ data }: InteractiveArchetype
   let currentAngle = -90;
 
   return (
-    <div className="space-y-4">
-      <div className="relative w-full aspect-square max-w-[280px] mx-auto">
+    <div className="space-y-2">
+      <div className="relative w-full aspect-square max-w-[240px] mx-auto">
         <svg viewBox="0 0 200 200" className="transform -rotate-90">
           {data.map((item, index) => {
             const percentage = (item.percentage / total) * 100;
@@ -91,23 +91,23 @@ export default function InteractiveArchetypeChart({ data }: InteractiveArchetype
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-1.5">
         {data.map((item, index) => (
           <motion.button
             key={item.name}
             onClick={() => setSelectedArchetype(item)}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
-            className="flex items-center gap-2 p-2 rounded-md hover-elevate active-elevate-2 text-left transition-all"
+            className="flex items-center gap-1.5 p-1.5 rounded-md hover-elevate active-elevate-2 text-left transition-all"
             whileTap={{ scale: 0.98 }}
             data-testid={`archetype-button-${index}`}
           >
             <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
               style={{ backgroundColor: item.color }}
             />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">{item.name}</div>
+              <div className="text-xs font-medium truncate">{item.name}</div>
               <div className="text-xs text-muted-foreground">{item.percentage}%</div>
             </div>
           </motion.button>
@@ -123,12 +123,12 @@ export default function InteractiveArchetypeChart({ data }: InteractiveArchetype
             transition={{ duration: 0.2 }}
           >
             <Card className="border-2" style={{ borderColor: selectedArchetype.color }}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="text-3xl">{selectedArchetype.emoji}</div>
+              <CardContent className="p-3">
+                <div className="flex items-start gap-2">
+                  <div className="text-2xl">{selectedArchetype.emoji}</div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg mb-1">{selectedArchetype.name}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedArchetype.description}</p>
+                    <h3 className="font-bold text-base mb-0.5">{selectedArchetype.name}</h3>
+                    <p className="text-xs text-muted-foreground">{selectedArchetype.description}</p>
                   </div>
                   <button
                     onClick={() => setSelectedArchetype(null)}

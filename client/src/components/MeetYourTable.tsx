@@ -1,6 +1,9 @@
+import { useRef, useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import GroupSummaryCard from "./GroupSummaryCard";
-import StackedAttendeeCards from "./StackedAttendeeCards";
-import { generateSparkPredictions, type AttendeeData } from "@/lib/attendeeAnalytics";
+import AttendeePreviewCard from "./AttendeePreviewCard";
+import { type AttendeeData } from "@/lib/attendeeAnalytics";
 
 interface MeetYourTableProps {
   attendees: AttendeeData[];
@@ -23,29 +26,44 @@ export default function MeetYourTable({
   userStudyLocale,
   userSeniority,
 }: MeetYourTableProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollButtons);
+      return () => container.removeEventListener('scroll', checkScrollButtons);
+    }
+  }, [attendees]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      const newScrollLeft = direction === 'left'
+        ? scrollContainerRef.current.scrollLeft - scrollAmount
+        : scrollContainerRef.current.scrollLeft + scrollAmount;
+      
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   if (!attendees || attendees.length === 0) {
     return null;
   }
-
-  const userContext = {
-    userInterests,
-    userEducationLevel,
-    userIndustry,
-    userAgeBand,
-    userRelationshipStatus,
-    userStudyLocale,
-    userSeniority,
-  };
-
-  const connectionPoints: Record<string, Array<{ label: string; type: string }>> = {};
-  
-  attendees.forEach((attendee) => {
-    const predictions = generateSparkPredictions(userContext, attendee);
-    connectionPoints[attendee.userId] = predictions.map(label => ({
-      label,
-      type: 'connection'
-    }));
-  });
 
   return (
     <div className="space-y-4" data-testid="section-meet-your-table">
@@ -58,11 +76,50 @@ export default function MeetYourTable({
 
       <GroupSummaryCard attendees={attendees} />
 
-      <div className="py-4">
-        <StackedAttendeeCards 
-          attendees={attendees} 
-          connectionPoints={connectionPoints}
-        />
+      <div className="relative">
+        {canScrollLeft && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full shadow-lg bg-background"
+            onClick={() => scroll('left')}
+            data-testid="button-scroll-left"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
+        
+        {canScrollRight && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full shadow-lg bg-background"
+            onClick={() => scroll('right')}
+            data-testid="button-scroll-right"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
+
+        <div 
+          ref={scrollContainerRef}
+          className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {attendees.map((attendee) => (
+            <AttendeePreviewCard
+              key={attendee.userId}
+              attendee={attendee}
+              userInterests={userInterests}
+              userEducationLevel={userEducationLevel}
+              userIndustry={userIndustry}
+              userAgeBand={userAgeBand}
+              userRelationshipStatus={userRelationshipStatus}
+              userStudyLocale={userStudyLocale}
+              userSeniority={userSeniority}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
