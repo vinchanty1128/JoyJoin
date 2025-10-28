@@ -8,6 +8,7 @@ import {
   text,
   integer,
   boolean,
+  date,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -37,26 +38,71 @@ export const users = pgTable("users", {
   hasCompletedProfileSetup: boolean("has_completed_profile_setup").default(false),
   hasCompletedVoiceQuiz: boolean("has_completed_voice_quiz").default(false),
   
-  // Registration fields (new)
-  age: integer("age"),
-  gender: varchar("gender"), // Male, Female, Non-binary, Prefer not to say
-  relationshipStatus: varchar("relationship_status"), // Single, In a relationship, Married, Prefer not to say
-  hasKids: boolean("has_kids"),
-  industry: varchar("industry"), // 大厂, 金融, 科技, AI, etc.
-  placeOfOrigin: varchar("place_of_origin"), // 籍贯
-  longTermBase: varchar("long_term_base"), // 长期base (city)
+  // Registration fields - Identity
+  birthdate: date("birthdate"), // Used to compute age_band
+  age: integer("age"), // Deprecated in favor of birthdate
+  ageBand: varchar("age_band"), // 18-22, 23-27, 28-34, 35-44, 45-54, 55+
+  ageVisibility: varchar("age_visibility").default("show_band_only"), // hide_all, show_band_only, show_exact_age
+  gender: varchar("gender"), // Woman, Man, Nonbinary, Self-describe, Prefer not to say
+  pronouns: varchar("pronouns"), // She/Her, He/Him, They/Them, Self-describe, Prefer not to say
+  
+  // Registration fields - Background
+  relationshipStatus: varchar("relationship_status"), // Single, In a relationship, Married/Partnered, It's complicated, Prefer not to say
+  children: varchar("children"), // No kids, Expecting, 0-5, 6-12, 13-18, Adult, Prefer not to say
+  hasKids: boolean("has_kids"), // Deprecated in favor of children
+  
+  // Registration fields - Education
+  educationLevel: varchar("education_level"), // High school/below, Some college/Associate, Bachelor's, Master's, Doctorate, Trade/Vocational, Prefer not to say
+  studyLocale: varchar("study_locale"), // Local, Overseas, Both, Prefer not to say
+  overseasRegions: text("overseas_regions").array(), // NA, Europe, East Asia, SE Asia, etc.
+  fieldOfStudy: varchar("field_of_study"), // Business, Engineering, CS, Arts/Design, etc.
+  educationVisibility: varchar("education_visibility").default("hide_all"), // hide_all, show_level_only, show_level_and_field
+  
+  // Registration fields - Work
+  industry: varchar("industry"), // Coarse taxonomy
+  roleTitleShort: varchar("role_title_short"), // Optional short text
+  seniority: varchar("seniority"), // Intern, Junior, Mid, Senior, Founder, Executive
+  workVisibility: varchar("work_visibility").default("show_industry_only"), // hide_all, show_industry_only
+  
+  // Registration fields - Culture & Language
+  hometownCountry: varchar("hometown_country"),
+  hometownRegionCity: varchar("hometown_region_city"),
+  hometownAffinityOptin: boolean("hometown_affinity_optin").default(false),
+  languagesComfort: text("languages_comfort").array(), // English, Mandarin, Cantonese, etc.
+  
+  // Registration fields - Deprecated/Legacy
+  placeOfOrigin: varchar("place_of_origin"), // Deprecated in favor of hometown fields
+  longTermBase: varchar("long_term_base"), // Deprecated - use location preferences
   wechatId: varchar("wechat_id"), // WeChat ID
+  
+  // Registration fields - Access & Safety
+  accessibilityNeeds: text("accessibility_needs"), // Optional text
+  safetyNoteHost: text("safety_note_host"), // Private note to host
+  
+  // Onboarding progress
   hasCompletedRegistration: boolean("has_completed_registration").default(false),
+  hasCompletedInterestsTopics: boolean("has_completed_interests_topics").default(false),
   hasCompletedPersonalityTest: boolean("has_completed_personality_test").default(false),
   
-  // Personality data
+  // Interests & Topics (Step 2)
+  interestsTop: text("interests_top").array(), // 3-7 selected interests
+  interestsRankedTop3: text("interests_ranked_top3").array(), // Top 3 ranked interests
+  topicsHappy: text("topics_happy").array(), // Topics user enjoys discussing
+  topicsAvoid: text("topics_avoid").array(), // Topics to avoid
+  
+  // Personality data (Step 3 - Vibe Vector)
+  vibeVector: jsonb("vibe_vector"), // {energy, conversation_style, initiative, novelty, humor} scored 0-1
+  archetype: varchar("archetype"), // Radiator, Anchor, Explorer, Storyteller, Sage
+  debateComfort: integer("debate_comfort"), // 1-7 scale
+  
+  // Legacy personality data (deprecated)
   personalityTraits: jsonb("personality_traits"),
   personalityChallenges: text("personality_challenges").array(),
   idealMatch: text("ideal_match"),
   energyLevel: integer("energy_level"),
   
-  // Social role (from personality test)
-  primaryRole: varchar("primary_role"), // 8 core roles
+  // Social role (from personality test - now mapped to archetype)
+  primaryRole: varchar("primary_role"), // 8 core roles - legacy
   secondaryRole: varchar("secondary_role"),
   roleSubtype: varchar("role_subtype"),
   
@@ -294,21 +340,59 @@ export const roleResults = pgTable("role_results", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Registration schema
+// Registration schema (Step 1: The Essentials)
 export const registerUserSchema = z.object({
-  firstName: z.string().min(1, "请输入名字"),
-  age: z.number().min(16, "年龄必须在16岁以上").max(80, "年龄必须在80岁以下"),
-  gender: z.enum(["Male", "Female", "Non-binary", "Prefer not to say"], {
+  // Identity
+  displayName: z.string().min(1, "请输入昵称"),
+  birthdate: z.string().optional(), // ISO date string
+  ageBand: z.enum(["18-22", "23-27", "28-34", "35-44", "45-54", "55+"], {
+    errorMap: () => ({ message: "请选择年龄段" }),
+  }),
+  ageVisibility: z.enum(["hide_all", "show_band_only", "show_exact_age"]).default("show_band_only"),
+  gender: z.enum(["Woman", "Man", "Nonbinary", "Self-describe", "Prefer not to say"], {
     errorMap: () => ({ message: "请选择性别" }),
   }),
-  relationshipStatus: z.enum(["Single", "In a relationship", "Married", "Prefer not to say"], {
+  pronouns: z.enum(["She/Her", "He/Him", "They/Them", "Self-describe", "Prefer not to say"]).optional(),
+  
+  // Background
+  relationshipStatus: z.enum(["Single", "In a relationship", "Married/Partnered", "It's complicated", "Prefer not to say"], {
     errorMap: () => ({ message: "请选择关系状态" }),
   }),
-  hasKids: z.boolean(),
+  children: z.enum(["No kids", "Expecting", "0-5", "6-12", "13-18", "Adult", "Prefer not to say"]).optional(),
+  
+  // Education
+  educationLevel: z.enum(["High school/below", "Some college/Associate", "Bachelor's", "Master's", "Doctorate", "Trade/Vocational", "Prefer not to say"]).optional(),
+  studyLocale: z.enum(["Local", "Overseas", "Both", "Prefer not to say"]).optional(),
+  overseasRegions: z.array(z.string()).optional(),
+  fieldOfStudy: z.string().optional(),
+  educationVisibility: z.enum(["hide_all", "show_level_only", "show_level_and_field"]).default("hide_all"),
+  
+  // Work
   industry: z.string().min(1, "请选择行业"),
-  placeOfOrigin: z.string().min(1, "请输入籍贯"),
-  longTermBase: z.string().min(1, "请选择长期base"),
+  roleTitleShort: z.string().optional(),
+  seniority: z.enum(["Intern", "Junior", "Mid", "Senior", "Founder", "Executive"]).optional(),
+  workVisibility: z.enum(["hide_all", "show_industry_only"]).default("show_industry_only"),
+  
+  // Culture & Language
+  hometownCountry: z.string().optional(),
+  hometownRegionCity: z.string().optional(),
+  hometownAffinityOptin: z.boolean().default(false),
+  languagesComfort: z.array(z.string()).optional(),
+  
+  // Access & Safety
+  accessibilityNeeds: z.string().optional(),
+  safetyNoteHost: z.string().optional(),
+  
+  // Legacy/Optional
   wechatId: z.string().optional(),
+});
+
+// Interests & Topics schema (Step 2)
+export const interestsTopicsSchema = z.object({
+  interestsTop: z.array(z.string()).min(3, "请至少选择3个兴趣").max(7, "最多选择7个兴趣"),
+  interestsRankedTop3: z.array(z.string()).length(3, "请将你最喜欢的3个兴趣排序"),
+  topicsHappy: z.array(z.string()).min(1, "请至少选择一个你喜欢的话题"),
+  topicsAvoid: z.array(z.string()).optional(),
 });
 
 // Test response schema
@@ -330,6 +414,7 @@ export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export type UpdatePersonality = z.infer<typeof updatePersonalitySchema>;
 export type UpdateBudgetPreference = z.infer<typeof updateBudgetPreferenceSchema>;
 export type RegisterUser = z.infer<typeof registerUserSchema>;
+export type InterestsTopics = z.infer<typeof interestsTopicsSchema>;
 
 export type Event = typeof events.$inferSelect;
 export type EventAttendance = typeof eventAttendance.$inferSelect;
