@@ -241,18 +241,21 @@ export function calculateMatchQuality(connectionPoints: SparkPrediction[]): Matc
   const maxConnectionPoints = 6;
   const basePercentage = Math.min((connectionPoints.length / maxConnectionPoints) * 100, 100);
   
-  // 质量层级基于总分数（用于决定颜色和动效）
+  // 质量层级基于最稀有的契合点（用于决定颜色和动效）
   let qualityTier: QualityTier;
   let visualBoost: number;
   
-  if (totalScore >= 15) {
-    qualityTier = 'epic';      // 高质量匹配 - 金色能量环
+  const hasEpic = connectionPoints.some(point => point.rarity === 'epic');
+  const hasRare = connectionPoints.some(point => point.rarity === 'rare');
+  
+  if (hasEpic) {
+    qualityTier = 'epic';      // 有Epic契合点 - 金色能量环
     visualBoost = 15;           // 15%视觉加成
-  } else if (totalScore >= 8) {
-    qualityTier = 'rare';      // 优质匹配 - 紫色能量环  
+  } else if (hasRare) {
+    qualityTier = 'rare';      // 有Rare契合点 - 紫色能量环  
     visualBoost = 10;           // 10%视觉加成
   } else {
-    qualityTier = 'common';    // 基础匹配 - 灰色能量环
+    qualityTier = 'common';    // 只有Common契合点 - 灰色能量环
     visualBoost = 5;            // 5%视觉加成
   }
   
