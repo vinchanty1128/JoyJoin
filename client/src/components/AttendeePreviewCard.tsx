@@ -110,7 +110,7 @@ export default function AttendeePreviewCard({
 
   return (
     <div
-      className="min-w-[180px] w-[180px] flex-shrink-0"
+      className="min-w-[180px] w-[180px] h-[320px] flex-shrink-0"
       style={{ perspective: "1000px" }}
       data-testid={`card-attendee-${attendee.userId}`}
     >
