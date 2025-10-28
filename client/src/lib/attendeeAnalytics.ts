@@ -367,8 +367,8 @@ export function generateSparkPredictions(
     }
   }
   
-  // Return top 6-8 predictions to provide variety
-  return predictions.slice(0, 8);
+  // Return top 6 predictions - perfect for 3x2 grid layout
+  return predictions.slice(0, 6);
 }
 
 export function calculateGroupInsights(attendees: AttendeeData[]): GroupInsight[] {

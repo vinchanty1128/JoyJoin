@@ -198,7 +198,7 @@ export default function UserConnectionCard({
 
                 {/* Mystery Badges Grid */}
                 <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     {connectionTags.map((badge, idx) => (
                       <MysteryBadge
                         key={idx}
