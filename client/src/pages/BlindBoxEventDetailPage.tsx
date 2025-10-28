@@ -172,30 +172,6 @@ export default function BlindBoxEventDetailPage() {
           </Card>
         )}
 
-        {/* Post-Match Event Card: Attendee Insights & Match Explanation */}
-        {event.status === "matched" && event.matchedAttendees && Array.isArray(event.matchedAttendees) && (
-          <PostMatchEventCard 
-            matchedAttendees={event.matchedAttendees as Array<{
-              userId: string;
-              displayName: string;
-              archetype?: string;
-              topInterests?: string[];
-              ageBand?: string;
-              industry?: string;
-              ageVisible?: boolean;
-              industryVisible?: boolean;
-            }>}
-            matchExplanation={event.matchExplanation || undefined}
-            userInterests={(user?.interestsRankedTop3 as string[] | undefined) || []}
-            userEducationLevel={user?.educationLevel || undefined}
-            userIndustry={user?.industry || undefined}
-            userAgeBand={user?.ageBand || undefined}
-            userRelationshipStatus={user?.relationshipStatus || undefined}
-            userStudyLocale={user?.studyLocale || undefined}
-            userSeniority={user?.seniority || undefined}
-          />
-        )}
-
         {/* 预算与菜式 */}
         <Card>
           <CardHeader className="pb-3">
@@ -222,6 +198,35 @@ export default function BlindBoxEventDetailPage() {
           </CardContent>
         </Card>
 
+        {/* Post-Match Event Card: Attendee Insights & Match Explanation */}
+        {event.status === "matched" && event.matchedAttendees && Array.isArray(event.matchedAttendees) && (
+          <PostMatchEventCard 
+            matchedAttendees={event.matchedAttendees as Array<{
+              userId: string;
+              displayName: string;
+              archetype?: string;
+              topInterests?: string[];
+              ageBand?: string;
+              industry?: string;
+              ageVisible?: boolean;
+              industryVisible?: boolean;
+            }>}
+            matchExplanation={event.matchExplanation || undefined}
+            userInterests={(user?.interestsRankedTop3 as string[] | undefined) || []}
+            userEducationLevel={user?.educationLevel || undefined}
+            userIndustry={user?.industry || undefined}
+            userAgeBand={user?.ageBand || undefined}
+            userRelationshipStatus={user?.relationshipStatus || undefined}
+            userStudyLocale={user?.studyLocale || undefined}
+            userSeniority={user?.seniority || undefined}
+          />
+        )}
+
+        {/* 破冰工具 (仅已匹配显示) */}
+        {event.status === "matched" && (
+          <IcebreakerTool />
+        )}
+
         {/* 规则与到场指南 */}
         <Card>
           <CardHeader className="pb-3">
@@ -242,11 +247,6 @@ export default function BlindBoxEventDetailPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* 破冰工具 (仅已匹配显示) */}
-        {event.status === "matched" && (
-          <IcebreakerTool />
-        )}
 
         {/* 帮助与支持 */}
         <Card>

@@ -6,7 +6,19 @@ This social networking platform connects people through small, curated micro-eve
 
 ## Recent Changes
 
-### October 28, 2025 - Events Page Navigation & Attendee Card Enhancements
+### October 28, 2025 - Events Page Navigation & Layout Improvements
+
+#### Event Detail Page Layout Reorder
+- **Improved Information Flow:** Reordered sections on event detail page for better UX
+- **New Section Order:**
+  1. 顶部摘要 (Event summary with countdown)
+  2. 地点信息 (Venue info with navigation)
+  3. **预算与菜式** (Budget & cuisine - moved to after venue for dining context)
+  4. 活动预览 (Attendee cards and match explanation)
+  5. **破冰工具** (Icebreaker tools - moved to after attendee preview for better flow)
+  6. 规则与到场指南 (Rules and arrival guide)
+  7. 帮助与支持 (Help and support)
+- **Rationale:** Users now see dining context (venue → budget → cuisine) together, then attendees followed immediately by icebreaker tools
 
 #### Connection Points Count Fix (Critical Bug Fix)
 - **Problem**: Card front displayed "与你有X个共同点" where X only counted interest overlaps, but card back showed multi-dimensional connection points (interests + education + industry + age + relationship status + overseas experience + seniority)
