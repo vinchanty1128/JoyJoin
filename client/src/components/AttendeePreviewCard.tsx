@@ -190,19 +190,19 @@ export default function AttendeePreviewCard({
                 {attendee.age && (
                   <span>{attendee.age}岁</span>
                 )}
-                {!attendee.age && attendee.ageVisible && attendee.ageBand && (
+                {!attendee.age && attendee.ageBand && (
                   <span>{attendee.ageBand}</span>
                 )}
               </div>
 
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
-                {attendee.educationVisible !== false && educationDisplay && (
+                {educationDisplay && (
                   <div className="flex items-center gap-1">
                     <GraduationCap className="h-3 w-3" />
                     <span>{educationDisplay}</span>
                   </div>
                 )}
-                {attendee.industryVisible && attendee.industry && (
+                {attendee.industry && (
                   <div className="flex items-center gap-1">
                     <Briefcase className="h-3 w-3" />
                     <span>{attendee.industry}</span>
