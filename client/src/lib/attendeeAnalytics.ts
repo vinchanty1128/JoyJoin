@@ -212,7 +212,7 @@ export function generateSparkPredictions(
 ): string[] {
   const predictions: string[] = [];
   
-  // Interest-based predictions
+  // Priority 1: Interest-based predictions (most interesting and hidden)
   if (userContext.userInterests && attendee.topInterests) {
     const userSet = new Set(userContext.userInterests);
     const commonInterests = attendee.topInterests.filter((interest) =>
@@ -222,35 +222,26 @@ export function generateSparkPredictions(
     const interestPredictions = commonInterests
       .map((interest) => sparkPredictions[interest])
       .filter((prediction): prediction is string => !!prediction)
-      .slice(0, 2);
+      .slice(0, 3); // Allow up to 3 interest matches
     
     predictions.push(...interestPredictions);
   }
   
-  // Education-based predictions
-  if (userContext.userEducationLevel && attendee.educationLevel) {
-    if (userContext.userEducationLevel === attendee.educationLevel) {
-      if (userContext.userEducationLevel === "Master's" || userContext.userEducationLevel === "Doctorate") {
-        predictions.push("同为高学历人群");
-      }
-    }
-  }
-  
-  // Study locale - Overseas experience
+  // Priority 2: Study locale - Overseas experience (interesting hidden info)
   if (userContext.userStudyLocale === "Overseas" && attendee.studyLocale === "Overseas") {
     predictions.push("都有海外留学经历");
   } else if (userContext.userStudyLocale === "Both" && attendee.studyLocale === "Both") {
-    predictions.push("都有海外留学经历");
-  }
-  
-  // Industry-based predictions
-  if (userContext.userIndustry && attendee.industry) {
-    if (userContext.userIndustry === attendee.industry) {
-      predictions.push(`同为${attendee.industry}从业者`);
+    predictions.push("都有海外+国内学习经历");
+  } else if (userContext.userStudyLocale && attendee.studyLocale && 
+             userContext.userStudyLocale !== attendee.studyLocale) {
+    // Different study backgrounds can also be interesting
+    if ((userContext.userStudyLocale === "Overseas" && attendee.studyLocale === "Both") ||
+        (userContext.userStudyLocale === "Both" && attendee.studyLocale === "Overseas")) {
+      predictions.push("都有国际化视野");
     }
   }
   
-  // Seniority-based predictions (career stage)
+  // Priority 3: Seniority-based predictions (career stage - not obvious from basic info)
   if (userContext.userSeniority && attendee.seniority) {
     if (userContext.userSeniority === "Founder" && attendee.seniority === "Founder") {
       predictions.push("同为创业者");
@@ -258,35 +249,45 @@ export function generateSparkPredictions(
       (userContext.userSeniority === "Senior" || userContext.userSeniority === "Executive") &&
       (attendee.seniority === "Senior" || attendee.seniority === "Executive")
     ) {
-      predictions.push("职场资深人士");
+      predictions.push("都是职场老司机");
     } else if (
-      (userContext.userSeniority === "Junior" || userContext.userSeniority === "Mid") &&
-      (attendee.seniority === "Junior" || attendee.seniority === "Mid")
+      userContext.userSeniority === "Junior" && attendee.seniority === "Junior"
     ) {
-      predictions.push("职场同龄人");
+      predictions.push("都是职场新人");
+    } else if (
+      userContext.userSeniority === "Mid" && attendee.seniority === "Mid"
+    ) {
+      predictions.push("职场中坚力量");
     }
   }
   
-  // Relationship status
+  // Priority 4: Relationship status (hidden personal info)
   if (userContext.userRelationshipStatus && attendee.relationshipStatus) {
     if (userContext.userRelationshipStatus === "Married/Partnered" && 
         attendee.relationshipStatus === "Married/Partnered") {
-      predictions.push("同为已婚/伴侣状态");
+      predictions.push("同为有伴一族");
     } else if (userContext.userRelationshipStatus === "Single" && 
                attendee.relationshipStatus === "Single") {
-      predictions.push("同为单身");
+      predictions.push("同为单身贵族");
     }
   }
   
-  // Age band similarity
-  if (userContext.userAgeBand && attendee.ageBand) {
-    if (userContext.userAgeBand === attendee.ageBand) {
-      predictions.push("同龄人");
+  // Priority 5: Education level (only if advanced degree - more interesting)
+  if (userContext.userEducationLevel && attendee.educationLevel) {
+    if (userContext.userEducationLevel === attendee.educationLevel) {
+      if (userContext.userEducationLevel === "Doctorate") {
+        predictions.push("同为博士学历");
+      } else if (userContext.userEducationLevel === "Master's") {
+        predictions.push("同为硕士学历");
+      }
     }
   }
   
-  // Return top 3 predictions to avoid overcrowding
-  return predictions.slice(0, 3);
+  // REMOVED: Industry-based and Age band predictions
+  // These are too obvious since they're already shown on the card front
+  
+  // Return top 5-6 predictions to provide variety
+  return predictions.slice(0, 6);
 }
 
 export function calculateGroupInsights(attendees: AttendeeData[]): GroupInsight[] {
