@@ -5,6 +5,7 @@ import { User, GraduationCap, Briefcase, MapPin, RotateCw } from "lucide-react";
 import EnergyRing from "./EnergyRing";
 import MysteryBadge from "./MysteryBadge";
 import type { AttendeeData } from "@/lib/attendeeAnalytics";
+import { calculateMatchQuality } from "@/lib/attendeeAnalytics";
 
 interface ConnectionTag {
   icon: string;
@@ -37,7 +38,13 @@ export default function UserConnectionCard({
     ? archetypeIcons[attendee.archetype] || "✨"
     : "✨";
 
-  const connectionStrength = Math.min(connectionTags.length, 8);
+  // Calculate match quality based on rarity
+  const sparkPredictions = connectionTags.map(tag => ({
+    text: tag.label,
+    rarity: tag.rarity
+  }));
+  
+  const matchQuality = calculateMatchQuality(sparkPredictions);
 
   const handleBadgeReveal = (index: number) => {
     setRevealedBadges((prev) => new Set(prev).add(index));
@@ -82,16 +89,12 @@ export default function UserConnectionCard({
               <CardContent className="p-4 space-y-4 h-full flex flex-col">
                 {/* Upper Zone: User Identity */}
                 <div className="flex gap-3 items-start">
-                  {/* Left: Energy Ring + Archetype */}
-                  <div className="flex-shrink-0">
-                    <EnergyRing strength={connectionStrength} maxStrength={8} size={90} strokeWidth={6}>
-                      <div className="flex flex-col items-center">
-                        <div className="text-3xl">{archetypeIcon}</div>
-                        <div className="text-xs font-medium text-muted-foreground mt-0.5">
-                          {attendee.archetype}
-                        </div>
-                      </div>
-                    </EnergyRing>
+                  {/* Left: Archetype Icon */}
+                  <div className="flex-shrink-0 flex flex-col items-center gap-1">
+                    <div className="text-3xl">{archetypeIcon}</div>
+                    <div className="text-xs font-medium text-muted-foreground text-center">
+                      {attendee.archetype}
+                    </div>
                   </div>
 
                   {/* Right: Personal Info */}
@@ -143,15 +146,26 @@ export default function UserConnectionCard({
                   </div>
                 </div>
 
-                {/* Lower Zone: Connection Count */}
-                <div className="flex-1 flex flex-col justify-center items-center gap-4 border-t pt-4">
-                  <div className="text-center space-y-2">
-                    <div className="text-4xl font-bold text-primary">
-                      {connectionTags.length}
-                    </div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      个潜在契合点
-                    </div>
+                {/* Lower Zone: Energy Ring surrounding Connection Count */}
+                <div className="flex-1 flex flex-col justify-center items-center gap-4 border-t pt-6">
+                  {/* Energy Ring with Connection Count */}
+                  <div className="relative">
+                    <EnergyRing 
+                      percentage={matchQuality.percentage}
+                      qualityTier={matchQuality.qualityTier}
+                      visualBoost={matchQuality.visualBoost}
+                      size={140}
+                      strokeWidth={8}
+                    >
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="text-5xl font-bold text-primary">
+                          {connectionTags.length}
+                        </div>
+                        <div className="text-xs font-medium text-muted-foreground mt-1 text-center px-2">
+                          个潜在契合点
+                        </div>
+                      </div>
+                    </EnergyRing>
                   </div>
 
                   <motion.button

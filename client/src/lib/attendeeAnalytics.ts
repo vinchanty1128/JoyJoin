@@ -213,6 +213,56 @@ export interface SparkPrediction {
   rarity: RarityLevel;
 }
 
+export type QualityTier = 'common' | 'rare' | 'epic';
+
+export interface MatchQuality {
+  rawScore: number;
+  percentage: number;
+  qualityTier: QualityTier;
+  visualBoost: number;
+}
+
+// 契合点质量评分系统
+export function calculateMatchQuality(connectionPoints: SparkPrediction[]): MatchQuality {
+  const weights = {
+    common: 1,    // 基础分
+    rare: 3,      // 3倍权重
+    epic: 6       // 6倍权重
+  };
+  
+  let totalScore = 0;
+  
+  connectionPoints.forEach(point => {
+    totalScore += weights[point.rarity];
+  });
+  
+  // 假设最多显示6个契合点，全部为Epic时获得满分（36分）
+  const maxPossibleScore = 6 * weights.epic; // 36分
+  
+  const percentage = Math.min((totalScore / maxPossibleScore) * 100, 100);
+  
+  let qualityTier: QualityTier;
+  let visualBoost: number;
+  
+  if (totalScore >= 20) {
+    qualityTier = 'epic';      // 56%以上 - 金色能量环
+    visualBoost = 20;           // 20%视觉加成
+  } else if (totalScore >= 12) {
+    qualityTier = 'rare';      // 33%-56% - 紫色能量环  
+    visualBoost = 10;           // 10%视觉加成
+  } else {
+    qualityTier = 'common';    // 低于33% - 灰色能量环
+    visualBoost = 0;            // 无视觉加成
+  }
+  
+  return {
+    rawScore: totalScore,
+    percentage,
+    qualityTier,
+    visualBoost
+  };
+}
+
 export function generateSparkPredictions(
   userContext: SparkPredictionContext,
   attendee: AttendeeData
