@@ -2,8 +2,8 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import GroupSummaryCard from "./GroupSummaryCard";
-import AttendeePreviewCard from "./AttendeePreviewCard";
-import { type AttendeeData } from "@/lib/attendeeAnalytics";
+import UserConnectionCard from "./UserConnectionCard";
+import { generateSparkPredictions, normalizeInterestName, type AttendeeData } from "@/lib/attendeeAnalytics";
 
 interface MeetYourTableProps {
   attendees: AttendeeData[];
@@ -65,6 +65,30 @@ export default function MeetYourTable({
     return null;
   }
 
+  const userContext = {
+    userInterests,
+    userEducationLevel,
+    userIndustry,
+    userAgeBand,
+    userRelationshipStatus,
+    userStudyLocale,
+    userSeniority,
+  };
+
+  const interestIcons: Record<string, string> = {
+    "电影娱乐": "🎬",
+    "旅行探索": "✈️",
+    "美食餐饮": "🍜",
+    "音乐演出": "🎵",
+    "阅读书籍": "📚",
+    "艺术文化": "🎨",
+    "运动健身": "⚽",
+    "健身健康": "💪",
+    "摄影": "📷",
+    "游戏": "🎮",
+    "科技": "💻",
+  };
+
   return (
     <div className="space-y-4" data-testid="section-meet-your-table">
       <div className="space-y-2">
@@ -106,19 +130,44 @@ export default function MeetYourTable({
           className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {attendees.map((attendee) => (
-            <AttendeePreviewCard
-              key={attendee.userId}
-              attendee={attendee}
-              userInterests={userInterests}
-              userEducationLevel={userEducationLevel}
-              userIndustry={userIndustry}
-              userAgeBand={userAgeBand}
-              userRelationshipStatus={userRelationshipStatus}
-              userStudyLocale={userStudyLocale}
-              userSeniority={userSeniority}
-            />
-          ))}
+          {attendees.map((attendee) => {
+            const sparkPredictions = generateSparkPredictions(userContext, attendee);
+            
+            const connectionTags = sparkPredictions.map((prediction) => {
+              let icon = "✨";
+              let type: "interest" | "background" | "experience" = "experience";
+              
+              if (prediction.includes("同城") || prediction.includes("同区")) {
+                icon = "📍";
+                type = "background";
+              } else if (prediction.includes("海归") || prediction.includes("学历")) {
+                icon = "🎓";
+                type = "background";
+              } else if (prediction.includes("创业") || prediction.includes("行业")) {
+                icon = "💼";
+                type = "experience";
+              } else if (attendee.topInterests) {
+                for (const interest of attendee.topInterests) {
+                  const normalizedInterest = normalizeInterestName(interest);
+                  if (prediction.includes(normalizedInterest)) {
+                    icon = interestIcons[normalizedInterest] || "🎯";
+                    type = "interest";
+                    break;
+                  }
+                }
+              }
+              
+              return { icon, label: prediction, type };
+            });
+
+            return (
+              <UserConnectionCard
+                key={attendee.userId}
+                attendee={attendee}
+                connectionTags={connectionTags}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
