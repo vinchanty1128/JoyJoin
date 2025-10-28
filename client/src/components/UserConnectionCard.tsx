@@ -100,15 +100,17 @@ export default function UserConnectionCard({
                   ))}
                 </div>
 
-                {connectionTags.length > 3 && (
+                {connectionTags.length > 0 && (
                   <motion.button
                     onClick={handleUnlock}
-                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1 py-2 rounded-md hover-elevate"
+                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1 py-2 rounded-md hover-elevate active-elevate-2 cursor-pointer"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     data-testid="button-unlock"
                   >
-                    <span className="font-medium">轻点探索更多默契</span>
+                    <span className="font-medium">
+                      {connectionTags.length > 3 ? "轻点探索更多默契" : "轻点解锁盲盒"}
+                    </span>
                     <ChevronDown className="w-3 h-3" />
                   </motion.button>
                 )}
