@@ -181,6 +181,30 @@ export default function MeetYourTable({
               } else if (predictionText.includes("单身") || predictionText.includes("Single") || predictionText.includes("有伴")) {
                 icon = "💑";
                 type = "background";
+              } else if (predictionText.includes("年龄段") || predictionText.includes("同龄")) {
+                icon = "🎂";
+                type = "background";
+              } else if (predictionText.includes("香港") || predictionText.includes("深圳") || predictionText.includes("北京") || predictionText.includes("上海") || predictionText.includes("老乡") || predictionText.includes("同乡")) {
+                icon = "📍";
+                type = "background";
+              } else if (predictionText.includes("探索") || predictionText.includes("发光") || predictionText.includes("智者") || predictionText.includes("讲故事") || predictionText.includes("稳定")) {
+                icon = "🎭";
+                type = "experience";
+              } else if (predictionText.includes("分享") || predictionText.includes("倾听")) {
+                icon = "💬";
+                type = "experience";
+              } else if (predictionText.includes("深度对话")) {
+                icon = "🧠";
+                type = "experience";
+              } else if (predictionText.includes("活力")) {
+                icon = "⚡";
+                type = "experience";
+              } else if (predictionText.includes("可靠")) {
+                icon = "🤝";
+                type = "experience";
+              } else if (predictionText.includes("科技圈") || predictionText.includes("金融圈") || predictionText.includes("艺术领域") || predictionText.includes("医疗行业") || predictionText.includes("教育行业")) {
+                icon = "🏢";
+                type = "experience";
               } else {
                 icon = "✨";
                 type = "experience";

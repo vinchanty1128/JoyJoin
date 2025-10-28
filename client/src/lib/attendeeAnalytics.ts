@@ -292,11 +292,83 @@ export function generateSparkPredictions(
     }
   }
   
-  // REMOVED: Industry-based and Age band predictions
-  // These are too obvious since they're already shown on the card front
+  // Priority 6: Age band matching (COMMON - life stage alignment)
+  if (userContext.userAgeBand && attendee.ageBand) {
+    if (userContext.userAgeBand === attendee.ageBand) {
+      predictions.push({ text: `同为${userContext.userAgeBand}年龄段`, rarity: 'common' });
+    }
+  }
   
-  // Return top 5-6 predictions to provide variety
-  return predictions.slice(0, 6);
+  // Priority 7: Hometown matching (COMMON/RARE - regional connection)
+  // Note: We don't have userHometown in context yet, so we'll skip for now
+  // This can be enabled once we add hometown to SparkPredictionContext
+  
+  // Priority 8: Archetype matching (COMMON - personality alignment)
+  if (attendee.archetype) {
+    const archetypeMatches: Record<string, { compatible: string[]; text: string; rarity: RarityLevel }> = {
+      "探索者": { 
+        compatible: ["探索者", "发光体"], 
+        text: "都喜欢探索新鲜事物",
+        rarity: 'common'
+      },
+      "讲故事的人": { 
+        compatible: ["讲故事的人", "智者"], 
+        text: "都擅长分享与倾听",
+        rarity: 'common'
+      },
+      "智者": { 
+        compatible: ["智者", "讲故事的人"], 
+        text: "都享受深度对话",
+        rarity: 'common'
+      },
+      "发光体": { 
+        compatible: ["发光体", "探索者"], 
+        text: "都是活力满满的人",
+        rarity: 'common'
+      },
+      "稳定器": { 
+        compatible: ["稳定器", "智者"], 
+        text: "都是可靠的伙伴",
+        rarity: 'common'
+      },
+    };
+    
+    // Check if archetypes are compatible
+    const userArchetype = Object.keys(archetypeMatches).find(key => 
+      archetypeMatches[key].compatible.includes(attendee.archetype!)
+    );
+    
+    if (userArchetype && archetypeMatches[userArchetype]) {
+      predictions.push({ 
+        text: archetypeMatches[userArchetype].text,
+        rarity: archetypeMatches[userArchetype].rarity
+      });
+    }
+  }
+  
+  // Priority 9: Industry matching (RARE - professional connection, but only if different from obvious info)
+  if (userContext.userIndustry && attendee.industry && 
+      userContext.userIndustry === attendee.industry &&
+      !attendee.industryVisible) { // Only if industry not visible on card front
+    
+    const industryNames: Record<string, { text: string; rarity: RarityLevel }> = {
+      "科技": { text: "都在科技圈", rarity: 'rare' },
+      "金融": { text: "都在金融圈", rarity: 'rare' },
+      "艺术": { text: "都在艺术领域", rarity: 'rare' },
+      "医疗": { text: "都在医疗行业", rarity: 'rare' },
+      "教育": { text: "都在教育行业", rarity: 'rare' },
+    };
+    
+    if (industryNames[userContext.userIndustry]) {
+      predictions.push({ 
+        text: industryNames[userContext.userIndustry].text,
+        rarity: industryNames[userContext.userIndustry].rarity
+      });
+    }
+  }
+  
+  // Return top 6-8 predictions to provide variety
+  return predictions.slice(0, 8);
 }
 
 export function calculateGroupInsights(attendees: AttendeeData[]): GroupInsight[] {
