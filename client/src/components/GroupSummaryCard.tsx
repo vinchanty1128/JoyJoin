@@ -1,22 +1,19 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import {
-  calculateCommonInterests,
   calculateArchetypeDistribution,
   calculateGroupInsights,
   archetypeDescriptions,
   type AttendeeData,
 } from "@/lib/attendeeAnalytics";
 import InteractiveArchetypeChart from "./InteractiveArchetypeChart";
-import InterestTagCloud from "./InterestTagCloud";
 
 interface GroupSummaryCardProps {
   attendees: AttendeeData[];
 }
 
 export default function GroupSummaryCard({ attendees }: GroupSummaryCardProps) {
-  const commonInterests = calculateCommonInterests(attendees);
   const archetypeDistribution = calculateArchetypeDistribution(attendees);
   const groupInsights = calculateGroupInsights(attendees);
 
@@ -50,21 +47,9 @@ export default function GroupSummaryCard({ attendees }: GroupSummaryCardProps) {
     };
   });
 
-  const commonInterestNames = commonInterests.map(item => item.interest);
-
   return (
     <Card className="mb-4 overflow-hidden" data-testid="card-group-summary">
       <CardContent className="p-4 space-y-6">
-        {commonInterestNames.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Target className="h-4 w-4 text-primary" />
-              <span>都喜欢</span>
-            </div>
-            <InterestTagCloud interests={commonInterestNames} />
-          </div>
-        )}
-
         {groupInsights.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium">
