@@ -69,20 +69,28 @@ export default function UserConnectionCard({
     >
       <div 
         className="relative h-[468px]"
-        style={{ perspective: "1000px" }}
+        style={{ perspective: "1200px" }}
       >
         <motion.div
           className="relative w-full h-full"
-          style={{ transformStyle: "preserve-3d" }}
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+          style={{ 
+            transformStyle: "preserve-3d",
+          }}
+          animate={{ 
+            rotateY: isFlipped ? 180 : 0,
+          }}
+          transition={{ 
+            duration: 0.7,
+            ease: [0.4, 0, 0.2, 1], // Custom cubic-bezier for smooth flip
+          }}
         >
           {/* Front Side - User Info */}
           <div
-            className="absolute w-full h-full"
+            className="absolute inset-0 w-full h-full"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(0deg)",
             }}
           >
             <Card className="h-full overflow-hidden border-2 hover-elevate transition-all">
@@ -185,7 +193,7 @@ export default function UserConnectionCard({
 
           {/* Back Side - Mystery Badges */}
           <div
-            className="absolute w-full h-full"
+            className="absolute inset-0 w-full h-full"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
