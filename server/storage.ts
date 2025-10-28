@@ -599,6 +599,7 @@ export class DatabaseStorage implements IStorage {
     const [event] = await db
       .update(blindBoxEvents)
       .set({
+        status: 'matched',
         matchedAttendees: matchData.matchedAttendees as any,
         matchExplanation: matchData.matchExplanation,
         updatedAt: new Date(),
