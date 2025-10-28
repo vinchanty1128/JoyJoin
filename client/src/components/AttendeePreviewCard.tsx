@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Briefcase, RotateCw } from "lucide-react";
+import { User, Briefcase, RotateCw, GraduationCap, MapPin } from "lucide-react";
 import {
   calculateCommonInterestsWithUser,
-  generatePersonalizedDescription,
+  archetypeDescriptions,
   type AttendeeData,
 } from "@/lib/attendeeAnalytics";
 
@@ -64,11 +64,18 @@ export default function AttendeePreviewCard({
     userInterests,
     attendee.topInterests || []
   );
-  const personalizedDescription = generatePersonalizedDescription(attendee);
+  const archetypeDescription = attendee.archetype 
+    ? archetypeDescriptions[attendee.archetype] || ""
+    : "";
 
-  const showContextLine =
-    (attendee.ageVisible && attendee.ageBand) ||
-    (attendee.industryVisible && attendee.industry);
+  const genderDisplay = attendee.gender === "Woman" ? "女" : 
+                       attendee.gender === "Man" ? "男" : 
+                       attendee.gender || "";
+  
+  const educationDisplay = attendee.educationLevel === "Bachelor's" ? "本科" :
+                          attendee.educationLevel === "Master's" ? "硕士" :
+                          attendee.educationLevel === "Doctorate" ? "博士" :
+                          attendee.educationLevel || "";
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -97,35 +104,43 @@ export default function AttendeePreviewCard({
             WebkitBackfaceVisibility: "hidden",
           }}
         >
-          <CardContent className="p-4 space-y-3 h-[240px] flex flex-col">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
-                <div
-                  className="font-semibold text-base"
-                  data-testid={`text-attendee-name-${attendee.userId}`}
-                >
-                  {attendee.displayName}
-                </div>
-                {attendee.archetype && (
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <span className="text-base">{archetypeIcon}</span>
-                    <span
-                      className="text-muted-foreground"
-                      data-testid={`text-attendee-archetype-${attendee.userId}`}
-                    >
-                      {attendee.archetype}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <RotateCw className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <CardContent className="p-4 space-y-3 h-[240px] flex flex-col items-center justify-center text-center">
+            <div className="absolute top-3 right-3">
+              <RotateCw className="h-4 w-4 text-muted-foreground" />
             </div>
 
-            <div className="flex-1" />
+            {attendee.archetype && (
+              <div className="text-6xl mb-2">{archetypeIcon}</div>
+            )}
+
+            <div className="space-y-2">
+              <div
+                className="font-semibold text-lg"
+                data-testid={`text-attendee-name-${attendee.userId}`}
+              >
+                {attendee.displayName}
+              </div>
+              
+              {attendee.archetype && (
+                <div className="space-y-1">
+                  <div
+                    className="text-sm font-medium text-primary"
+                    data-testid={`text-attendee-archetype-${attendee.userId}`}
+                  >
+                    {attendee.archetype}
+                  </div>
+                  {archetypeDescription && (
+                    <div className="text-xs text-muted-foreground px-2">
+                      {archetypeDescription}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {commonInterestsCount > 0 && (
               <div
-                className="flex items-center gap-1 text-xs text-muted-foreground"
+                className="flex items-center gap-1 text-xs text-muted-foreground mt-auto"
                 data-testid={`text-common-interests-${attendee.userId}`}
               >
                 <span>与你有{commonInterestsCount}个共同点</span>
@@ -156,34 +171,51 @@ export default function AttendeePreviewCard({
             transform: "rotateY(180deg)",
           }}
         >
-          <CardContent className="p-4 space-y-3 h-[240px]">
+          <CardContent className="p-4 space-y-3 h-[240px] flex flex-col">
             <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
-                <div className="font-semibold text-base">
-                  {attendee.displayName}
-                </div>
-                {showContextLine && (
-                  <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
-                    {attendee.ageVisible && attendee.ageBand && (
-                      <>
-                        <User className="h-3 w-3" />
-                        <span>{attendee.ageBand}</span>
-                      </>
-                    )}
-                    {attendee.ageVisible &&
-                      attendee.ageBand &&
-                      attendee.industryVisible &&
-                      attendee.industry && <span>•</span>}
-                    {attendee.industryVisible && attendee.industry && (
-                      <>
-                        <Briefcase className="h-3 w-3" />
-                        <span>{attendee.industry}</span>
-                      </>
-                    )}
+              <div className="font-semibold text-base">
+                {attendee.displayName}
+              </div>
+              <RotateCw className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
+                {genderDisplay && (
+                  <div className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    <span>{genderDisplay}</span>
+                  </div>
+                )}
+                {attendee.age && (
+                  <span>{attendee.age}岁</span>
+                )}
+                {!attendee.age && attendee.ageVisible && attendee.ageBand && (
+                  <span>{attendee.ageBand}</span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
+                {attendee.educationVisible !== false && educationDisplay && (
+                  <div className="flex items-center gap-1">
+                    <GraduationCap className="h-3 w-3" />
+                    <span>{educationDisplay}</span>
+                  </div>
+                )}
+                {attendee.industryVisible && attendee.industry && (
+                  <div className="flex items-center gap-1">
+                    <Briefcase className="h-3 w-3" />
+                    <span>{attendee.industry}</span>
                   </div>
                 )}
               </div>
-              <RotateCw className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+
+              {attendee.hometown && (
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <MapPin className="h-3 w-3" />
+                  <span>{attendee.hometown}</span>
+                </div>
+              )}
             </div>
 
             {attendee.archetype && (
@@ -209,10 +241,6 @@ export default function AttendeePreviewCard({
                 ))}
               </div>
             )}
-
-            <div className="text-xs text-muted-foreground italic">
-              "{personalizedDescription}"
-            </div>
           </CardContent>
         </Card>
       </div>

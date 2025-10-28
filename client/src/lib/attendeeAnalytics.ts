@@ -4,9 +4,14 @@ export interface AttendeeData {
   archetype?: string;
   topInterests?: string[];
   ageBand?: string;
+  age?: number;
   industry?: string;
   ageVisible?: boolean;
   industryVisible?: boolean;
+  gender?: string;
+  educationLevel?: string;
+  hometown?: string;
+  educationVisible?: boolean;
 }
 
 export interface CommonInterest {
@@ -80,6 +85,19 @@ export function calculateCommonInterestsWithUser(
   
   return commonCount;
 }
+
+export const archetypeDescriptions: Record<string, string> = {
+  "探索者": "好奇心驱动，热衷于尝试新事物和新体验",
+  "讲故事的人": "善于表达，喜欢分享经历和倾听他人",
+  "智者": "深思熟虑，享受深度对话和知识交流",
+  "发光体": "活力四射，能点燃团队氛围的正能量担当",
+  "稳定器": "可靠稳重，为朋友提供情感支持和安全感",
+  "The Explorer": "Curiosity-driven, loves trying new things",
+  "The Storyteller": "Great at sharing experiences and listening",
+  "The Sage": "Thoughtful, enjoys deep conversations",
+  "The Radiator": "Energetic, lights up any gathering",
+  "The Anchor": "Reliable, provides emotional support",
+};
 
 export function generatePersonalizedDescription(
   attendee: AttendeeData
