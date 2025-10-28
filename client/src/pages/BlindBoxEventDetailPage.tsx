@@ -142,7 +142,7 @@ export default function BlindBoxEventDetailPage() {
         </Card>
 
         {/* 地点信息 (仅已匹配显示) */}
-        {event.status === "matched" && event.restaurantName && (
+        {event.status === "matched" && event.restaurantName ? (
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">地点信息</CardTitle>
@@ -170,7 +170,7 @@ export default function BlindBoxEventDetailPage() {
               </Button>
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
         {/* 预算与菜式 */}
         <Card>
