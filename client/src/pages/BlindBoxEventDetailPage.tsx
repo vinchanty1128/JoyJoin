@@ -212,13 +212,13 @@ export default function BlindBoxEventDetailPage() {
               industryVisible?: boolean;
             }>}
             matchExplanation={event.matchExplanation || undefined}
-            userInterests={(user?.interestsRankedTop3 as string[] | undefined) || []}
-            userEducationLevel={user?.educationLevel || undefined}
-            userIndustry={user?.industry || undefined}
-            userAgeBand={user?.ageBand || undefined}
-            userRelationshipStatus={user?.relationshipStatus || undefined}
-            userStudyLocale={user?.studyLocale || undefined}
-            userSeniority={user?.seniority || undefined}
+            userInterests={(user?.interestsRankedTop3 as string[] | undefined) || ["film_entertainment", "travel_exploration"]}
+            userEducationLevel={user?.educationLevel || "Master's"}
+            userIndustry={user?.industry || "科技"}
+            userAgeBand={user?.ageBand || "28-34"}
+            userRelationshipStatus={user?.relationshipStatus || "Single"}
+            userStudyLocale={user?.studyLocale || "Overseas"}
+            userSeniority={user?.seniority || "Mid"}
           />
         )}
 

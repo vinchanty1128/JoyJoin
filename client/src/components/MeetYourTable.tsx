@@ -132,29 +132,60 @@ export default function MeetYourTable({
         >
           {attendees.map((attendee) => {
             const sparkPredictions = generateSparkPredictions(userContext, attendee);
+            console.log('[MeetYourTable] User context:', userContext);
+            console.log('[MeetYourTable] Attendee:', attendee.displayName, attendee);
+            console.log('[MeetYourTable] Spark predictions:', sparkPredictions);
             
             const connectionTags = sparkPredictions.map((prediction) => {
               let icon = "✨";
               let type: "interest" | "background" | "experience" = "experience";
               
-              if (prediction.includes("同城") || prediction.includes("同区")) {
-                icon = "📍";
+              // Determine icon based on prediction type
+              if (prediction.includes("共同影迷") || prediction.includes("Movie") || prediction.includes("电影")) {
+                icon = "🎬";
+                type = "interest";
+              } else if (prediction.includes("旅行") || prediction.includes("Travel")) {
+                icon = "✈️";
+                type = "interest";
+              } else if (prediction.includes("美食") || prediction.includes("Food") || prediction.includes("Foodie")) {
+                icon = "🍜";
+                type = "interest";
+              } else if (prediction.includes("音乐") || prediction.includes("Music")) {
+                icon = "🎵";
+                type = "interest";
+              } else if (prediction.includes("书友") || prediction.includes("阅读") || prediction.includes("Book")) {
+                icon = "📚";
+                type = "interest";
+              } else if (prediction.includes("摄影") || prediction.includes("Photo")) {
+                icon = "📷";
+                type = "interest";
+              } else if (prediction.includes("健身") || prediction.includes("运动") || prediction.includes("Fitness") || prediction.includes("Gym")) {
+                icon = "💪";
+                type = "interest";
+              } else if (prediction.includes("户外") || prediction.includes("Outdoor")) {
+                icon = "🏕️";
+                type = "interest";
+              } else if (prediction.includes("咖啡") || prediction.includes("Coffee") || prediction.includes("茶")) {
+                icon = "☕";
+                type = "interest";
+              } else if (prediction.includes("海外") || prediction.includes("留学") || prediction.includes("国际化")) {
+                icon = "🌍";
                 type = "background";
-              } else if (prediction.includes("海归") || prediction.includes("学历")) {
+              } else if (prediction.includes("学历") || prediction.includes("博士") || prediction.includes("硕士")) {
                 icon = "🎓";
                 type = "background";
-              } else if (prediction.includes("创业") || prediction.includes("行业")) {
+              } else if (prediction.includes("创业") || prediction.includes("Founder")) {
+                icon = "🚀";
+                type = "experience";
+              } else if (prediction.includes("职场") || prediction.includes("Senior") || prediction.includes("资深")) {
                 icon = "💼";
                 type = "experience";
-              } else if (attendee.topInterests) {
-                for (const interest of attendee.topInterests) {
-                  const normalizedInterest = normalizeInterestName(interest);
-                  if (prediction.includes(normalizedInterest)) {
-                    icon = interestIcons[normalizedInterest] || "🎯";
-                    type = "interest";
-                    break;
-                  }
-                }
+              } else if (prediction.includes("单身") || prediction.includes("Single") || prediction.includes("有伴")) {
+                icon = "💑";
+                type = "background";
+              } else {
+                icon = "✨";
+                type = "experience";
               }
               
               return { icon, label: prediction, type };
