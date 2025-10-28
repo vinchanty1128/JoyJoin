@@ -136,48 +136,49 @@ export default function MeetYourTable({
             const connectionTags = sparkPredictions.map((prediction) => {
               let icon = "✨";
               let type: "interest" | "background" | "experience" = "experience";
+              const predictionText = prediction.text;
               
               // Determine icon based on prediction type
-              if (prediction.includes("共同影迷") || prediction.includes("Movie") || prediction.includes("电影")) {
+              if (predictionText.includes("共同影迷") || predictionText.includes("Movie") || predictionText.includes("电影")) {
                 icon = "🎬";
                 type = "interest";
-              } else if (prediction.includes("旅行") || prediction.includes("Travel")) {
+              } else if (predictionText.includes("旅行") || predictionText.includes("Travel")) {
                 icon = "✈️";
                 type = "interest";
-              } else if (prediction.includes("美食") || prediction.includes("Food") || prediction.includes("Foodie")) {
+              } else if (predictionText.includes("美食") || predictionText.includes("Food") || predictionText.includes("Foodie")) {
                 icon = "🍜";
                 type = "interest";
-              } else if (prediction.includes("音乐") || prediction.includes("Music")) {
+              } else if (predictionText.includes("音乐") || predictionText.includes("Music")) {
                 icon = "🎵";
                 type = "interest";
-              } else if (prediction.includes("书友") || prediction.includes("阅读") || prediction.includes("Book")) {
+              } else if (predictionText.includes("书友") || predictionText.includes("阅读") || predictionText.includes("Book")) {
                 icon = "📚";
                 type = "interest";
-              } else if (prediction.includes("摄影") || prediction.includes("Photo")) {
+              } else if (predictionText.includes("摄影") || predictionText.includes("Photo")) {
                 icon = "📷";
                 type = "interest";
-              } else if (prediction.includes("健身") || prediction.includes("运动") || prediction.includes("Fitness") || prediction.includes("Gym")) {
+              } else if (predictionText.includes("健身") || predictionText.includes("运动") || predictionText.includes("Fitness") || predictionText.includes("Gym")) {
                 icon = "💪";
                 type = "interest";
-              } else if (prediction.includes("户外") || prediction.includes("Outdoor")) {
+              } else if (predictionText.includes("户外") || predictionText.includes("Outdoor")) {
                 icon = "🏕️";
                 type = "interest";
-              } else if (prediction.includes("咖啡") || prediction.includes("Coffee") || prediction.includes("茶")) {
+              } else if (predictionText.includes("咖啡") || predictionText.includes("Coffee") || predictionText.includes("茶")) {
                 icon = "☕";
                 type = "interest";
-              } else if (prediction.includes("海外") || prediction.includes("留学") || prediction.includes("国际化")) {
+              } else if (predictionText.includes("海外") || predictionText.includes("留学") || predictionText.includes("国际化")) {
                 icon = "🌍";
                 type = "background";
-              } else if (prediction.includes("学历") || prediction.includes("博士") || prediction.includes("硕士")) {
+              } else if (predictionText.includes("学历") || predictionText.includes("博士") || predictionText.includes("硕士")) {
                 icon = "🎓";
                 type = "background";
-              } else if (prediction.includes("创业") || prediction.includes("Founder")) {
+              } else if (predictionText.includes("创业") || predictionText.includes("Founder")) {
                 icon = "🚀";
                 type = "experience";
-              } else if (prediction.includes("职场") || prediction.includes("Senior") || prediction.includes("资深")) {
+              } else if (predictionText.includes("职场") || predictionText.includes("Senior") || predictionText.includes("资深")) {
                 icon = "💼";
                 type = "experience";
-              } else if (prediction.includes("单身") || prediction.includes("Single") || prediction.includes("有伴")) {
+              } else if (predictionText.includes("单身") || predictionText.includes("Single") || predictionText.includes("有伴")) {
                 icon = "💑";
                 type = "background";
               } else {
@@ -185,7 +186,7 @@ export default function MeetYourTable({
                 type = "experience";
               }
               
-              return { icon, label: prediction, type };
+              return { icon, label: predictionText, type, rarity: prediction.rarity };
             });
 
             return (

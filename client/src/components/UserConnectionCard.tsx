@@ -10,6 +10,7 @@ interface ConnectionTag {
   icon: string;
   label: string;
   type: "interest" | "background" | "experience";
+  rarity: "common" | "rare" | "epic";
 }
 
 interface UserConnectionCardProps {
@@ -204,6 +205,7 @@ export default function UserConnectionCard({
                         icon={badge.icon}
                         label={badge.label}
                         type={badge.type}
+                        rarity={badge.rarity}
                         isRevealed={revealedBadges.has(idx)}
                         onReveal={() => handleBadgeReveal(idx)}
                         delay={idx * 0.1}

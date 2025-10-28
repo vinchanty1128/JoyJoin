@@ -206,11 +206,18 @@ export interface SparkPredictionContext {
   userSeniority?: string;
 }
 
+export type RarityLevel = 'common' | 'rare' | 'epic';
+
+export interface SparkPrediction {
+  text: string;
+  rarity: RarityLevel;
+}
+
 export function generateSparkPredictions(
   userContext: SparkPredictionContext,
   attendee: AttendeeData
-): string[] {
-  const predictions: string[] = [];
+): SparkPrediction[] {
+  const predictions: SparkPrediction[] = [];
   
   // Priority 1: Interest-based predictions (most interesting and hidden)
   if (userContext.userInterests && attendee.topInterests) {
@@ -219,66 +226,68 @@ export function generateSparkPredictions(
       userSet.has(interest)
     );
     
+    // Interests are COMMON - many people share common interests
     const interestPredictions = commonInterests
       .map((interest) => sparkPredictions[interest])
       .filter((prediction): prediction is string => !!prediction)
-      .slice(0, 3); // Allow up to 3 interest matches
+      .slice(0, 3)
+      .map(text => ({ text, rarity: 'common' as RarityLevel }));
     
     predictions.push(...interestPredictions);
   }
   
-  // Priority 2: Study locale - Overseas experience (interesting hidden info)
+  // Priority 2: Study locale - Overseas experience (RARE - hidden info)
   if (userContext.userStudyLocale === "Overseas" && attendee.studyLocale === "Overseas") {
-    predictions.push("都有海外留学经历");
+    predictions.push({ text: "都有海外留学经历", rarity: 'rare' });
   } else if (userContext.userStudyLocale === "Both" && attendee.studyLocale === "Both") {
-    predictions.push("都有海外+国内学习经历");
+    predictions.push({ text: "都有海外+国内学习经历", rarity: 'epic' }); // Very rare combination
   } else if (userContext.userStudyLocale && attendee.studyLocale && 
              userContext.userStudyLocale !== attendee.studyLocale) {
     // Different study backgrounds can also be interesting
     if ((userContext.userStudyLocale === "Overseas" && attendee.studyLocale === "Both") ||
         (userContext.userStudyLocale === "Both" && attendee.studyLocale === "Overseas")) {
-      predictions.push("都有国际化视野");
+      predictions.push({ text: "都有国际化视野", rarity: 'rare' });
     }
   }
   
-  // Priority 3: Seniority-based predictions (career stage - not obvious from basic info)
+  // Priority 3: Seniority-based predictions (RARE - career stage not obvious)
   if (userContext.userSeniority && attendee.seniority) {
     if (userContext.userSeniority === "Founder" && attendee.seniority === "Founder") {
-      predictions.push("同为创业者");
+      predictions.push({ text: "同为创业者", rarity: 'epic' }); // Founders are rare
     } else if (
       (userContext.userSeniority === "Senior" || userContext.userSeniority === "Executive") &&
       (attendee.seniority === "Senior" || attendee.seniority === "Executive")
     ) {
-      predictions.push("都是职场老司机");
+      predictions.push({ text: "都是职场老司机", rarity: 'rare' });
     } else if (
       userContext.userSeniority === "Junior" && attendee.seniority === "Junior"
     ) {
-      predictions.push("都是职场新人");
+      predictions.push({ text: "都是职场新人", rarity: 'common' });
     } else if (
       userContext.userSeniority === "Mid" && attendee.seniority === "Mid"
     ) {
-      predictions.push("职场中坚力量");
+      predictions.push({ text: "职场中坚力量", rarity: 'common' });
     }
   }
   
-  // Priority 4: Relationship status (hidden personal info)
+  // Priority 4: Relationship status (COMMON - hidden but common)
   if (userContext.userRelationshipStatus && attendee.relationshipStatus) {
     if (userContext.userRelationshipStatus === "Married/Partnered" && 
         attendee.relationshipStatus === "Married/Partnered") {
-      predictions.push("同为有伴一族");
+      predictions.push({ text: "同为有伴一族", rarity: 'common' });
     } else if (userContext.userRelationshipStatus === "Single" && 
                attendee.relationshipStatus === "Single") {
-      predictions.push("同为单身贵族");
+      predictions.push({ text: "同为单身贵族", rarity: 'common' });
     }
   }
   
-  // Priority 5: Education level (only if advanced degree - more interesting)
+  // Priority 5: Education level (RARE/EPIC - advanced degrees)
   if (userContext.userEducationLevel && attendee.educationLevel) {
     if (userContext.userEducationLevel === attendee.educationLevel) {
       if (userContext.userEducationLevel === "Doctorate") {
-        predictions.push("同为博士学历");
+        predictions.push({ text: "同为博士学历", rarity: 'epic' }); // PhDs are rare
       } else if (userContext.userEducationLevel === "Master's") {
-        predictions.push("同为硕士学历");
+        predictions.push({ text: "同为硕士学历", rarity: 'rare' });
       }
     }
   }
