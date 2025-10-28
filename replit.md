@@ -8,6 +8,12 @@ This social networking platform connects people through small, curated micro-eve
 
 ### October 28, 2025 - Events Page Navigation & Attendee Card Enhancements
 
+#### Connection Points Count Fix (Critical Bug Fix)
+- **Problem**: Card front displayed "与你有X个共同点" where X only counted interest overlaps, but card back showed multi-dimensional connection points (interests + education + industry + age + relationship status + overseas experience + seniority)
+- **Solution**: Changed to use `sparkPredictions.length` for accurate count
+- **Text Improvement**: Changed "共同点" to "契合点" for consistency with card back's "我们之间的契合点"
+- **Impact**: Card front number now matches the actual count of connection badges on card back
+
 #### Events Page Segmented Control
 - **New Navigation UI:** Added large segmented control (tabs) at the top of Events page for easy state filtering
 - **Three Clear Categories:**

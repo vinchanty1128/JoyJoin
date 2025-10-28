@@ -74,10 +74,6 @@ export default function AttendeePreviewCard({
     : "✨";
 
   const topInterests = (attendee.topInterests || []).slice(0, 3);
-  const commonInterestsCount = calculateCommonInterestsWithUser(
-    userInterests,
-    attendee.topInterests || []
-  );
   const archetypeDescription = attendee.archetype 
     ? archetypeDescriptions[attendee.archetype] || ""
     : "";
@@ -94,6 +90,8 @@ export default function AttendeePreviewCard({
     },
     attendee
   );
+
+  const connectionPointsCount = sparkPredictions.length;
 
   const genderDisplay = attendee.gender === "Woman" ? "女" : 
                        attendee.gender === "Man" ? "男" : 
@@ -165,18 +163,18 @@ export default function AttendeePreviewCard({
               )}
             </div>
 
-            {commonInterestsCount > 0 && (
+            {connectionPointsCount > 0 && (
               <div
                 className="flex items-center gap-1 text-sm text-muted-foreground mt-auto"
                 data-testid={`text-common-interests-${attendee.userId}`}
               >
-                <span>与你有{commonInterestsCount}个共同点</span>
+                <span>与你有{connectionPointsCount}个契合点</span>
                 <div className="flex gap-0.5 ml-1">
                   {[...Array(3)].map((_, idx) => (
                     <div
                       key={idx}
                       className={`w-1.5 h-1.5 rounded-full ${
-                        idx < commonInterestsCount
+                        idx < connectionPointsCount
                           ? "bg-primary"
                           : "bg-muted-foreground/30"
                       }`}
