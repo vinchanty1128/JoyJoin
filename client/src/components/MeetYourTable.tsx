@@ -1,7 +1,6 @@
-import AttendeePreviewCard from "./AttendeePreviewCard";
 import GroupSummaryCard from "./GroupSummaryCard";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import type { AttendeeData } from "@/lib/attendeeAnalytics";
+import StackedAttendeeCards from "./StackedAttendeeCards";
+import { generateSparkPredictions, type AttendeeData } from "@/lib/attendeeAnalytics";
 
 interface MeetYourTableProps {
   attendees: AttendeeData[];
@@ -28,6 +27,26 @@ export default function MeetYourTable({
     return null;
   }
 
+  const userContext = {
+    userInterests,
+    userEducationLevel,
+    userIndustry,
+    userAgeBand,
+    userRelationshipStatus,
+    userStudyLocale,
+    userSeniority,
+  };
+
+  const connectionPoints: Record<string, Array<{ label: string; type: string }>> = {};
+  
+  attendees.forEach((attendee) => {
+    const predictions = generateSparkPredictions(userContext, attendee);
+    connectionPoints[attendee.userId] = predictions.map(label => ({
+      label,
+      type: 'connection'
+    }));
+  });
+
   return (
     <div className="space-y-4" data-testid="section-meet-your-table">
       <div className="space-y-2">
@@ -39,24 +58,12 @@ export default function MeetYourTable({
 
       <GroupSummaryCard attendees={attendees} />
 
-      <ScrollArea className="w-full">
-        <div className="flex gap-3 pb-2">
-          {attendees.map((attendee) => (
-            <AttendeePreviewCard
-              key={attendee.userId}
-              attendee={attendee}
-              userInterests={userInterests}
-              userEducationLevel={userEducationLevel}
-              userIndustry={userIndustry}
-              userAgeBand={userAgeBand}
-              userRelationshipStatus={userRelationshipStatus}
-              userStudyLocale={userStudyLocale}
-              userSeniority={userSeniority}
-            />
-          ))}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      <div className="py-4">
+        <StackedAttendeeCards 
+          attendees={attendees} 
+          connectionPoints={connectionPoints}
+        />
+      </div>
     </div>
   );
 }
