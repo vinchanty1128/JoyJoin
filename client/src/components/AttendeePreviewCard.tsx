@@ -76,12 +76,12 @@ export default function AttendeePreviewCard({
 
   return (
     <div
-      className="min-w-[180px] w-[180px] flex-shrink-0 perspective-1000"
+      className="min-w-[180px] w-[180px] flex-shrink-0"
       style={{ perspective: "1000px" }}
       data-testid={`card-attendee-${attendee.userId}`}
     >
       <div
-        className="relative w-full h-full"
+        className="relative w-full h-[240px]"
         style={{
           transformStyle: "preserve-3d",
           transition: "transform 0.5s",
