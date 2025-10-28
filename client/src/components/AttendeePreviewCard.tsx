@@ -6,6 +6,7 @@ import {
   calculateCommonInterestsWithUser,
   archetypeDescriptions,
   generateSparkPredictions,
+  normalizeInterestName,
   type AttendeeData,
 } from "@/lib/attendeeAnalytics";
 
@@ -114,7 +115,7 @@ export default function AttendeePreviewCard({
       data-testid={`card-attendee-${attendee.userId}`}
     >
       <div
-        className="relative w-full h-[280px]"
+        className="relative w-full h-[320px]"
         style={{
           transformStyle: "preserve-3d",
           transition: "transform 0.5s",
@@ -130,7 +131,7 @@ export default function AttendeePreviewCard({
             WebkitBackfaceVisibility: "hidden",
           }}
         >
-          <CardContent className="p-3 space-y-2 h-[280px] flex flex-col items-center justify-center text-center">
+          <CardContent className="p-3 space-y-2 h-[320px] flex flex-col items-center justify-center text-center">
             <div className="absolute top-2 right-2">
               <RotateCw className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -163,21 +164,6 @@ export default function AttendeePreviewCard({
                 </div>
               )}
             </div>
-
-            {sparkPredictions.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 justify-center">
-                {sparkPredictions.map((prediction, idx) => (
-                  <Badge
-                    key={idx}
-                    variant="secondary"
-                    className="text-xs no-default-active-elevate bg-primary/10 text-primary border-primary/20"
-                    data-testid={`badge-spark-${attendee.userId}-${idx}`}
-                  >
-                    ✨ {prediction}
-                  </Badge>
-                ))}
-              </div>
-            )}
 
             {commonInterestsCount > 0 && (
               <div
@@ -212,7 +198,7 @@ export default function AttendeePreviewCard({
             transform: "rotateY(180deg)",
           }}
         >
-          <CardContent className="p-3 space-y-2 h-[280px] flex flex-col">
+          <CardContent className="p-3 space-y-2 h-[320px] flex flex-col">
             <div className="flex items-start justify-between">
               <div className="font-semibold text-lg">
                 {attendee.displayName}
@@ -259,18 +245,36 @@ export default function AttendeePreviewCard({
               )}
             </div>
 
-            {topInterests.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-auto">
-                {topInterests.map((interest, idx) => (
+            {sparkPredictions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {sparkPredictions.map((prediction, idx) => (
                   <Badge
                     key={idx}
                     variant="secondary"
-                    className="text-sm gap-1 no-default-active-elevate"
+                    className="text-xs no-default-active-elevate bg-primary/10 text-primary border-primary/20"
+                    data-testid={`badge-spark-back-${attendee.userId}-${idx}`}
                   >
-                    <span>{interestIcons[interest] || "·"}</span>
-                    <span>{interest}</span>
+                    ✨ {prediction}
                   </Badge>
                 ))}
+              </div>
+            )}
+
+            {topInterests.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-auto">
+                {topInterests.map((interest, idx) => {
+                  const normalizedInterest = normalizeInterestName(interest);
+                  return (
+                    <Badge
+                      key={idx}
+                      variant="secondary"
+                      className="text-sm gap-1 no-default-active-elevate"
+                    >
+                      <span>{interestIcons[normalizedInterest] || interestIcons[interest] || "·"}</span>
+                      <span>{normalizedInterest}</span>
+                    </Badge>
+                  );
+                })}
               </div>
             )}
           </CardContent>
