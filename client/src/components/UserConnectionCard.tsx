@@ -61,7 +61,7 @@ export default function UserConnectionCard({
       data-testid={`connection-card-${attendee.userId}`}
     >
       <div 
-        className="relative h-[360px]"
+        className="relative h-[468px]"
         style={{ perspective: "1000px" }}
       >
         <motion.div
