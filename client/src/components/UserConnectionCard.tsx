@@ -56,8 +56,8 @@ export default function UserConnectionCard({
       className="min-w-[200px] w-[200px] flex-shrink-0"
       data-testid={`connection-card-${attendee.userId}`}
     >
-      <Card className="overflow-hidden border-2 hover-elevate transition-all">
-        <CardContent className="p-4 space-y-3">
+      <Card className="h-full overflow-hidden border-2 hover-elevate transition-all">
+        <CardContent className="p-4 space-y-3 h-full flex flex-col">
           {/* Energy Ring with Archetype */}
           <div className="flex justify-center">
             <EnergyRing strength={connectionStrength} maxStrength={8} size={120}>
@@ -84,7 +84,7 @@ export default function UserConnectionCard({
                 key="quick-tags"
                 initial={{ opacity: 1 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="space-y-3"
+                className="space-y-3 flex-1 flex flex-col justify-end"
               >
                 <div className="flex flex-wrap gap-1.5 justify-center">
                   {quickTags.map((tag, idx) => (
@@ -120,7 +120,7 @@ export default function UserConnectionCard({
                 key="mystery-badges"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
+                className="space-y-3 flex-1 flex flex-col justify-center"
               >
                 <div className="flex flex-wrap gap-2 justify-center">
                   {mysteryBadges.map((badge, idx) => (
