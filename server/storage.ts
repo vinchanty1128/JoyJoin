@@ -64,6 +64,10 @@ export interface IStorage {
     selectedCuisines?: string[];
   }): Promise<BlindBoxEvent>;
   cancelBlindBoxEvent(eventId: string, userId: string): Promise<BlindBoxEvent>;
+  setBlindBoxEventMatchData(eventId: string, userId: string, matchData: {
+    matchedAttendees: any[];
+    matchExplanation?: string;
+  }): Promise<BlindBoxEvent>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -578,6 +582,36 @@ export class DatabaseStorage implements IStorage {
     
     if (!event) {
       throw new Error('Event not found or cannot be canceled');
+    }
+    
+    return event;
+  }
+
+  async setBlindBoxEventMatchData(
+    eventId: string,
+    userId: string,
+    matchData: {
+      matchedAttendees: any[];
+      matchExplanation?: string;
+    }
+  ): Promise<BlindBoxEvent> {
+    const [event] = await db
+      .update(blindBoxEvents)
+      .set({
+        matchedAttendees: matchData.matchedAttendees as any,
+        matchExplanation: matchData.matchExplanation,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(blindBoxEvents.id, eventId),
+          eq(blindBoxEvents.userId, userId)
+        )
+      )
+      .returning();
+    
+    if (!event) {
+      throw new Error('Event not found');
     }
     
     return event;

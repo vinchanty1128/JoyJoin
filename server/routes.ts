@@ -523,6 +523,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo endpoint to set match data for testing
+  app.post('/api/blind-box-events/:eventId/set-demo-match', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { eventId } = req.params;
+      
+      // Demo matched attendees data
+      const demoMatchedAttendees = [
+        {
+          userId: "demo1",
+          displayName: "Alex",
+          archetype: "探索者",
+          topInterests: ["电影", "旅行"],
+          ageBand: "28-34",
+          industry: "科技",
+          ageVisible: true,
+          industryVisible: true
+        },
+        {
+          userId: "demo2",
+          displayName: "小明",
+          archetype: "讲故事的人",
+          topInterests: ["美食", "音乐"],
+          ageBand: "25-29",
+          industry: "艺术",
+          ageVisible: true,
+          industryVisible: false
+        },
+        {
+          userId: "demo3",
+          displayName: "Sarah",
+          archetype: "智者",
+          topInterests: ["阅读", "电影"],
+          ageBand: "30-35",
+          industry: "金融",
+          ageVisible: false,
+          industryVisible: true
+        },
+        {
+          userId: "demo4",
+          displayName: "李华",
+          archetype: "发光体",
+          topInterests: ["健身", "旅行"],
+          ageBand: "26-30",
+          industry: "医疗",
+          ageVisible: true,
+          industryVisible: true
+        }
+      ];
+      
+      const demoExplanation = "这桌聚集了对电影、旅行充满热情的朋友。我们平衡了探索者的好奇探索与讲故事的人的生动叙事，确保对话既热烈又有深度。";
+      
+      const event = await storage.setBlindBoxEventMatchData(eventId, userId, {
+        matchedAttendees: demoMatchedAttendees,
+        matchExplanation: demoExplanation
+      });
+      
+      res.json(event);
+    } catch (error) {
+      console.error("Error setting demo match data:", error);
+      res.status(500).json({ message: "Failed to set demo match data" });
+    }
+  });
+
   // Icebreaker routes - Multi-layered questions for deeper connection
   const icebreakerQuestions = {
     // Layer 1: Simple & Lighthearted - Easy entry points
