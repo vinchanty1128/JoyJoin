@@ -6,9 +6,10 @@ import { Sparkles, Gift, Star, Target } from "lucide-react";
 
 interface FeedbackCompletionProps {
   onDone: () => void;
+  onDeepFeedback?: () => void;
 }
 
-export default function FeedbackCompletion({ onDone }: FeedbackCompletionProps) {
+export default function FeedbackCompletion({ onDone, onDeepFeedback }: FeedbackCompletionProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
@@ -133,19 +134,69 @@ export default function FeedbackCompletion({ onDone }: FeedbackCompletionProps) 
               </ul>
             </motion.div>
 
+            {/* Deep Feedback Invitation */}
+            {onDeepFeedback && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="p-6 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 space-y-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-3xl">💫</div>
+                  <div className="flex-1 space-y-2">
+                    <h3 className="font-semibold text-lg">帮助我们让匹配更精准</h3>
+                    <p className="text-sm text-muted-foreground italic">
+                      可选 · 约3分钟 · 匿名处理
+                    </p>
+                    <div className="text-sm space-y-1">
+                      <p className="text-muted-foreground">你的深度见解将直接帮助我们：</p>
+                      <ul className="space-y-1 ml-2">
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span className="text-muted-foreground">校准契合点系统的准确性</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span className="text-muted-foreground">理解真实社交中的连接逻辑</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span className="text-muted-foreground">为未来用户创造更好的体验</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button
+                    onClick={onDeepFeedback}
+                    variant="default"
+                    className="flex-1"
+                    data-testid="button-deep-feedback"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    参与深度反馈，共建更好体验
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
             {/* Action Button */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
+              transition={{ delay: onDeepFeedback ? 0.8 : 0.7 }}
             >
               <Button 
                 onClick={onDone} 
                 size="lg" 
+                variant={onDeepFeedback ? "outline" : "default"}
                 className="w-full"
                 data-testid="button-done"
               >
-                返回活动列表
+                {onDeepFeedback ? "暂时不用，谢谢" : "返回活动列表"}
               </Button>
             </motion.div>
 

@@ -191,6 +191,24 @@ export const eventFeedback = pgTable("event_feedback", {
   rewardsClaimed: boolean("rewards_claimed").default(false),
   rewardPoints: integer("reward_points").default(50), // Points earned for completing feedback
   
+  // Deep Feedback (Optional) - User Co-creation Module
+  hasDeepFeedback: boolean("has_deep_feedback").default(false),
+  
+  // Module 1: Match Point Validation
+  matchPointValidation: jsonb("match_point_validation"), // {[matchPoint]: {discussed: 'deeply'|'briefly'|'not', notes: string}}
+  additionalMatchPoints: text("additional_match_points"), // Other common points that facilitated conversation
+  
+  // Module 2: Conversation Dynamics
+  conversationBalance: integer("conversation_balance"), // 0-100 (0=all them, 50=balanced, 100=all me)
+  conversationComfort: integer("conversation_comfort"), // 0-100 comfort level
+  conversationNotes: text("conversation_notes"), // Optional notes about dynamics
+  
+  // Module 3: Matching Preferences
+  futurePreferences: text("future_preferences").array(), // Array of preference tags
+  futurePreferencesOther: text("future_preferences_other"), // Custom preferences
+  
+  deepFeedbackCompletedAt: timestamp("deep_feedback_completed_at"),
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 

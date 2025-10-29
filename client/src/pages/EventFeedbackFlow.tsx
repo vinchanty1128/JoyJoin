@@ -205,7 +205,10 @@ export default function EventFeedbackFlow() {
         )}
         
         {currentStep === "completion" && (
-          <FeedbackCompletion onDone={() => navigate("/events")} />
+          <FeedbackCompletion 
+            onDone={() => navigate("/events")}
+            onDeepFeedback={() => navigate(`/events/${eventId}/deep-feedback`)}
+          />
         )}
       </div>
     </div>

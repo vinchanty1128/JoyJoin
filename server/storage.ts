@@ -39,6 +39,7 @@ export interface IStorage {
   getUserAllFeedbacks(userId: string): Promise<Array<EventFeedback>>;
   getUserFeedback(userId: string, eventId: string): Promise<EventFeedback | undefined>;
   createEventFeedback(userId: string, feedback: InsertEventFeedback): Promise<EventFeedback>;
+  updateEventFeedbackDeep(userId: string, eventId: string, deepData: any): Promise<EventFeedback>;
 
   // Blind Box Event operations
   getUserBlindBoxEvents(userId: string): Promise<Array<BlindBoxEvent>>;
@@ -409,6 +410,20 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newFeedback;
+  }
+
+  async updateEventFeedbackDeep(userId: string, eventId: string, deepData: any): Promise<EventFeedback> {
+    const [updatedFeedback] = await db
+      .update(eventFeedback)
+      .set(deepData)
+      .where(
+        and(
+          eq(eventFeedback.userId, userId),
+          eq(eventFeedback.eventId, eventId)
+        )
+      )
+      .returning();
+    return updatedFeedback;
   }
 
   // Blind Box Event operations

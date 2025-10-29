@@ -446,6 +446,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Deep feedback route (optional extension)
+  app.post('/api/events/:eventId/feedback/deep', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { eventId } = req.params;
+      
+      // Get existing feedback
+      const existingFeedback = await storage.getUserFeedback(userId, eventId);
+      
+      if (!existingFeedback) {
+        return res.status(404).json({ message: "Basic feedback not found. Please complete basic feedback first." });
+      }
+
+      // Update with deep feedback data
+      const deepFeedbackData = {
+        hasDeepFeedback: true,
+        matchPointValidation: req.body.matchPointValidation,
+        additionalMatchPoints: req.body.additionalMatchPoints,
+        conversationBalance: req.body.conversationBalance,
+        conversationComfort: req.body.conversationComfort,
+        conversationNotes: req.body.conversationNotes,
+        futurePreferences: req.body.futurePreferences,
+        futurePreferencesOther: req.body.futurePreferencesOther,
+        deepFeedbackCompletedAt: new Date(),
+      };
+
+      const updatedFeedback = await storage.updateEventFeedbackDeep(userId, eventId, deepFeedbackData);
+      res.json(updatedFeedback);
+    } catch (error) {
+      console.error("Error updating deep feedback:", error);
+      res.status(500).json({ message: "Failed to update deep feedback" });
+    }
+  });
+
   // Blind Box Event routes
   app.get('/api/my-events', isAuthenticated, async (req: any, res) => {
     try {

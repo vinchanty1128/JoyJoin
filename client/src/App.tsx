@@ -22,6 +22,7 @@ import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
 import BlindBoxConfirmationPage from "@/pages/BlindBoxConfirmationPage";
 import BlindBoxEventDetailPage from "@/pages/BlindBoxEventDetailPage";
 import EventFeedbackFlow from "@/pages/EventFeedbackFlow";
+import DeepFeedbackFlow from "@/pages/DeepFeedbackFlow";
 import NotFound from "@/pages/not-found";
 
 function RedirectToRegistration() {
@@ -121,6 +122,7 @@ function AuthenticatedRouter() {
       <Route path="/blindbox/confirmation" component={BlindBoxConfirmationPage} />
       <Route path="/blind-box-events/:eventId" component={BlindBoxEventDetailPage} />
       <Route path="/events/:eventId/feedback" component={EventFeedbackFlow} />
+      <Route path="/events/:eventId/deep-feedback" component={DeepFeedbackFlow} />
       <Route path="/events" component={EventsPage} />
       <Route path="/chats" component={ChatsPage} />
       <Route path="/chats/:eventId" component={EventChatDetailPage} />
