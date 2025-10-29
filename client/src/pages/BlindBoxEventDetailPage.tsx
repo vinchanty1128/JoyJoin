@@ -132,7 +132,7 @@ export default function BlindBoxEventDetailPage() {
               </div>
             </div>
 
-            {event.status === "matched" && (
+            {(event.status === "matched" || event.status === "completed") && event.totalParticipants && (
               <div className="flex items-center gap-2 text-sm">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{getParticipantInfo()}</span>
@@ -141,8 +141,8 @@ export default function BlindBoxEventDetailPage() {
           </CardContent>
         </Card>
 
-        {/* 地点信息 (仅已匹配显示) */}
-        {event.status === "matched" && event.restaurantName ? (
+        {/* 地点信息 (仅已匹配或已完成显示) */}
+        {(event.status === "matched" || event.status === "completed") && event.restaurantName ? (
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">地点信息</CardTitle>
@@ -199,7 +199,7 @@ export default function BlindBoxEventDetailPage() {
         </Card>
 
         {/* Post-Match Event Card: Attendee Insights & Match Explanation */}
-        {event.status === "matched" && event.matchedAttendees && Array.isArray(event.matchedAttendees) && (
+        {(event.status === "matched" || event.status === "completed") && event.matchedAttendees && Array.isArray(event.matchedAttendees) && (
           <PostMatchEventCard 
             matchedAttendees={event.matchedAttendees as Array<{
               userId: string;
@@ -222,8 +222,8 @@ export default function BlindBoxEventDetailPage() {
           />
         )}
 
-        {/* 破冰工具 (仅已匹配显示) */}
-        {event.status === "matched" && (
+        {/* 破冰工具 (仅已匹配或已完成显示) */}
+        {(event.status === "matched" || event.status === "completed") && (
           <IcebreakerTool />
         )}
 
