@@ -38,6 +38,39 @@ const TRAIT_TAGS = [
   "开放包容",
 ];
 
+const archetypeIcons: Record<string, string> = {
+  "The Explorer": "🧭",
+  "Explorer": "🧭",
+  "探索者": "🧭",
+  "The Storyteller": "📖",
+  "Storyteller": "📖",
+  "讲故事的人": "📖",
+  "The Sage": "🦉",
+  "Sage": "🦉",
+  "智者": "🦉",
+  "The Radiator": "☀️",
+  "Radiator": "☀️",
+  "发光体": "☀️",
+  "火花塞": "☀️",
+  "The Anchor": "⚓",
+  "Anchor": "⚓",
+  "稳定器": "⚓",
+};
+
+const archetypeNames: Record<string, string> = {
+  "The Explorer": "探索者",
+  "Explorer": "探索者",
+  "The Storyteller": "讲故事的人",
+  "Storyteller": "讲故事的人",
+  "The Sage": "智者",
+  "Sage": "智者",
+  "The Radiator": "发光体",
+  "Radiator": "发光体",
+  "火花塞": "发光体",
+  "The Anchor": "稳定器",
+  "Anchor": "稳定器",
+};
+
 export default function TraitTagsWall({ attendees, initialTraits = {}, onNext }: TraitTagsWallProps) {
   const [traits, setTraits] = useState<Record<string, TraitData>>(initialTraits);
   const [expandedAttendee, setExpandedAttendee] = useState<string | null>(null);
@@ -139,6 +172,13 @@ export default function TraitTagsWall({ attendees, initialTraits = {}, onNext }:
               };
               const tagCount = attendeeTraits.tags.length;
 
+              const archetypeIcon = attendee.archetype 
+                ? archetypeIcons[attendee.archetype] || "✨"
+                : "✨";
+              const archetypeName = attendee.archetype
+                ? archetypeNames[attendee.archetype] || attendee.archetype
+                : undefined;
+
               return (
                 <div key={attendee.userId} className="border rounded-lg overflow-hidden">
                   {/* Attendee Header */}
@@ -149,15 +189,12 @@ export default function TraitTagsWall({ attendees, initialTraits = {}, onNext }:
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-2xl">
-                        {attendee.archetype === "探索者" ? "🧭" :
-                         attendee.archetype === "讲故事的人" ? "📖" :
-                         attendee.archetype === "火花塞" ? "⚡" :
-                         "✨"}
+                        {archetypeIcon}
                       </div>
                       <div className="text-left">
                         <p className="font-semibold">{attendee.displayName}</p>
-                        {attendee.archetype && (
-                          <p className="text-xs text-muted-foreground">{attendee.archetype}</p>
+                        {archetypeName && (
+                          <p className="text-xs text-muted-foreground">{archetypeName}</p>
                         )}
                       </div>
                     </div>
