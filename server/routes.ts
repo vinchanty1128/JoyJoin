@@ -397,6 +397,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Feedback routes
+  app.get('/api/my-feedbacks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const feedbacks = await storage.getUserAllFeedbacks(userId);
+      res.json(feedbacks);
+    } catch (error) {
+      console.error("Error fetching all feedbacks:", error);
+      res.status(500).json({ message: "Failed to fetch feedbacks" });
+    }
+  });
+
   app.get('/api/events/:eventId/feedback', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -422,7 +433,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: result.error });
       }
 
+      // Award points for completing feedback
       const feedback = await storage.createEventFeedback(userId, result.data);
+      
+      // Note: In a real app, you'd update user points here
+      // await storage.awardFeedbackPoints(userId, 50);
+      
       res.json(feedback);
     } catch (error) {
       console.error("Error creating feedback:", error);

@@ -2,11 +2,12 @@ import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import PendingMatchCard from "@/components/PendingMatchCard";
 import MatchedEventCard from "@/components/MatchedEventCard";
+import CompletedEventCard from "@/components/CompletedEventCard";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { BlindBoxEvent } from "@shared/schema";
+import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function EventsPage() {
@@ -16,6 +17,11 @@ export default function EventsPage() {
 
   const { data: events, isLoading } = useQuery<Array<BlindBoxEvent>>({
     queryKey: ["/api/my-events"],
+  });
+
+  // Fetch feedback data for completed events
+  const { data: feedbacks } = useQuery<Array<EventFeedback>>({
+    queryKey: ["/api/my-feedbacks"],
   });
 
   const cancelMutation = useMutation({
@@ -158,9 +164,16 @@ export default function EventsPage() {
                   <p className="text-sm text-muted-foreground">参加过的活动会显示在这里</p>
                 </div>
               ) : (
-                completedEvents.map(event => (
-                  <MatchedEventCard key={event.id} event={event} />
-                ))
+                completedEvents.map(event => {
+                  const hasFeedback = feedbacks?.some(f => f.eventId === event.id) || false;
+                  return (
+                    <CompletedEventCard 
+                      key={event.id} 
+                      event={event} 
+                      hasFeedback={hasFeedback}
+                    />
+                  );
+                })
               )}
             </TabsContent>
           </Tabs>

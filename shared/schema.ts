@@ -160,12 +160,37 @@ export const eventFeedback = pgTable("event_feedback", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   eventId: varchar("event_id").notNull().references(() => events.id),
   userId: varchar("user_id").notNull().references(() => users.id),
+  
+  // Legacy fields (deprecated but kept for backward compatibility)
   rating: integer("rating"), // 1-5 stars
   vibeMatch: integer("vibe_match"), // How well did the vibe match expectations (1-5)
   energyMatch: integer("energy_match"), // How well did the energy match (1-5)
   wouldAttendAgain: boolean("would_attend_again"),
   feedback: text("feedback"),
   connections: text("connections").array(), // User IDs of people they connected with
+  
+  // New balanced feedback system fields
+  // Dimension 1: Overall Atmosphere - Thermometer
+  atmosphereScore: integer("atmosphere_score"), // 1-5 (1=尴尬, 2=平淡, 3=舒适, 4=热烈, 5=完美)
+  atmosphereNote: text("atmosphere_note"), // Optional supplementary note
+  
+  // Dimension 2: Attendee Impressions - Trait Tags
+  attendeeTraits: jsonb("attendee_traits"), // {userId: {displayName, tags: string[], needsImprovement: boolean, improvementNote: string}}
+  
+  // Dimension 3: Connection Radar
+  connectionRadar: jsonb("connection_radar"), // {topicResonance: 1-5, personalityMatch: 1-5, backgroundDiversity: 1-5, overallFit: 1-5}
+  hasNewConnections: boolean("has_new_connections"), // Whether they want to keep in touch with anyone
+  connectionStatus: varchar("connection_status"), // "已交换联系方式", "有但还没联系", "没有但很愉快", "没有不太合适"
+  
+  // Dimension 4: Improvement Suggestions - Magic Recipe Cards
+  improvementAreas: text("improvement_areas").array(), // Max 3 areas
+  improvementOther: text("improvement_other"), // Custom improvement suggestion
+  
+  // Gamification & Rewards
+  completedAt: timestamp("completed_at"),
+  rewardsClaimed: boolean("rewards_claimed").default(false),
+  rewardPoints: integer("reward_points").default(50), // Points earned for completing feedback
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -211,18 +236,25 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   message: z.string().min(1, "消息不能为空"),
 });
 
-export const insertEventFeedbackSchema = createInsertSchema(eventFeedback).pick({
-  eventId: true,
-  rating: true,
-  vibeMatch: true,
-  energyMatch: true,
-  wouldAttendAgain: true,
-  feedback: true,
-  connections: true,
+export const insertEventFeedbackSchema = createInsertSchema(eventFeedback).omit({
+  id: true,
+  createdAt: true,
+  userId: true, // Auto-populated from session
 }).extend({
-  rating: z.number().min(1).max(5),
-  vibeMatch: z.number().min(1).max(5),
-  energyMatch: z.number().min(1).max(5),
+  // Legacy fields validation
+  rating: z.number().min(1).max(5).optional(),
+  vibeMatch: z.number().min(1).max(5).optional(),
+  energyMatch: z.number().min(1).max(5).optional(),
+  
+  // New balanced feedback system validation
+  atmosphereScore: z.number().min(1).max(5).optional(),
+  atmosphereNote: z.string().optional(),
+  attendeeTraits: z.any().optional(), // JSON object
+  connectionRadar: z.any().optional(), // JSON object  
+  hasNewConnections: z.boolean().optional(),
+  connectionStatus: z.enum(["已交换联系方式", "有但还没联系", "没有但很愉快", "没有不太合适"]).optional(),
+  improvementAreas: z.array(z.string()).max(3).optional(),
+  improvementOther: z.string().optional(),
 });
 
 // Blind Box Events table

@@ -36,6 +36,7 @@ export interface IStorage {
   createChatMessage(userId: string, message: InsertChatMessage): Promise<ChatMessage>;
   
   // Feedback operations
+  getUserAllFeedbacks(userId: string): Promise<Array<EventFeedback>>;
   getUserFeedback(userId: string, eventId: string): Promise<EventFeedback | undefined>;
   createEventFeedback(userId: string, feedback: InsertEventFeedback): Promise<EventFeedback>;
 
@@ -377,6 +378,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Feedback operations
+  async getUserAllFeedbacks(userId: string): Promise<Array<EventFeedback>> {
+    const feedbacks = await db
+      .select()
+      .from(eventFeedback)
+      .where(eq(eventFeedback.userId, userId))
+      .orderBy(desc(eventFeedback.createdAt));
+    return feedbacks;
+  }
+
   async getUserFeedback(userId: string, eventId: string): Promise<EventFeedback | undefined> {
     const [feedback] = await db
       .select()
