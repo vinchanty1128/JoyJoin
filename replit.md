@@ -6,6 +6,76 @@ This social networking platform connects people through small, curated micro-eve
 
 ## Recent Changes
 
+### October 29, 2025 - Deep Feedback System (Two-Tier Feedback Architecture)
+
+#### Complete Two-Tier Feedback Flow
+- **Architecture:** Implemented optional deep feedback as an extension of basic 4-step feedback
+- **Flow:** Basic Feedback (4 steps) → Completion Page → Optional Deep Feedback Entry → Deep Feedback (3 modules) → Deep Completion
+- **Design Philosophy:** Positions deep feedback as user co-creation opportunity, not transactional reward
+- **Privacy-First:** All deep feedback anonymously processed, emphasizes community value over personal benefits
+
+#### Deep Feedback Modules (3 Modules, ~3 Minutes)
+1. **Match Point Validation (契合点有效性验证):**
+   - Evaluates effectiveness of AI-suggested connection points in real conversations
+   - For each matched characteristic (overseas experience, tech industry, reading, etc.): "深入聊到了", "简单提及", or "没聊到"
+   - Optional text input for other connection points that facilitated conversation
+   - **Purpose:** Calibrate matching algorithm based on real-world conversation outcomes
+
+2. **Conversation Dynamics (交流动态评估):**
+   - Conversation balance slider (0-100): tracks who dominated the conversation
+   - Comfort level slider (0-100): with emoji indicators (😞 😐 🙂 😊 😄)
+   - Optional notes about conversation evolution and atmosphere
+   - **Purpose:** Understand group dynamics and comfort patterns
+
+3. **Matching Preferences (匹配偏好洞察):**
+   - Multi-select preference cards: diversity, deep topics, casual chat, similar life stage, shared hobbies, networking
+   - Optional custom preference text input
+   - Includes "你的反馈如何被使用" explanation (4-step value loop)
+   - **Purpose:** Capture evolving user preferences for future matching improvements
+
+#### UX Design Elements
+- **Low-Pressure Participation:** Completely optional, all questions skippable, no impact on rewards if not participated
+- **Progress Tracking:** Visual progress bar + "进度 X/3" indicator throughout flow
+- **Privacy Notice:** "🔒 你的反馈安全承诺：所有评价严格匿名处理" displayed prominently
+- **Value Communication:** "💫 每个反馈都在创造价值" with concrete examples of how feedback improves the platform
+- **Community Building:** Emphasis on "共同创造更好的社交体验" rather than personal rewards
+
+#### Deep Feedback Entry Point
+- **Location:** FeedbackCompletion page (after basic 4-step feedback)
+- **Messaging:** "参与深度反馈，共建更好体验" with subtitle "可选 · 约3分钟 · 匿名处理"
+- **Benefits Display:** Shows 3 ways feedback helps (algorithm calibration, experience optimization, community co-creation)
+- **No Pressure:** Clear that it's optional, users can return to events list at any time
+
+#### Deep Completion Page
+- **Success Animation:** Pulsing heart icon with gradient background
+- **Impact Stats:** "3 模块完成", "8+ 有效洞察", "5 维度优化"
+- **Value Loop:** Explains how feedback is processed and used (3 checkmarks)
+- **Community Impact:** Shows contribution to community improvement with Users icon
+- **Simple Exit:** "返回活动列表" button with no additional CTAs
+
+#### Database Schema Extensions
+- Extended `eventFeedback` table with deep feedback fields:
+  - `hasDeepFeedback` (boolean, default false)
+  - `matchPointValidation` (jsonb) - validation results for each match point
+  - `additionalMatchPoints` (text) - user-discovered connection points
+  - `conversationBalance` (integer 0-100) - who dominated conversation
+  - `conversationComfort` (integer 0-100) - comfort level
+  - `conversationNotes` (text) - optional conversation observations
+  - `futurePreferences` (text array) - selected matching preferences
+  - `futurePreferencesOther` (text) - custom preference input
+  - `deepFeedbackCompletedAt` (timestamp)
+
+#### Backend API
+- **New Route:** `POST /api/events/:eventId/feedback/deep`
+- **Validation:** Requires existing basic feedback before accepting deep feedback
+- **Data Persistence:** Updates existing feedback record with deep feedback fields
+- **Response:** Returns complete feedback object with both basic and deep data
+
+#### Testing & Validation
+- End-to-end testing passed: Complete flow from basic feedback through all three deep feedback modules
+- Data persistence verified: All deep feedback fields correctly saved to database
+- UX validation: Progress tracking, skip options, privacy messaging, and value communication working as designed
+
 ### October 28, 2025 - Events Page Navigation & Layout Improvements
 
 #### Event Detail Page Layout Reorder
