@@ -187,14 +187,14 @@ export default function TraitTagsWall({ attendees, initialTraits = {}, onNext }:
                       >
                         <div className="p-4 pt-0 space-y-4 border-t">
                           {/* Tag Grid */}
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2.5">
                             {TRAIT_TAGS.map((tag) => {
                               const isSelected = attendeeTraits.tags.includes(tag);
                               return (
                                 <Badge
                                   key={tag}
                                   variant={isSelected ? "default" : "outline"}
-                                  className="cursor-pointer hover-elevate active-elevate-2"
+                                  className="cursor-pointer hover-elevate active-elevate-2 text-sm px-3.5 py-1.5"
                                   onClick={() => toggleTag(attendee.userId, tag)}
                                   data-testid={`tag-${attendee.userId}-${tag}`}
                                 >
