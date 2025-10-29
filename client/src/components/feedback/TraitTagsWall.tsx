@@ -38,35 +38,51 @@ const TRAIT_TAGS = [
   "开放包容",
 ];
 
+// Archetype icons - supporting both old (5) and new (8) systems
 const archetypeIcons: Record<string, string> = {
+  // 8个核心社交角色 (New personality test system)
+  "火花塞": "🙌",
+  "探索者": "🧭",
+  "故事家": "🗣️",
+  "挑战者": "💪",
+  "连接者": "🤗",
+  "协调者": "🧘",
+  "氛围组": "🕺",
+  "肯定者": "🙏",
+  
+  // Old 5 archetype system (for backwards compatibility)
   "The Explorer": "🧭",
   "Explorer": "🧭",
-  "探索者": "🧭",
   "The Storyteller": "📖",
   "Storyteller": "📖",
-  "讲故事的人": "📖",
   "The Sage": "🦉",
   "Sage": "🦉",
-  "智者": "🦉",
   "The Radiator": "☀️",
   "Radiator": "☀️",
-  "发光体": "☀️",
-  "火花塞": "☀️",
   "The Anchor": "⚓",
   "Anchor": "⚓",
-  "稳定器": "⚓",
 };
 
 const archetypeNames: Record<string, string> = {
+  // 8个核心社交角色 (already in Chinese)
+  "火花塞": "火花塞",
+  "探索者": "探索者",
+  "故事家": "故事家",
+  "挑战者": "挑战者",
+  "连接者": "连接者",
+  "协调者": "协调者",
+  "氛围组": "氛围组",
+  "肯定者": "肯定者",
+  
+  // Old system translations
   "The Explorer": "探索者",
   "Explorer": "探索者",
-  "The Storyteller": "讲故事的人",
-  "Storyteller": "讲故事的人",
+  "The Storyteller": "故事家",
+  "Storyteller": "故事家",
   "The Sage": "智者",
   "Sage": "智者",
-  "The Radiator": "发光体",
-  "Radiator": "发光体",
-  "火花塞": "发光体",
+  "The Radiator": "火花塞",
+  "Radiator": "火花塞",
   "The Anchor": "稳定器",
   "Anchor": "稳定器",
 };
