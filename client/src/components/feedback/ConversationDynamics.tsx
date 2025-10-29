@@ -51,7 +51,7 @@ export default function ConversationDynamics({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

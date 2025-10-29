@@ -86,7 +86,7 @@ export default function MatchingPreferences({
   const canProceed = selectedPreferences.length >= 1 || otherPreference.trim().length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

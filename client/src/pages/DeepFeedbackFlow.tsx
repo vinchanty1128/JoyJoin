@@ -194,7 +194,7 @@ export default function DeepFeedbackFlow() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-10">
         <AnimatePresence mode="wait">
           {currentStep === 1 && (
             <motion.div

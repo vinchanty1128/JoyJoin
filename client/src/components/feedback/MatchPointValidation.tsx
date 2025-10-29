@@ -50,7 +50,7 @@ export default function MatchPointValidation({
   const canProceed = completedCount >= 1; // At least one match point rated
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
