@@ -158,7 +158,7 @@ export const chatMessages = pgTable("chat_messages", {
 // Post-event feedback table
 export const eventFeedback = pgTable("event_feedback", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  eventId: varchar("event_id").notNull().references(() => events.id),
+  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id),
   userId: varchar("user_id").notNull().references(() => users.id),
   
   // Legacy fields (deprecated but kept for backward compatibility)
