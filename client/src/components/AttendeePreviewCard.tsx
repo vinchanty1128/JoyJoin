@@ -10,17 +10,16 @@ import {
   type AttendeeData,
 } from "@/lib/attendeeAnalytics";
 
+// 8个核心社交角色系统
 const archetypeIcons: Record<string, string> = {
-  "The Explorer": "🧭",
-  "The Storyteller": "📖",
-  "The Sage": "🦉",
-  "The Radiator": "☀️",
-  "The Anchor": "⚓",
+  "火花塞": "🙌",
   "探索者": "🧭",
-  "讲故事的人": "📖",
-  "智者": "🦉",
-  "发光体": "☀️",
-  "稳定器": "⚓",
+  "故事家": "🗣️",
+  "挑战者": "💪",
+  "连接者": "🤗",
+  "协调者": "🧘",
+  "氛围组": "🕺",
+  "肯定者": "🙏",
 };
 
 const interestIcons: Record<string, string> = {
@@ -280,7 +279,7 @@ export default function AttendeePreviewCard({
                       className="text-xs no-default-active-elevate bg-primary/10 text-primary border-primary/30"
                       data-testid={`badge-spark-back-${attendee.userId}-${idx}`}
                     >
-                      ✨ {prediction}
+                      ✨ {prediction.text}
                     </Badge>
                   ))}
                 </div>

@@ -38,9 +38,8 @@ const TRAIT_TAGS = [
   "开放包容",
 ];
 
-// Archetype icons - supporting both old (5) and new (8) systems
+// 8个核心社交角色系统
 const archetypeIcons: Record<string, string> = {
-  // 8个核心社交角色 (New personality test system)
   "火花塞": "🙌",
   "探索者": "🧭",
   "故事家": "🗣️",
@@ -49,42 +48,6 @@ const archetypeIcons: Record<string, string> = {
   "协调者": "🧘",
   "氛围组": "🕺",
   "肯定者": "🙏",
-  
-  // Old 5 archetype system (for backwards compatibility)
-  "The Explorer": "🧭",
-  "Explorer": "🧭",
-  "The Storyteller": "📖",
-  "Storyteller": "📖",
-  "The Sage": "🦉",
-  "Sage": "🦉",
-  "The Radiator": "☀️",
-  "Radiator": "☀️",
-  "The Anchor": "⚓",
-  "Anchor": "⚓",
-};
-
-const archetypeNames: Record<string, string> = {
-  // 8个核心社交角色 (already in Chinese)
-  "火花塞": "火花塞",
-  "探索者": "探索者",
-  "故事家": "故事家",
-  "挑战者": "挑战者",
-  "连接者": "连接者",
-  "协调者": "协调者",
-  "氛围组": "氛围组",
-  "肯定者": "肯定者",
-  
-  // Old system translations
-  "The Explorer": "探索者",
-  "Explorer": "探索者",
-  "The Storyteller": "故事家",
-  "Storyteller": "故事家",
-  "The Sage": "智者",
-  "Sage": "智者",
-  "The Radiator": "火花塞",
-  "Radiator": "火花塞",
-  "The Anchor": "稳定器",
-  "Anchor": "稳定器",
 };
 
 export default function TraitTagsWall({ attendees, initialTraits = {}, onNext }: TraitTagsWallProps) {
@@ -191,9 +154,6 @@ export default function TraitTagsWall({ attendees, initialTraits = {}, onNext }:
               const archetypeIcon = attendee.archetype 
                 ? archetypeIcons[attendee.archetype] || "✨"
                 : "✨";
-              const archetypeName = attendee.archetype
-                ? archetypeNames[attendee.archetype] || attendee.archetype
-                : undefined;
 
               return (
                 <div key={attendee.userId} className="border rounded-lg overflow-hidden">
@@ -209,8 +169,8 @@ export default function TraitTagsWall({ attendees, initialTraits = {}, onNext }:
                       </div>
                       <div className="text-left">
                         <p className="font-semibold">{attendee.displayName}</p>
-                        {archetypeName && (
-                          <p className="text-xs text-muted-foreground">{archetypeName}</p>
+                        {attendee.archetype && (
+                          <p className="text-xs text-muted-foreground">{attendee.archetype}</p>
                         )}
                       </div>
                     </div>
