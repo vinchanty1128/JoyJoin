@@ -22,20 +22,27 @@ export default function GroupSummaryCard({ attendees }: GroupSummaryCardProps) {
   }
 
   const archetypeChartData = archetypeDistribution.map(item => {
+    // 8个核心社交角色的颜色配置 - 与UserConnectionCard保持一致
     const archetypeColors: Record<string, string> = {
-      "探索者": "hsl(var(--primary))",
-      "讲故事的人": "#8B5CF6",
-      "智者": "#0EA5E9",
-      "发光体": "#F59E0B",
-      "稳定器": "#10B981",
+      "火花塞": "#f97316",      // orange-600
+      "探索者": "#06b6d4",      // cyan-600
+      "故事家": "#a855f7",      // purple-600
+      "挑战者": "#dc2626",      // red-600
+      "连接者": "#10b981",      // emerald-600
+      "协调者": "#4f46e5",      // indigo-600
+      "氛围组": "#c026d3",      // fuchsia-600
+      "肯定者": "#14b8a6",      // teal-600
     };
 
     const archetypeEmojis: Record<string, string> = {
+      "火花塞": "🙌",
       "探索者": "🧭",
-      "讲故事的人": "📖",
-      "智者": "🦉",
-      "发光体": "⭐",
-      "稳定器": "⚓",
+      "故事家": "🗣️",
+      "挑战者": "💪",
+      "连接者": "🤗",
+      "协调者": "🧘",
+      "氛围组": "🕺",
+      "肯定者": "🙏",
     };
 
     return {
