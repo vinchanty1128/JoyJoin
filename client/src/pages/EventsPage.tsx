@@ -165,12 +165,12 @@ export default function EventsPage() {
                 </div>
               ) : (
                 completedEvents.map(event => {
-                  const hasFeedback = feedbacks?.some(f => f.eventId === event.id) || false;
+                  const feedback = feedbacks?.find(f => f.eventId === event.id);
                   return (
                     <CompletedEventCard 
                       key={event.id} 
                       event={event} 
-                      hasFeedback={hasFeedback}
+                      feedback={feedback}
                     />
                   );
                 })
