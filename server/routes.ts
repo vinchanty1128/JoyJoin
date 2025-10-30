@@ -1,7 +1,9 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema } from "@shared/schema";
 
 // Role mapping based on question responses
@@ -159,13 +161,35 @@ function generateInsights(primaryRole: string, secondaryRole: string | null): {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Session middleware
+  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const pgStore = connectPg(session);
+  const sessionStore = new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: false,
+    ttl: sessionTtl,
+    tableName: "sessions",
+  });
+  
+  app.use(session({
+    secret: process.env.SESSION_SECRET!,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      maxAge: sessionTtl,
+    },
+  }));
+
+  // Phone auth setup
+  setupPhoneAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -175,9 +199,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Registration routes
-  app.post('/api/user/register', isAuthenticated, async (req: any, res) => {
+  app.post('/api/user/register', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const result = registerUserSchema.safeParse(req.body);
       
       if (!result.success) {
@@ -199,9 +223,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Personality test routes
-  app.post('/api/personality-test/submit', isAuthenticated, async (req: any, res) => {
+  app.post('/api/personality-test/submit', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { responses } = req.body;
 
       // Calculate role scores
@@ -249,9 +273,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/personality-test/results', isAuthenticated, async (req: any, res) => {
+  app.get('/api/personality-test/results', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const result = await storage.getRoleResult(userId);
       
       if (!result) {
@@ -266,9 +290,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Profile routes
-  app.post('/api/profile/setup', isAuthenticated, async (req: any, res) => {
+  app.post('/api/profile/setup', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const result = updateProfileSchema.safeParse(req.body);
       
       if (!result.success) {
@@ -285,9 +309,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/user/interests-topics', isAuthenticated, async (req: any, res) => {
+  app.post('/api/user/interests-topics', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const result = interestsTopicsSchema.safeParse(req.body);
       
       if (!result.success) {
@@ -303,9 +327,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/profile/personality', isAuthenticated, async (req: any, res) => {
+  app.post('/api/profile/personality', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const result = updatePersonalitySchema.safeParse(req.body);
       
       if (!result.success) {
@@ -322,9 +346,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/profile/budget', isAuthenticated, async (req: any, res) => {
+  app.post('/api/profile/budget', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const result = updateBudgetPreferenceSchema.safeParse(req.body);
       
       if (!result.success) {
@@ -341,9 +365,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Event routes
-  app.get('/api/events/joined', isAuthenticated, async (req: any, res) => {
+  app.get('/api/events/joined', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const events = await storage.getUserJoinedEvents(userId);
       res.json(events);
     } catch (error) {
@@ -352,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/events/:eventId/participants', isAuthenticated, async (req: any, res) => {
+  app.get('/api/events/:eventId/participants', isPhoneAuthenticated, async (req: any, res) => {
     try {
       const { eventId } = req.params;
       const participants = await storage.getEventParticipants(eventId);
@@ -364,7 +388,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat routes
-  app.get('/api/events/:eventId/messages', isAuthenticated, async (req: any, res) => {
+  app.get('/api/events/:eventId/messages', isPhoneAuthenticated, async (req: any, res) => {
     try {
       const { eventId } = req.params;
       const messages = await storage.getEventMessages(eventId);
@@ -375,9 +399,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/events/:eventId/messages', isAuthenticated, async (req: any, res) => {
+  app.post('/api/events/:eventId/messages', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       const result = insertChatMessageSchema.safeParse({
         ...req.body,
@@ -397,9 +421,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Feedback routes
-  app.get('/api/my-feedbacks', isAuthenticated, async (req: any, res) => {
+  app.get('/api/my-feedbacks', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const feedbacks = await storage.getUserAllFeedbacks(userId);
       res.json(feedbacks);
     } catch (error) {
@@ -408,9 +432,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/events/:eventId/feedback', isAuthenticated, async (req: any, res) => {
+  app.get('/api/events/:eventId/feedback', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       const feedback = await storage.getUserFeedback(userId, eventId);
       res.json(feedback);
@@ -420,9 +444,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/events/:eventId/feedback', isAuthenticated, async (req: any, res) => {
+  app.post('/api/events/:eventId/feedback', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       const result = insertEventFeedbackSchema.safeParse({
         ...req.body,
@@ -447,9 +471,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Deep feedback route (optional extension)
-  app.post('/api/events/:eventId/feedback/deep', isAuthenticated, async (req: any, res) => {
+  app.post('/api/events/:eventId/feedback/deep', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       
       // Get existing feedback
@@ -481,9 +505,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Blind Box Event routes
-  app.get('/api/my-events', isAuthenticated, async (req: any, res) => {
+  app.get('/api/my-events', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const events = await storage.getUserBlindBoxEvents(userId);
       res.json(events);
     } catch (error) {
@@ -492,9 +516,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/blind-box-events', isAuthenticated, async (req: any, res) => {
+  app.post('/api/blind-box-events', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { date, time, eventType, city, area, budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines, inviteFriends, friendsCount } = req.body;
       
       if (!date || !time || !eventType || !area || !budget || budget.length === 0) {
@@ -523,9 +547,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/blind-box-events/:eventId', isAuthenticated, async (req: any, res) => {
+  app.get('/api/blind-box-events/:eventId', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       const event = await storage.getBlindBoxEventById(eventId, userId);
       
@@ -540,9 +564,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/blind-box-events/:eventId', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/blind-box-events/:eventId', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       const { budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines } = req.body;
       
@@ -561,9 +585,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/blind-box-events/:eventId/cancel', isAuthenticated, async (req: any, res) => {
+  app.post('/api/blind-box-events/:eventId/cancel', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       const event = await storage.cancelBlindBoxEvent(eventId, userId);
       res.json(event);
@@ -574,9 +598,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Demo endpoint to set match data for testing
-  app.post('/api/blind-box-events/:eventId/set-demo-match', isAuthenticated, async (req: any, res) => {
+  app.post('/api/blind-box-events/:eventId/set-demo-match', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const { eventId } = req.params;
       
       // Demo matched attendees data with rich hidden attributes for interesting connections
@@ -776,7 +800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     city_life: { name: "城市生活", color: "teal" },
   };
 
-  app.get('/api/icebreakers/random', isAuthenticated, async (req: any, res) => {
+  app.get('/api/icebreakers/random', isPhoneAuthenticated, async (req: any, res) => {
     try {
       const { topic } = req.query;
       let selectedCategory: string;

@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
-import LandingPage from "@/pages/LandingPage";
+import LoginPage from "@/pages/LoginPage";
 import RegistrationPage from "@/pages/RegistrationPage";
 import InterestsTopicsPage from "@/pages/InterestsTopicsPage";
 import PersonalityTestPage from "@/pages/PersonalityTestPage";
@@ -150,7 +150,7 @@ function Router() {
   }
 
   if (!isAuthenticated) {
-    return <Route path="*" component={LandingPage} />;
+    return <Route path="*" component={LoginPage} />;
   }
 
   return <AuthenticatedRouter />;

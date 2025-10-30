@@ -74,6 +74,7 @@ export const users = pgTable("users", {
   placeOfOrigin: varchar("place_of_origin"), // Deprecated in favor of hometown fields
   longTermBase: varchar("long_term_base"), // Deprecated - use location preferences
   wechatId: varchar("wechat_id"), // WeChat ID
+  phoneNumber: varchar("phone_number").unique(), // Phone number for authentication
   
   // Registration fields - Access & Safety
   accessibilityNeeds: text("accessibility_needs"), // Optional text
