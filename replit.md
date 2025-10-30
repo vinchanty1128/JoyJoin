@@ -6,6 +6,74 @@ This social networking platform connects people through small, curated micro-eve
 
 ## Recent Changes
 
+### October 30, 2025 - Chinese-Localized Authentication System
+
+#### Complete Removal of Western Social Logins
+- **Replaced Replit Auth:** Removed Google, GitHub, X, Apple social login integrations
+- **New System:** Implemented WeChat binding + phone SMS verification for Chinese market
+- **Rationale:** Western social logins inappropriate for Hong Kong/Shenzhen target market
+
+#### Phone Verification Authentication
+- **Primary Method:** Phone number + SMS verification code login
+- **Implementation:**
+  - Created `phoneAuth.ts` with verification code generation and validation
+  - 6-digit codes with 5-minute expiry
+  - In-memory code storage (production should use Redis)
+  - Development mode logs codes to console: `📱 Verification code for ${phoneNumber}: ${code}`
+- **User Creation:** Auto-creates user account on first login with phone number
+  - Temporary email: `${phoneNumber}@temp.joyjoin.com`
+  - Display name: "用户" + last 4 digits of phone
+
+#### WeChat OAuth Integration (Placeholder)
+- **WeChat Login Button:** Green button with WeChat icon on login page
+- **Status:** Placeholder implementation (requires WeChat developer account in production)
+- **Future:** Will integrate official WeChat OAuth 2.0 flow
+
+#### Session Management Migration
+- **Old System:** Passport.js with Replit Auth (OIDC)
+- **New System:** express-session with PostgreSQL storage (connect-pg-simple)
+- **Session Configuration:**
+  - Store: PostgreSQL "sessions" table (auto-created)
+  - Cookie: httpOnly, secure=false (dev), sameSite='lax'
+  - TTL: 7 days
+  - Session data: `{userId: string}`
+- **Middleware:** `isPhoneAuthenticated` checks `req.session.userId`
+
+#### Database Schema Changes
+- **New Column:** Added `phone_number` VARCHAR to `users` table
+- **Constraints:** Unique constraint on phone_number
+- **Migration:** Manual SQL execution via psql (drizzle-kit had interactive prompt issues)
+
+#### Updated API Routes
+- **New Routes:**
+  - `POST /api/auth/send-code` - Send verification code to phone
+  - `POST /api/auth/phone-login` - Login with phone + code
+  - `POST /api/auth/logout` - Destroy session
+- **Updated Routes:** All protected routes now use `isPhoneAuthenticated` middleware
+- **User Context:** Changed from `req.user.claims.sub` to `req.session.userId` throughout backend
+
+#### New Login Page
+- **Created:** `client/src/pages/LoginPage.tsx`
+- **Branding:** JoyJoin (悦聚·Joy) with Sparkles icon and purple gradient
+- **Two Login Options:**
+  1. WeChat login (green button, placeholder)
+  2. Phone + verification code (primary method)
+- **UX Features:**
+  - 60-second countdown after sending code
+  - Real-time phone number validation (11 digits)
+  - Toast notifications for success/error states
+  - Automatic redirect after successful login
+- **Styling:** Gradient background, centered card layout, terms of service links
+
+#### Testing & Validation
+- End-to-end testing passed:
+  - Login page renders correctly with all UI elements
+  - Send code functionality works (generates and stores codes)
+  - Login flow validates codes properly
+  - Session creation successful
+  - Authentication middleware protects routes
+- Verified error handling for invalid/expired codes
+
 ### October 29, 2025 - Deep Feedback System (Two-Tier Feedback Architecture)
 
 #### Complete Two-Tier Feedback Flow
