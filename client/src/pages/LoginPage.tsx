@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Users, Wand2, Gift, Zap } from "lucide-react";
 import { SiWechat } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -204,6 +204,71 @@ export default function LoginPage() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Product Features */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {/* 4-6人小局 */}
+            <Card className="border hover-elevate">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">4-6人精品小局</h3>
+                  <p className="text-xs text-muted-foreground">神秘饭局·深度社交</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* AI智能匹配 */}
+            <Card className="border hover-elevate">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Wand2 className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">AI智能匹配</h3>
+                  <p className="text-xs text-muted-foreground">8维画像·精准连接</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 神秘盲盒 */}
+            <Card className="border hover-elevate">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Gift className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">神秘盲盒体验</h3>
+                  <p className="text-xs text-muted-foreground">翻卡解锁·惊喜相遇</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 能量场发现 */}
+            <Card className="border hover-elevate">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Zap className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">能量场发现</h3>
+                  <p className="text-xs text-muted-foreground">三级稀有度·游戏化</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground">
