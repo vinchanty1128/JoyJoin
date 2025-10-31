@@ -33,8 +33,8 @@ export default function RegistrationPage() {
     resolver: zodResolver(registerUserSchema),
     defaultValues: {
       displayName: "",
-      ageBand: undefined,
-      ageVisibility: "show_band_only",
+      birthdate: "",
+      ageVisibility: "hide_all",
       gender: undefined,
       pronouns: undefined,
       relationshipStatus: undefined,
@@ -103,7 +103,7 @@ export default function RegistrationPage() {
   const getFieldsForStep = (currentStep: number) => {
     switch (currentStep) {
       case 1: // Identity
-        return ["displayName", "ageBand", "ageVisibility", "gender"];
+        return ["displayName", "birthdate", "gender"];
       case 2: // Background & Education
         return ["relationshipStatus", "educationLevel"];
       case 3: // Work
@@ -221,26 +221,18 @@ export default function RegistrationPage() {
                 </div>
 
                 <div>
-                  <Label>年龄段 *</Label>
-                  <Select
-                    value={form.watch("ageBand")}
-                    onValueChange={(value: any) => form.setValue("ageBand", value)}
-                  >
-                    <SelectTrigger data-testid="select-age-band">
-                      <SelectValue placeholder="选择你的年龄段" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="18-22">18-22</SelectItem>
-                      <SelectItem value="23-27">23-27</SelectItem>
-                      <SelectItem value="28-34">28-34</SelectItem>
-                      <SelectItem value="35-44">35-44</SelectItem>
-                      <SelectItem value="45-54">45-54</SelectItem>
-                      <SelectItem value="55+">55+</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.ageBand && (
+                  <Label>出生日期 *</Label>
+                  <Input
+                    type="date"
+                    value={form.watch("birthdate")}
+                    onChange={(e) => form.setValue("birthdate", e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    data-testid="input-birthdate"
+                    className="w-full"
+                  />
+                  {form.formState.errors.birthdate && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.ageBand.message}
+                      {form.formState.errors.birthdate.message}
                     </p>
                   )}
                 </div>
@@ -256,12 +248,11 @@ export default function RegistrationPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="hide_all">完全隐藏</SelectItem>
-                      <SelectItem value="show_band_only">仅显示年龄段</SelectItem>
                       <SelectItem value="show_exact_age">显示精确年龄</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground mt-1">
-                    控制其他人能看到你的多少年龄信息
+                    控制其他人能看到你的年龄信息
                   </p>
                 </div>
 
