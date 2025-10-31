@@ -223,11 +223,25 @@ export default function AttendeePreviewCard({
                     <span>{educationDisplay}</span>
                   </div>
                 )}
+                {attendee.fieldOfStudy && (
+                  <span className="text-muted-foreground">· {attendee.fieldOfStudy}</span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-foreground">
                 {attendee.industry && (
                   <div className="flex items-center gap-1">
                     <Briefcase className="h-3.5 w-3.5" />
                     <span>{attendee.industry}</span>
                   </div>
+                )}
+                {attendee.seniority && (
+                  <span className="text-muted-foreground">
+                    · {attendee.seniority === "Junior" ? "初级" : 
+                       attendee.seniority === "Mid" ? "中级" : 
+                       attendee.seniority === "Senior" ? "高级" :
+                       attendee.seniority === "Founder" ? "创始人" : attendee.seniority}
+                  </span>
                 )}
               </div>
 
@@ -235,6 +249,12 @@ export default function AttendeePreviewCard({
                 <div className="flex items-center gap-1 text-foreground">
                   <MapPin className="h-3.5 w-3.5" />
                   <span>{attendee.hometownRegionCity}</span>
+                </div>
+              )}
+
+              {attendee.languagesComfort && attendee.languagesComfort.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  🌐 {attendee.languagesComfort.join(" · ")}
                 </div>
               )}
             </div>
