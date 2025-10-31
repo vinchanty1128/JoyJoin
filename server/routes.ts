@@ -1119,7 +1119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Notification endpoints
   app.get('/api/notifications/counts', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.session.user?.id;
+      const userId = req.session.userId;
       if (!userId) {
         return res.status(401).json({ message: "Not authenticated" });
       }
@@ -1134,7 +1134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/notifications/mark-read', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.session.user?.id;
+      const userId = req.session.userId;
       if (!userId) {
         return res.status(401).json({ message: "Not authenticated" });
       }
@@ -1155,7 +1155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Demo: Create sample notifications
   app.post('/api/notifications/seed-demo', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.session.user?.id;
+      const userId = req.session.userId;
       if (!userId) {
         return res.status(401).json({ message: "Not authenticated" });
       }
