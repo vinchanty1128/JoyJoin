@@ -1,12 +1,19 @@
-import { Compass, Calendar, Bell, MessageSquare, User } from "lucide-react";
+import { Compass, Calendar, MessageSquare, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 
-const navItems = [
-  { icon: Compass, label: "发现", path: "/", testId: "nav-discover" },
-  { icon: Calendar, label: "活动", path: "/events", testId: "nav-events" },
-  { icon: Bell, label: "通知", path: "/notifications", testId: "nav-notifications", badge: 3 },
-  { icon: MessageSquare, label: "聊天", path: "/chats", testId: "nav-chats" },
+interface NavItem {
+  icon: any;
+  label: string;
+  path: string;
+  testId: string;
+  badge?: number;
+}
+
+const navItems: NavItem[] = [
+  { icon: Compass, label: "发现", path: "/", testId: "nav-discover", badge: 0 },
+  { icon: Calendar, label: "活动", path: "/events", testId: "nav-events", badge: 0 },
+  { icon: MessageSquare, label: "聊天", path: "/chats", testId: "nav-chats", badge: 0 },
   { icon: User, label: "我的", path: "/profile", testId: "nav-profile" }
 ];
 
@@ -18,6 +25,8 @@ export default function BottomNav() {
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive = location === item.path;
+          const showBadge = item.badge !== undefined && item.badge > 0;
+          
           return (
             <a
               key={item.path}
@@ -29,12 +38,12 @@ export default function BottomNav() {
             >
               <div className="relative">
                 <item.icon className={`h-5 w-5 ${isActive ? "fill-primary/20" : ""}`} />
-                {item.badge && item.badge > 0 && (
+                {showBadge && (
                   <Badge 
-                    className="absolute -top-2 -right-2 h-4 min-w-4 px-1 flex items-center justify-center text-[10px] font-semibold"
+                    className="absolute -top-2 -right-2 h-[18px] min-w-[18px] px-1.5 flex items-center justify-center text-[11px] font-semibold bg-primary text-primary-foreground animate-pulse"
                     data-testid={`badge-${item.testId}`}
                   >
-                    {item.badge}
+                    {item.badge > 99 ? '99+' : item.badge}
                   </Badge>
                 )}
               </div>

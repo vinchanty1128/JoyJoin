@@ -482,3 +482,32 @@ export type InsertEventFeedback = z.infer<typeof insertEventFeedbackSchema>;
 export type InsertBlindBoxEvent = z.infer<typeof insertBlindBoxEventSchema>;
 export type InsertTestResponse = z.infer<typeof insertTestResponseSchema>;
 export type InsertRoleResult = z.infer<typeof insertRoleResultSchema>;
+
+// Notifications table
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  category: varchar("category").notNull(), // discover, activities, chat
+  type: varchar("type").notNull(), // new_activity, matching_progress, match_success, activity_reminder, feedback_reminder, new_message
+  title: varchar("title").notNull(),
+  message: text("message"),
+  relatedResourceId: varchar("related_resource_id"), // event ID, chat ID, etc.
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+// Notification count response type
+export type NotificationCounts = {
+  discover: number;
+  activities: number;
+  chat: number;
+  total: number;
+};
