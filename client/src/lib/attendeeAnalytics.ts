@@ -3,14 +3,14 @@ export interface AttendeeData {
   displayName: string;
   archetype?: string;
   topInterests?: string[];
-  ageBand?: string;
   age?: number;
+  birthdate?: string;
   industry?: string;
   ageVisible?: boolean;
   industryVisible?: boolean;
   gender?: string;
   educationLevel?: string;
-  hometown?: string;
+  hometownRegionCity?: string;
   educationVisible?: boolean;
   relationshipStatus?: string;
   studyLocale?: string;
