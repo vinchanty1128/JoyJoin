@@ -124,16 +124,25 @@ export function calculateCommonInterestsWithUser(
 }
 
 export const archetypeDescriptions: Record<string, string> = {
+  // 8个核心社交角色
+  "火花塞": "点燃话题，激发讨论的活力引擎",
   "探索者": "好奇心驱动，热衷于尝试新事物和新体验",
+  "故事家": "善于表达，喜欢分享经历和倾听他人",
+  "挑战者": "勇于质疑，推动深度思考和成长",
+  "连接者": "擅长建立联系，串联不同的人和话题",
+  "协调者": "平衡氛围，善于协调和化解分歧",
+  "氛围组": "活跃气氛，让聚会充满欢声笑语",
+  "肯定者": "给予支持和认可，提供情感价值",
+  
+  // 演示数据使用的角色
+  "社交达人": "外向热情，擅长社交和建立人脉",
+  "创意家": "充满想象力，带来新奇独特的视角",
+  
+  // 旧版角色（兼容性保留）
   "讲故事的人": "善于表达，喜欢分享经历和倾听他人",
   "智者": "深思熟虑，享受深度对话和知识交流",
   "发光体": "活力四射，能点燃团队氛围的正能量担当",
   "稳定器": "可靠稳重，为朋友提供情感支持和安全感",
-  "The Explorer": "Curiosity-driven, loves trying new things",
-  "The Storyteller": "Great at sharing experiences and listening",
-  "The Sage": "Thoughtful, enjoys deep conversations",
-  "The Radiator": "Energetic, lights up any gathering",
-  "The Anchor": "Reliable, provides emotional support",
 };
 
 export function generatePersonalizedDescription(
