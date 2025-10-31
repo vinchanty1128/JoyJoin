@@ -4,6 +4,9 @@ import { storage } from "./storage";
 // 简化的验证码存储（生产环境应使用Redis）
 const verificationCodes = new Map<string, { code: string; expiresAt: number }>();
 
+// 🎯 DEMO MODE: 万能验证码，方便演示
+const DEMO_CODE = "666666";
+
 // 生成6位数验证码
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -46,24 +49,29 @@ export function setupPhoneAuth(app: Express) {
         return res.status(400).json({ message: "Phone number and code are required" });
       }
 
-      // 验证验证码
-      const storedData = verificationCodes.get(phoneNumber);
-      
-      if (!storedData) {
-        return res.status(400).json({ message: "验证码无效或已过期" });
-      }
+      // 🎯 DEMO MODE: 万能验证码 666666 总是有效
+      if (code === DEMO_CODE) {
+        console.log(`✅ Demo code ${DEMO_CODE} accepted for ${phoneNumber}`);
+      } else {
+        // 验证真实验证码
+        const storedData = verificationCodes.get(phoneNumber);
+        
+        if (!storedData) {
+          return res.status(400).json({ message: "验证码无效或已过期" });
+        }
 
-      if (storedData.expiresAt < Date.now()) {
+        if (storedData.expiresAt < Date.now()) {
+          verificationCodes.delete(phoneNumber);
+          return res.status(400).json({ message: "验证码已过期" });
+        }
+
+        if (storedData.code !== code) {
+          return res.status(400).json({ message: "验证码错误" });
+        }
+
+        // 验证成功，删除验证码
         verificationCodes.delete(phoneNumber);
-        return res.status(400).json({ message: "验证码已过期" });
       }
-
-      if (storedData.code !== code) {
-        return res.status(400).json({ message: "验证码错误" });
-      }
-
-      // 验证成功，删除验证码
-      verificationCodes.delete(phoneNumber);
 
       // 查找或创建用户
       const users = await storage.getUserByPhone(phoneNumber);
