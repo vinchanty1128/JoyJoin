@@ -1152,6 +1152,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo: Create sample notifications
+  app.post('/api/notifications/seed-demo', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Create discover notifications
+      await storage.createNotification({
+        userId,
+        category: 'discover',
+        type: 'new_activity',
+        title: '新活动推荐',
+        message: '发现了一个超适合你的周末咖啡聚会',
+      });
+
+      // Create activities notifications
+      await storage.createNotification({
+        userId,
+        category: 'activities',
+        type: 'match_success',
+        title: '匹配成功',
+        message: '你的周末轰趴活动已成功匹配4位小伙伴',
+      });
+
+      await storage.createNotification({
+        userId,
+        category: 'activities',
+        type: 'activity_reminder',
+        title: '活动提醒',
+        message: '距离「周末轰趴」开始还有2小时',
+      });
+
+      await storage.createNotification({
+        userId,
+        category: 'activities',
+        type: 'feedback_reminder',
+        title: '反馈提醒',
+        message: '「周末轰趴」已结束，快来分享你的感受吧',
+      });
+
+      // Create chat notifications
+      await storage.createNotification({
+        userId,
+        category: 'chat',
+        type: 'new_message',
+        title: '新消息',
+        message: 'Alex 在群聊中@了你',
+      });
+
+      await storage.createNotification({
+        userId,
+        category: 'chat',
+        type: 'new_message',
+        title: '新消息',
+        message: '周末轰趴群聊有6条新消息',
+      });
+
+      res.json({ success: true, message: 'Demo notifications created' });
+    } catch (error) {
+      console.error("Error creating demo notifications:", error);
+      res.status(500).json({ message: "Failed to create demo notifications" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

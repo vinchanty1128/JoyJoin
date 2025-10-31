@@ -1,31 +1,36 @@
 import { Compass, Calendar, MessageSquare, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { useNotificationCounts } from "@/hooks/useNotificationCounts";
 
 interface NavItem {
   icon: any;
   label: string;
   path: string;
   testId: string;
-  badge?: number;
+  badgeCategory?: 'discover' | 'activities' | 'chat';
 }
 
 const navItems: NavItem[] = [
-  { icon: Compass, label: "发现", path: "/", testId: "nav-discover", badge: 0 },
-  { icon: Calendar, label: "活动", path: "/events", testId: "nav-events", badge: 0 },
-  { icon: MessageSquare, label: "聊天", path: "/chats", testId: "nav-chats", badge: 0 },
+  { icon: Compass, label: "发现", path: "/", testId: "nav-discover", badgeCategory: 'discover' },
+  { icon: Calendar, label: "活动", path: "/events", testId: "nav-events", badgeCategory: 'activities' },
+  { icon: MessageSquare, label: "聊天", path: "/chats", testId: "nav-chats", badgeCategory: 'chat' },
   { icon: User, label: "我的", path: "/profile", testId: "nav-profile" }
 ];
 
 export default function BottomNav() {
   const [location] = useLocation();
+  const { data: notificationCounts } = useNotificationCounts();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background border-t z-50 safe-area-pb">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive = location === item.path;
-          const showBadge = item.badge !== undefined && item.badge > 0;
+          const badgeCount = item.badgeCategory && notificationCounts 
+            ? notificationCounts[item.badgeCategory] 
+            : 0;
+          const showBadge = badgeCount > 0;
           
           return (
             <a
@@ -43,7 +48,7 @@ export default function BottomNav() {
                     className="absolute -top-2 -right-2 h-[18px] min-w-[18px] px-1.5 flex items-center justify-center text-[11px] font-semibold bg-primary text-primary-foreground animate-pulse"
                     data-testid={`badge-${item.testId}`}
                   >
-                    {item.badge > 99 ? '99+' : item.badge}
+                    {badgeCount > 99 ? '99+' : badgeCount}
                   </Badge>
                 )}
               </div>
