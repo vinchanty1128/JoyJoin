@@ -148,7 +148,7 @@ async function createDemoDataForUser(userId: string) {
     
     console.log(`🎯 Creating demo data for user: ${userId}`);
     
-    // 1. 设置用户为已完成所有 onboarding 步骤
+    // 1. 设置用户为已完成所有 onboarding 步骤，并添加背景信息
     await db.update(users)
       .set({
         hasCompletedRegistration: true,
@@ -156,6 +156,14 @@ async function createDemoDataForUser(userId: string) {
         hasCompletedPersonalityTest: true,
         hasCompletedProfileSetup: true,
         hasCompletedVoiceQuiz: true,
+        // 添加背景信息以触发Epic契合点
+        educationLevel: 'Master\'s',
+        studyLocale: 'Overseas',
+        fieldOfStudy: 'CS',
+        seniority: 'Founder',
+        industry: '科技',
+        interestsTop: ['摄影', '写作', '创业', '可持续发展', '咖啡'],
+        languagesComfort: ['普通话', '英语', '粤语'],
       })
       .where(eq(users.id, userId));
     
@@ -224,10 +232,58 @@ async function createDemoDataForUser(userId: string) {
       restaurantAddress: '中环云咸街28号',
       cuisineTags: ['日本料理', '寿司'],
       matchedAttendees: [
-        { userId: 'demo-1', displayName: '小美', archetype: '社交达人', topInterests: ['美食', '旅行'], ageBand: '25-30', industry: '科技' },
-        { userId: 'demo-2', displayName: '阿强', archetype: '探索者', topInterests: ['美食', '摄影'], ageBand: '28-33', industry: '设计' },
-        { userId: 'demo-3', displayName: 'Lisa', archetype: '连接者', topInterests: ['美食', '艺术'], ageBand: '26-31', industry: '金融' },
-        { userId: 'demo-4', displayName: 'David', archetype: '创意家', topInterests: ['美食', '音乐'], ageBand: '30-35', industry: '媒体' }
+        { 
+          userId: 'demo-epic-1', 
+          displayName: 'Sophia', 
+          archetype: '探索者', 
+          topInterests: ['摄影', '音乐创作', '可持续发展'], 
+          ageBand: '28-33', 
+          industry: '设计',
+          educationLevel: 'Master\'s',
+          studyLocale: 'Overseas',
+          fieldOfStudy: 'Arts/Design',
+          seniority: 'Senior',
+          languagesComfort: ['普通话', '英语', '日语']
+        },
+        { 
+          userId: 'demo-epic-2', 
+          displayName: 'Max', 
+          archetype: '火花塞', 
+          topInterests: ['创业', '公益', '写作'], 
+          ageBand: '30-35', 
+          industry: '社会创新',
+          educationLevel: 'Master\'s',
+          studyLocale: 'Both',
+          fieldOfStudy: 'Business',
+          seniority: 'Founder',
+          languagesComfort: ['普通话', '英语', '法语', '西班牙语']
+        },
+        { 
+          userId: 'demo-epic-3', 
+          displayName: '艾米', 
+          archetype: '连接者', 
+          topInterests: ['绘画', '摄影', '数字游民'], 
+          ageBand: '26-31', 
+          industry: '设计',
+          educationLevel: 'Bachelor\'s',
+          studyLocale: 'Overseas',
+          fieldOfStudy: 'Arts/Design',
+          seniority: 'Mid',
+          languagesComfort: ['普通话', '英语']
+        },
+        { 
+          userId: 'demo-epic-4', 
+          displayName: 'Leo', 
+          archetype: '创意家', 
+          topInterests: ['音乐创作', '可持续', '咖啡'], 
+          ageBand: '29-34', 
+          industry: '科技',
+          educationLevel: 'Doctorate',
+          studyLocale: 'Overseas',
+          fieldOfStudy: 'CS',
+          seniority: 'Founder',
+          languagesComfort: ['普通话', '英语', '德语']
+        }
       ],
       matchExplanation: '这桌是日料爱好者的聚会！大家都对精致料理和文化交流充满热情，年龄相近，话题契合度高。',
     });

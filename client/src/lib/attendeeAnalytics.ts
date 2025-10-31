@@ -15,6 +15,8 @@ export interface AttendeeData {
   relationshipStatus?: string;
   studyLocale?: string;
   seniority?: string;
+  fieldOfStudy?: string;
+  languagesComfort?: string[];
 }
 
 export interface CommonInterest {
@@ -204,6 +206,8 @@ export interface SparkPredictionContext {
   userRelationshipStatus?: string;
   userStudyLocale?: string;
   userSeniority?: string;
+  userFieldOfStudy?: string;
+  userLanguages?: string[];
 }
 
 export type RarityLevel = 'common' | 'rare' | 'epic';
@@ -435,6 +439,116 @@ export function generateSparkPredictions(
       text: `同为${userContext.userIndustry}圈的硕士海归`,
       rarity: 'epic'
     });
+  }
+  
+  // 🌟 NEW Epic-level predictions - Ultra-rare combinations
+  
+  // Creative interdisciplinary background (EPIC)
+  if (userContext.userFieldOfStudy && attendee.fieldOfStudy) {
+    const creativeFields = ["Arts/Design", "Music", "Film"];
+    const techFields = ["CS", "Engineering"];
+    const businessFields = ["Business", "Economics"];
+    
+    const userIsCreative = creativeFields.includes(userContext.userFieldOfStudy);
+    const userIsTech = techFields.includes(userContext.userFieldOfStudy);
+    const userIsBusiness = businessFields.includes(userContext.userFieldOfStudy);
+    
+    const attendeeIsCreative = creativeFields.includes(attendee.fieldOfStudy);
+    const attendeeIsTech = techFields.includes(attendee.fieldOfStudy);
+    const attendeeIsBusiness = businessFields.includes(attendee.fieldOfStudy);
+    
+    // Creative + Tech crossover
+    if ((userIsCreative && attendeeIsTech) || (userIsTech && attendeeIsCreative)) {
+      predictions.push({ 
+        text: "跨界创意×技术的碰撞",
+        rarity: 'epic'
+      });
+    }
+    
+    // Creative + Business crossover
+    if ((userIsCreative && attendeeIsBusiness) || (userIsBusiness && attendeeIsCreative)) {
+      predictions.push({ 
+        text: "艺术与商业的融合",
+        rarity: 'epic'
+      });
+    }
+  }
+  
+  // Digital nomad lifestyle (EPIC)
+  if (userContext.userInterests && attendee.topInterests) {
+    const userHasRemoteWork = userContext.userInterests.some(i => 
+      i.includes("远程工作") || i.includes("数字游民") || i.includes("自由职业")
+    );
+    const attendeeHasRemoteWork = attendee.topInterests.some(i => 
+      i.includes("远程工作") || i.includes("数字游民") || i.includes("自由职业")
+    );
+    
+    if (userHasRemoteWork && attendeeHasRemoteWork) {
+      predictions.push({ 
+        text: "同为数字游民一族",
+        rarity: 'epic'
+      });
+    }
+  }
+  
+  // Social impact orientation (EPIC)
+  if (userContext.userInterests && attendee.topInterests) {
+    const userHasSocialImpact = userContext.userInterests.some(i => 
+      i.includes("公益") || i.includes("社会创新") || i.includes("可持续") || i.includes("环保")
+    );
+    const attendeeHasSocialImpact = attendee.topInterests.some(i => 
+      i.includes("公益") || i.includes("社会创新") || i.includes("可持续") || i.includes("环保")
+    );
+    
+    if (userHasSocialImpact && attendeeHasSocialImpact) {
+      predictions.push({ 
+        text: "都在做有意义的事",
+        rarity: 'epic'
+      });
+    }
+  }
+  
+  // Artistic creation experience (EPIC)
+  if (userContext.userInterests && attendee.topInterests) {
+    const artisticInterests = ["绘画", "摄影", "写作", "音乐创作", "设计"];
+    
+    const userArtisticCount = userContext.userInterests.filter(i => 
+      artisticInterests.some(art => i.includes(art))
+    ).length;
+    
+    const attendeeArtisticCount = attendee.topInterests.filter(i => 
+      artisticInterests.some(art => i.includes(art))
+    ).length;
+    
+    if (userArtisticCount >= 2 && attendeeArtisticCount >= 2) {
+      predictions.push({ 
+        text: "同为创作型灵魂",
+        rarity: 'epic'
+      });
+    }
+  }
+  
+  // Career transition journey (EPIC)
+  if (userContext.userSeniority === "Founder" && attendee.seniority === "Founder" &&
+      userContext.userIndustry && attendee.industry &&
+      userContext.userIndustry !== attendee.industry) {
+    predictions.push({ 
+      text: "都在跨界创业",
+      rarity: 'epic'
+    });
+  }
+  
+  // Multi-city living experience (EPIC - based on language diversity)
+  if (userContext.userLanguages && attendee.languagesComfort) {
+    const userLangCount = userContext.userLanguages.length;
+    const attendeeLangCount = attendee.languagesComfort.length;
+    
+    if (userLangCount >= 3 && attendeeLangCount >= 3) {
+      predictions.push({ 
+        text: "都是多元文化的探索者",
+        rarity: 'epic'
+      });
+    }
   }
   
   // Return top 6 predictions - perfect for 3x2 grid layout
