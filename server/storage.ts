@@ -3,7 +3,8 @@ import {
   type Event, type EventAttendance, type ChatMessage, type EventFeedback, type BlindBoxEvent,
   type InsertEventAttendance, type InsertChatMessage, type InsertEventFeedback,
   type RegisterUser, type InsertTestResponse, type InsertRoleResult, type RoleResult, type InterestsTopics,
-  users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents, testResponses, roleResults
+  type Notification, type InsertNotification, type NotificationCounts,
+  users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents, testResponses, roleResults, notifications
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -72,6 +73,18 @@ export interface IStorage {
     matchedAttendees: any[];
     matchExplanation?: string;
   }): Promise<BlindBoxEvent>;
+  
+  // Notification operations
+  getNotificationCounts(userId: string): Promise<{ discover: number; activities: number; chat: number; total: number }>;
+  markNotificationsAsRead(userId: string, category: string): Promise<void>;
+  createNotification(data: {
+    userId: string;
+    category: string;
+    type: string;
+    title: string;
+    message?: string;
+    relatedResourceId?: string;
+  }): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -667,6 +680,72 @@ export class DatabaseStorage implements IStorage {
     }
     
     return event;
+  }
+
+  // Notification operations
+  async getNotificationCounts(userId: string): Promise<NotificationCounts> {
+    const result = await db
+      .select({
+        category: notifications.category,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.isRead, false)
+        )
+      )
+      .groupBy(notifications.category);
+
+    const counts: NotificationCounts = {
+      discover: 0,
+      activities: 0,
+      chat: 0,
+      total: 0,
+    };
+
+    result.forEach(row => {
+      const count = Number(row.count) || 0;
+      if (row.category === 'discover') counts.discover = count;
+      if (row.category === 'activities') counts.activities = count;
+      if (row.category === 'chat') counts.chat = count;
+      counts.total += count;
+    });
+
+    return counts;
+  }
+
+  async markNotificationsAsRead(userId: string, category: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.category, category),
+          eq(notifications.isRead, false)
+        )
+      );
+  }
+
+  async createNotification(data: {
+    userId: string;
+    category: string;
+    type: string;
+    title: string;
+    message?: string;
+    relatedResourceId?: string;
+  }): Promise<void> {
+    await db.insert(notifications).values({
+      userId: data.userId,
+      category: data.category,
+      type: data.type,
+      title: data.title,
+      message: data.message,
+      relatedResourceId: data.relatedResourceId,
+      isRead: false,
+    });
   }
 }
 

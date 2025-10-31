@@ -1116,6 +1116,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notification endpoints
+  app.get('/api/notifications/counts', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const counts = await storage.getNotificationCounts(userId);
+      res.json(counts);
+    } catch (error) {
+      console.error("Error fetching notification counts:", error);
+      res.status(500).json({ message: "Failed to fetch notification counts" });
+    }
+  });
+
+  app.post('/api/notifications/mark-read', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { category } = req.body;
+      if (!category || !['discover', 'activities', 'chat'].includes(category)) {
+        return res.status(400).json({ message: "Invalid category" });
+      }
+
+      await storage.markNotificationsAsRead(userId, category);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark notifications as read" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
