@@ -505,6 +505,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🎯 DEMO: Seed demonstration events
+  app.post('/api/demo/seed-events', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const { db } = await import("./db");
+      const { blindBoxEvents } = await import("@shared/schema");
+      
+      // Create a matched event (tomorrow evening)
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(19, 0, 0, 0);
+      
+      const matchedEvent = await db.insert(blindBoxEvents).values({
+        userId,
+        title: "周四 19:00 · 饭局",
+        eventType: "饭局",
+        city: "香港",
+        district: "中环",
+        dateTime: tomorrow,
+        budgetTier: "150-250",
+        selectedLanguages: ["粤语", "普通话"],
+        selectedCuisines: ["日本料理", "粤菜"],
+        acceptNearby: true,
+        status: "matched",
+        progress: 100,
+        currentParticipants: 5,
+        totalParticipants: 5,
+        maleCount: 2,
+        femaleCount: 3,
+        restaurantName: "鮨一 Sushi Ichi",
+        restaurantAddress: "中环云咸街28号",
+        cuisineTags: ["日本料理", "寿司"],
+        matchedAttendees: [
+          { userId: "demo-1", displayName: "小美", archetype: "社交达人", topInterests: ["美食", "旅行"], ageBand: "25-30", industry: "科技" },
+          { userId: "demo-2", displayName: "阿强", archetype: "探索者", topInterests: ["美食", "摄影"], ageBand: "28-33", industry: "设计" },
+          { userId: "demo-3", displayName: "Lisa", archetype: "连接者", topInterests: ["美食", "艺术"], ageBand: "26-31", industry: "金融" },
+          { userId: "demo-4", displayName: "David", archetype: "创意家", topInterests: ["美食", "音乐"], ageBand: "30-35", industry: "媒体" }
+        ],
+        matchExplanation: "这桌是日料爱好者的聚会！大家都对精致料理和文化交流充满热情，年龄相近，话题契合度高。"
+      }).returning();
+      
+      // Create a completed event (last week)
+      const lastWeek = new Date();
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      lastWeek.setHours(20, 0, 0, 0);
+      
+      const completedEvent = await db.insert(blindBoxEvents).values({
+        userId,
+        title: "周三 20:00 · 酒局",
+        eventType: "酒局",
+        city: "深圳",
+        district: "南山区",
+        dateTime: lastWeek,
+        budgetTier: "200-300",
+        selectedLanguages: ["普通话", "英语"],
+        selectedCuisines: ["西餐", "酒吧"],
+        acceptNearby: false,
+        status: "completed",
+        progress: 100,
+        currentParticipants: 6,
+        totalParticipants: 6,
+        maleCount: 3,
+        femaleCount: 3,
+        restaurantName: "The Tap House 精酿酒吧",
+        restaurantAddress: "南山区海德三道1186号",
+        cuisineTags: ["酒吧", "西餐"],
+        matchedAttendees: [
+          { userId: "demo-5", displayName: "Sarah", archetype: "氛围组", topInterests: ["音乐", "社交"], ageBand: "27-32", industry: "创业" },
+          { userId: "demo-6", displayName: "Alex", archetype: "火花塞", topInterests: ["创业", "科技"], ageBand: "29-34", industry: "互联网" },
+          { userId: "demo-7", displayName: "小红", archetype: "故事家", topInterests: ["旅行", "摄影"], ageBand: "26-31", industry: "市场" },
+          { userId: "demo-8", displayName: "Tom", archetype: "探索者", topInterests: ["音乐", "电影"], ageBand: "28-33", industry: "设计" },
+          { userId: "demo-9", displayName: "Emma", archetype: "连接者", topInterests: ["艺术", "文化"], ageBand: "25-30", industry: "咨询" }
+        ],
+        matchExplanation: "这是一场创意人的深夜聚会！精酿啤酒配上有趣的灵魂，大家都喜欢分享故事和创意想法。"
+      }).returning();
+      
+      console.log("✅ Demo events created:", { matched: matchedEvent[0].id, completed: completedEvent[0].id });
+      
+      res.json({ 
+        message: "Demo events created successfully",
+        events: {
+          matched: matchedEvent[0],
+          completed: completedEvent[0]
+        }
+      });
+    } catch (error) {
+      console.error("Error seeding demo events:", error);
+      res.status(500).json({ message: "Failed to seed demo events" });
+    }
+  });
+
   // Blind Box Event routes
   app.get('/api/my-events', isPhoneAuthenticated, async (req: any, res) => {
     try {

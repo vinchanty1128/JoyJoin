@@ -53,6 +53,15 @@ export default function LoginPage() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // 🎯 DEMO: 自动生成演示活动数据
+      try {
+        await apiRequest("POST", "/api/demo/seed-events", {});
+        console.log("✅ Demo events seeded");
+      } catch (error) {
+        console.log("Demo events may already exist:", error);
+      }
+      
       toast({
         title: "登录成功",
         description: "欢迎回来！",
