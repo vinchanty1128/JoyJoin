@@ -89,6 +89,9 @@ export function setupPhoneAuth(app: Express) {
           lastName: phoneNumber.slice(-4), // 使用手机号后4位
         });
         userId = newUser.id;
+        
+        // 🎯 DEMO MODE: 为新用户创建演示数据
+        await createDemoDataForUser(userId);
       }
 
       // 设置session
@@ -135,3 +138,137 @@ export const isPhoneAuthenticated: RequestHandler = async (req, res, next) => {
   }
   res.status(401).json({ message: "Unauthorized" });
 };
+
+// 🎯 DEMO MODE: 为新用户创建完整的演示数据
+async function createDemoDataForUser(userId: string) {
+  try {
+    const { db } = await import("./db");
+    const { users, roleResults, blindBoxEvents } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+    
+    console.log(`🎯 Creating demo data for user: ${userId}`);
+    
+    // 1. 设置用户为已完成所有 onboarding 步骤
+    await db.update(users)
+      .set({
+        hasCompletedRegistration: true,
+        hasCompletedInterestsTopics: true,
+        hasCompletedPersonalityTest: true,
+        hasCompletedProfileSetup: true,
+        hasCompletedVoiceQuiz: true,
+      })
+      .where(eq(users.id, userId));
+    
+    // 2. 创建演示性格测试结果
+    await db.insert(roleResults).values({
+      userId,
+      primaryRole: '连接者',
+      primaryRoleScore: 18,
+      secondaryRole: '探索者',
+      secondaryRoleScore: 15,
+      roleSubtype: 'balanced',
+      roleScores: {
+        '连接者': 18,
+        '探索者': 15,
+        '火花塞': 12,
+        '氛围组': 10,
+        '故事家': 9,
+        '社交达人': 8,
+        '创意家': 6,
+        '守护者': 4
+      },
+      affinityScore: 8,
+      opennessScore: 9,
+      conscientiousnessScore: 7,
+      emotionalStabilityScore: 8,
+      extraversionScore: 7,
+      positivityScore: 9,
+      strengths: '你天生善于连接不同背景的人，总能找到大家的共同话题。你的亲和力让人感到舒适，愿意向你敞开心扉。',
+      challenges: '有时可能因为太在意他人感受而忽略自己的需求，需要学会适当表达自己的观点。',
+      idealFriendTypes: ['探索者', '故事家', '创意家'],
+      testVersion: 1,
+    });
+    
+    // 3. 更新用户的 archetype 字段
+    await db.update(users)
+      .set({
+        primaryRole: '连接者',
+        secondaryRole: '探索者',
+        archetype: '连接者',
+      })
+      .where(eq(users.id, userId));
+    
+    // 4. 创建已匹配活动（明天晚上的日料聚餐）
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(19, 0, 0, 0);
+    
+    await db.insert(blindBoxEvents).values({
+      userId,
+      title: '周四 19:00 · 饭局',
+      eventType: '饭局',
+      city: '香港',
+      district: '中环',
+      dateTime: tomorrow,
+      budgetTier: '150-250',
+      selectedLanguages: ['粤语', '普通话'],
+      selectedCuisines: ['日本料理', '粤菜'],
+      acceptNearby: true,
+      status: 'matched',
+      progress: 100,
+      currentParticipants: 5,
+      totalParticipants: 5,
+      maleCount: 2,
+      femaleCount: 3,
+      restaurantName: '鮨一 Sushi Ichi',
+      restaurantAddress: '中环云咸街28号',
+      cuisineTags: ['日本料理', '寿司'],
+      matchedAttendees: [
+        { userId: 'demo-1', displayName: '小美', archetype: '社交达人', topInterests: ['美食', '旅行'], ageBand: '25-30', industry: '科技' },
+        { userId: 'demo-2', displayName: '阿强', archetype: '探索者', topInterests: ['美食', '摄影'], ageBand: '28-33', industry: '设计' },
+        { userId: 'demo-3', displayName: 'Lisa', archetype: '连接者', topInterests: ['美食', '艺术'], ageBand: '26-31', industry: '金融' },
+        { userId: 'demo-4', displayName: 'David', archetype: '创意家', topInterests: ['美食', '音乐'], ageBand: '30-35', industry: '媒体' }
+      ],
+      matchExplanation: '这桌是日料爱好者的聚会！大家都对精致料理和文化交流充满热情，年龄相近，话题契合度高。',
+    });
+    
+    // 5. 创建已完成活动（上周的精酿啤酒聚会）
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    lastWeek.setHours(20, 0, 0, 0);
+    
+    await db.insert(blindBoxEvents).values({
+      userId,
+      title: '周三 20:00 · 酒局',
+      eventType: '酒局',
+      city: '深圳',
+      district: '南山区',
+      dateTime: lastWeek,
+      budgetTier: '200-300',
+      selectedLanguages: ['普通话', '英语'],
+      selectedCuisines: ['西餐', '酒吧'],
+      acceptNearby: false,
+      status: 'completed',
+      progress: 100,
+      currentParticipants: 6,
+      totalParticipants: 6,
+      maleCount: 3,
+      femaleCount: 3,
+      restaurantName: 'The Tap House 精酿酒吧',
+      restaurantAddress: '南山区海德三道1186号',
+      cuisineTags: ['酒吧', '西餐'],
+      matchedAttendees: [
+        { userId: 'demo-5', displayName: 'Sarah', archetype: '氛围组', topInterests: ['音乐', '社交'], ageBand: '27-32', industry: '创业' },
+        { userId: 'demo-6', displayName: 'Alex', archetype: '火花塞', topInterests: ['创业', '科技'], ageBand: '29-34', industry: '互联网' },
+        { userId: 'demo-7', displayName: '小红', archetype: '故事家', topInterests: ['旅行', '摄影'], ageBand: '26-31', industry: '市场' },
+        { userId: 'demo-8', displayName: 'Tom', archetype: '探索者', topInterests: ['音乐', '电影'], ageBand: '28-33', industry: '设计' },
+        { userId: 'demo-9', displayName: 'Emma', archetype: '连接者', topInterests: ['艺术', '文化'], ageBand: '25-30', industry: '咨询' }
+      ],
+      matchExplanation: '这是一场创意人的深夜聚会！精酿啤酒配上有趣的灵魂，大家都喜欢分享故事和创意想法。',
+    });
+    
+    console.log('✅ Demo data created successfully for user:', userId);
+  } catch (error) {
+    console.error('❌ Failed to create demo data:', error);
+  }
+}
