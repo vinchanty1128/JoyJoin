@@ -93,6 +93,12 @@ export class DatabaseStorage implements IStorage {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
+        // 🎯 DEMO MODE: 自动跳过所有引导步骤，直接进入活动页面
+        hasCompletedRegistration: true,
+        hasCompletedInterestsTopics: true,
+        hasCompletedPersonalityTest: true,
+        hasCompletedProfileSetup: true,
+        hasCompletedVoiceQuiz: true,
       })
       .returning();
     return user;
