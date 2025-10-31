@@ -105,19 +105,20 @@ export default function UserConnectionCard({
     >
       <div 
         className="relative h-[468px]"
-        style={{ perspective: "1200px" }}
+        style={{ perspective: "1200px", willChange: "transform" }}
       >
         <motion.div
           className="relative w-full h-full"
           style={{ 
             transformStyle: "preserve-3d",
+            willChange: "transform"
           }}
           animate={{ 
             rotateY: isFlipped ? 180 : 0,
           }}
           transition={{ 
-            duration: 0.7,
-            ease: [0.4, 0, 0.2, 1], // Custom cubic-bezier for smooth flip
+            duration: 0.5,
+            ease: [0.4, 0.0, 0.2, 1],
           }}
         >
           {/* Front Side - User Info */}
@@ -195,24 +196,22 @@ export default function UserConnectionCard({
                 {/* Lower Zone: Energy Ring surrounding Connection Count */}
                 <div className="flex-1 flex flex-col justify-center items-center gap-4 border-t pt-6">
                   {/* Energy Ring with Connection Count */}
-                  <div className="relative">
-                    <EnergyRing 
-                      percentage={matchQuality.percentage}
-                      qualityTier={matchQuality.qualityTier}
-                      visualBoost={matchQuality.visualBoost}
-                      size={140}
-                      strokeWidth={8}
-                    >
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="text-5xl font-bold text-primary">
-                          {connectionTags.length}
-                        </div>
-                        <div className="text-xs font-medium text-muted-foreground mt-1 text-center px-2">
-                          个潜在契合点
-                        </div>
+                  <EnergyRing 
+                    percentage={matchQuality.percentage}
+                    qualityTier={matchQuality.qualityTier}
+                    visualBoost={matchQuality.visualBoost}
+                    size={140}
+                    strokeWidth={8}
+                  >
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-5xl font-bold text-primary">
+                        {connectionTags.length}
                       </div>
-                    </EnergyRing>
-                  </div>
+                      <div className="text-xs font-medium text-muted-foreground mt-1 text-center px-2">
+                        个潜在契合点
+                      </div>
+                    </div>
+                  </EnergyRing>
 
                   <motion.button
                     onClick={() => setIsFlipped(true)}

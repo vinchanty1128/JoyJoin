@@ -76,7 +76,7 @@ export default function MysteryBadge({
   return (
     <motion.div
       className="relative w-full aspect-[4/5] cursor-pointer"
-      style={{ perspective: "1000px" }}
+      style={{ perspective: "1000px", willChange: "transform" }}
       initial={{ scale: 0, y: 20, opacity: 0 }}
       animate={{
         scale: 1,
@@ -98,9 +98,15 @@ export default function MysteryBadge({
     >
       <motion.div
         className="relative w-full h-full"
-        style={{ transformStyle: "preserve-3d" }}
+        style={{ 
+          transformStyle: "preserve-3d",
+          willChange: "transform"
+        }}
         animate={{ rotateY: isRevealed ? 180 : 0 }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
+        transition={{ 
+          duration: 0.5,
+          ease: [0.4, 0.0, 0.2, 1]
+        }}
       >
         {/* Front - Mystery Box */}
         <div
