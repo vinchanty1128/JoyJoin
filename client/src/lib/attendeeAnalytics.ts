@@ -202,7 +202,7 @@ export interface SparkPredictionContext {
   userInterests?: string[];
   userEducationLevel?: string;
   userIndustry?: string;
-  userAgeBand?: string;
+  userAge?: number;
   userRelationshipStatus?: string;
   userStudyLocale?: string;
   userSeniority?: string;
@@ -350,10 +350,11 @@ export function generateSparkPredictions(
     }
   }
   
-  // Priority 6: Age band matching (COMMON - life stage alignment)
-  if (userContext.userAgeBand && attendee.ageBand) {
-    if (userContext.userAgeBand === attendee.ageBand) {
-      predictions.push({ text: `同为${userContext.userAgeBand}年龄段`, rarity: 'common' });
+  // Priority 6: Age similarity (COMMON - life stage alignment)
+  if (userContext.userAge && attendee.age) {
+    const ageDiff = Math.abs(userContext.userAge - attendee.age);
+    if (ageDiff <= 3) {
+      predictions.push({ text: "年龄相近", rarity: 'common' });
     }
   }
   
