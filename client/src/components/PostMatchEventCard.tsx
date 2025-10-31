@@ -8,7 +8,6 @@ interface AttendeeData {
   displayName: string;
   archetype?: string;
   topInterests?: string[];
-  ageBand?: string;
   industry?: string;
   ageVisible?: boolean;
   industryVisible?: boolean;
@@ -20,7 +19,7 @@ interface PostMatchEventCardProps {
   userInterests?: string[];
   userEducationLevel?: string;
   userIndustry?: string;
-  userAgeBand?: string;
+  userAge?: number;
   userRelationshipStatus?: string;
   userStudyLocale?: string;
   userSeniority?: string;
@@ -34,7 +33,7 @@ export default function PostMatchEventCard({
   userInterests = [],
   userEducationLevel,
   userIndustry,
-  userAgeBand,
+  userAge,
   userRelationshipStatus,
   userStudyLocale,
   userSeniority,
@@ -59,7 +58,7 @@ export default function PostMatchEventCard({
           userInterests={userInterests}
           userEducationLevel={userEducationLevel}
           userIndustry={userIndustry}
-          userAgeBand={userAgeBand}
+          userAge={userAge}
           userRelationshipStatus={userRelationshipStatus}
           userStudyLocale={userStudyLocale}
           userSeniority={userSeniority}

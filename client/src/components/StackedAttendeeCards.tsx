@@ -9,7 +9,6 @@ interface Attendee {
   displayName: string;
   archetype?: string;
   topInterests?: string[];
-  ageBand?: string;
   industry?: string;
   ageVisible?: boolean;
   industryVisible?: boolean;
@@ -229,25 +228,17 @@ export default function StackedAttendeeCards({ attendees, connectionPoints }: St
                     </motion.div>
                   )}
 
-                  {(selectedAttendee.ageVisible || selectedAttendee.industryVisible) && (
+                  {selectedAttendee.industryVisible && selectedAttendee.industry && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                       className="pt-4 border-t space-y-2 text-sm"
                     >
-                      {selectedAttendee.ageVisible && selectedAttendee.ageBand && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">年龄段</span>
-                          <span className="font-medium">{selectedAttendee.ageBand}</span>
-                        </div>
-                      )}
-                      {selectedAttendee.industryVisible && selectedAttendee.industry && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">行业</span>
-                          <span className="font-medium">{selectedAttendee.industry}</span>
-                        </div>
-                      )}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">行业</span>
+                        <span className="font-medium">{selectedAttendee.industry}</span>
+                      </div>
                     </motion.div>
                   )}
                 </CardContent>

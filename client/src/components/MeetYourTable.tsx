@@ -8,7 +8,7 @@ interface MeetYourTableProps {
   userInterests?: string[];
   userEducationLevel?: string;
   userIndustry?: string;
-  userAgeBand?: string;
+  userAge?: number;
   userRelationshipStatus?: string;
   userStudyLocale?: string;
   userSeniority?: string;
@@ -21,7 +21,7 @@ export default function MeetYourTable({
   userInterests = [],
   userEducationLevel,
   userIndustry,
-  userAgeBand,
+  userAge,
   userRelationshipStatus,
   userStudyLocale,
   userSeniority,
@@ -38,7 +38,7 @@ export default function MeetYourTable({
     userInterests,
     userEducationLevel,
     userIndustry,
-    userAgeBand,
+    userAge,
     userRelationshipStatus,
     userStudyLocale,
     userSeniority,

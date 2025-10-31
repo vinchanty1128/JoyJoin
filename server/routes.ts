@@ -549,10 +549,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         restaurantAddress: "中环云咸街28号",
         cuisineTags: ["日本料理", "寿司"],
         matchedAttendees: [
-          { userId: "demo-1", displayName: "小美", archetype: "社交达人", topInterests: ["美食", "旅行"], ageBand: "25-30", industry: "科技" },
-          { userId: "demo-2", displayName: "阿强", archetype: "探索者", topInterests: ["美食", "摄影"], ageBand: "28-33", industry: "设计" },
-          { userId: "demo-3", displayName: "Lisa", archetype: "连接者", topInterests: ["美食", "艺术"], ageBand: "26-31", industry: "金融" },
-          { userId: "demo-4", displayName: "David", archetype: "创意家", topInterests: ["美食", "音乐"], ageBand: "30-35", industry: "媒体" }
+          { userId: "demo-1", displayName: "小美", archetype: "社交达人", topInterests: ["美食", "旅行"], age: 27, birthdate: "1998-05-15", industry: "科技" },
+          { userId: "demo-2", displayName: "阿强", archetype: "探索者", topInterests: ["美食", "摄影"], age: 30, birthdate: "1995-03-20", industry: "设计" },
+          { userId: "demo-3", displayName: "Lisa", archetype: "连接者", topInterests: ["美食", "艺术"], age: 28, birthdate: "1997-07-10", industry: "金融" },
+          { userId: "demo-4", displayName: "David", archetype: "创意家", topInterests: ["美食", "音乐"], age: 32, birthdate: "1993-11-05", industry: "媒体" }
         ],
         matchExplanation: "这桌是日料爱好者的聚会！大家都对精致料理和文化交流充满热情，年龄相近，话题契合度高。"
       }).returning();
@@ -583,11 +583,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         restaurantAddress: "南山区海德三道1186号",
         cuisineTags: ["酒吧", "西餐"],
         matchedAttendees: [
-          { userId: "demo-5", displayName: "Sarah", archetype: "氛围组", topInterests: ["音乐", "社交"], ageBand: "27-32", industry: "创业" },
-          { userId: "demo-6", displayName: "Alex", archetype: "火花塞", topInterests: ["创业", "科技"], ageBand: "29-34", industry: "互联网" },
-          { userId: "demo-7", displayName: "小红", archetype: "故事家", topInterests: ["旅行", "摄影"], ageBand: "26-31", industry: "市场" },
-          { userId: "demo-8", displayName: "Tom", archetype: "探索者", topInterests: ["音乐", "电影"], ageBand: "28-33", industry: "设计" },
-          { userId: "demo-9", displayName: "Emma", archetype: "连接者", topInterests: ["艺术", "文化"], ageBand: "25-30", industry: "咨询" }
+          { userId: "demo-5", displayName: "Sarah", archetype: "氛围组", topInterests: ["音乐", "社交"], age: 29, birthdate: "1996-04-12", industry: "创业" },
+          { userId: "demo-6", displayName: "Alex", archetype: "火花塞", topInterests: ["创业", "科技"], age: 31, birthdate: "1994-09-08", industry: "互联网" },
+          { userId: "demo-7", displayName: "小红", archetype: "故事家", topInterests: ["旅行", "摄影"], age: 28, birthdate: "1997-02-18", industry: "市场" },
+          { userId: "demo-8", displayName: "Tom", archetype: "探索者", topInterests: ["音乐", "电影"], age: 30, birthdate: "1995-07-22", industry: "设计" },
+          { userId: "demo-9", displayName: "Emma", archetype: "连接者", topInterests: ["艺术", "文化"], age: 27, birthdate: "1998-01-30", industry: "咨询" }
         ],
         matchExplanation: "这是一场创意人的深夜聚会！精酿啤酒配上有趣的灵魂，大家都喜欢分享故事和创意想法。"
       }).returning();

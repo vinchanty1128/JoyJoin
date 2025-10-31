@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, MapPin, DollarSign, Users, Phone, Navigation, AlertCircle } from "lucide-react";
 import type { BlindBoxEvent } from "@shared/schema";
 import { getCurrencySymbol } from "@/lib/currency";
+import { calculateAge } from "@shared/utils";
 import IcebreakerTool from "@/components/IcebreakerTool";
 import PostMatchEventCard from "@/components/PostMatchEventCard";
 import { useAuth } from "@/hooks/useAuth";
@@ -206,7 +207,6 @@ export default function BlindBoxEventDetailPage() {
               displayName: string;
               archetype?: string;
               topInterests?: string[];
-              ageBand?: string;
               industry?: string;
               ageVisible?: boolean;
               industryVisible?: boolean;
@@ -215,7 +215,7 @@ export default function BlindBoxEventDetailPage() {
             userInterests={(user?.interestsRankedTop3 as string[] | undefined) || ["film_entertainment", "travel_exploration"]}
             userEducationLevel={user?.educationLevel || "Master's"}
             userIndustry={user?.industry || "科技"}
-            userAgeBand={user?.ageBand || "28-34"}
+            userAge={user?.birthdate ? calculateAge(user.birthdate) : undefined}
             userRelationshipStatus={user?.relationshipStatus || "Single"}
             userStudyLocale={user?.studyLocale || "Overseas"}
             userSeniority={user?.seniority || "Mid"}

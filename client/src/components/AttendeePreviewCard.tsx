@@ -51,7 +51,7 @@ interface AttendeePreviewCardProps {
   userInterests?: string[];
   userEducationLevel?: string;
   userIndustry?: string;
-  userAgeBand?: string;
+  userAge?: number;
   userRelationshipStatus?: string;
   userStudyLocale?: string;
   userSeniority?: string;
@@ -62,7 +62,7 @@ export default function AttendeePreviewCard({
   userInterests = [],
   userEducationLevel,
   userIndustry,
-  userAgeBand,
+  userAge,
   userRelationshipStatus,
   userStudyLocale,
   userSeniority,
@@ -82,7 +82,7 @@ export default function AttendeePreviewCard({
       userInterests,
       userEducationLevel,
       userIndustry,
-      userAgeBand,
+      userAge,
       userRelationshipStatus,
       userStudyLocale,
       userSeniority,
@@ -214,9 +214,6 @@ export default function AttendeePreviewCard({
                 {attendee.age && (
                   <span>{attendee.age}岁</span>
                 )}
-                {!attendee.age && attendee.ageBand && (
-                  <span>{attendee.ageBand}</span>
-                )}
               </div>
 
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-foreground">
@@ -234,10 +231,10 @@ export default function AttendeePreviewCard({
                 )}
               </div>
 
-              {attendee.hometown && (
+              {attendee.hometownRegionCity && (
                 <div className="flex items-center gap-1 text-foreground">
                   <MapPin className="h-3.5 w-3.5" />
-                  <span>{attendee.hometown}</span>
+                  <span>{attendee.hometownRegionCity}</span>
                 </div>
               )}
             </div>
