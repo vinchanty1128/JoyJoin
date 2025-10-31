@@ -247,7 +247,7 @@ async function createDemoDataForUser(userId: string) {
           fieldOfStudy: '艺术设计',
           seniority: 'Senior',
           relationshipStatus: 'Single',
-          languagesComfort: ['普通话 (Mandarin)', 'English', '日本語 (Japanese)'],
+          languagesComfort: ['普通话', '英语', '日语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -267,7 +267,7 @@ async function createDemoDataForUser(userId: string) {
           fieldOfStudy: '商业管理',
           seniority: 'Founder',
           relationshipStatus: 'Single',
-          languagesComfort: ['普通话 (Mandarin)', 'English', 'Français (French)', 'Español (Spanish)'],
+          languagesComfort: ['普通话', '英语', '法语', '西班牙语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -287,7 +287,7 @@ async function createDemoDataForUser(userId: string) {
           fieldOfStudy: '视觉设计',
           seniority: 'Mid',
           relationshipStatus: 'Single',
-          languagesComfort: ['普通话 (Mandarin)', 'English', '粤语 (Cantonese)'],
+          languagesComfort: ['普通话', '英语', '粤语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -307,7 +307,7 @@ async function createDemoDataForUser(userId: string) {
           fieldOfStudy: '计算机科学',
           seniority: 'Founder',
           relationshipStatus: 'Married/Partnered',
-          languagesComfort: ['普通话 (Mandarin)', 'English', 'Deutsch (German)'],
+          languagesComfort: ['普通话', '英语', '德语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -357,7 +357,7 @@ async function createDemoDataForUser(userId: string) {
           seniority: 'Founder',
           relationshipStatus: 'Single',
           hometownRegionCity: '深圳',
-          languagesComfort: ['普通话 (Mandarin)', 'English'],
+          languagesComfort: ['普通话', '英语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -377,7 +377,7 @@ async function createDemoDataForUser(userId: string) {
           seniority: 'Senior',
           relationshipStatus: 'Single',
           hometownRegionCity: '杭州',
-          languagesComfort: ['普通话 (Mandarin)', 'English'],
+          languagesComfort: ['普通话', '英语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -397,7 +397,7 @@ async function createDemoDataForUser(userId: string) {
           seniority: 'Mid',
           relationshipStatus: 'Single',
           hometownRegionCity: '成都',
-          languagesComfort: ['普通话 (Mandarin)'],
+          languagesComfort: ['普通话'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -417,7 +417,7 @@ async function createDemoDataForUser(userId: string) {
           seniority: 'Mid',
           relationshipStatus: 'Married/Partnered',
           hometownRegionCity: '香港',
-          languagesComfort: ['English', '粤语 (Cantonese)'],
+          languagesComfort: ['英语', '粤语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true
@@ -437,7 +437,7 @@ async function createDemoDataForUser(userId: string) {
           seniority: 'Junior',
           relationshipStatus: 'Single',
           hometownRegionCity: '上海',
-          languagesComfort: ['普通话 (Mandarin)', 'English'],
+          languagesComfort: ['普通话', '英语'],
           ageVisible: true,
           educationVisible: true,
           industryVisible: true

@@ -121,43 +121,43 @@ export default function RegistrationPage() {
 
   // Language options
   const languageOptions = [
-    "普通话 (Mandarin)",
-    "粤语 (Cantonese)",
-    "English",
-    "日本语 (Japanese)",
-    "한국어 (Korean)",
-    "Français (French)",
-    "Deutsch (German)",
-    "Español (Spanish)",
+    "普通话",
+    "粤语",
+    "英语",
+    "日语",
+    "韩语",
+    "法语",
+    "德语",
+    "西班牙语",
   ];
 
   // Overseas regions
   const overseasRegionOptions = [
-    "北美 (North America)",
-    "欧洲 (Europe)",
-    "东亚 (East Asia)",
-    "东南亚 (Southeast Asia)",
-    "南亚 (South Asia)",
-    "中东 (Middle East)",
-    "大洋洲 (Oceania)",
-    "拉美 (Latin America)",
-    "非洲 (Africa)",
+    "北美",
+    "欧洲",
+    "东亚",
+    "东南亚",
+    "南亚",
+    "中东",
+    "大洋洲",
+    "拉美",
+    "非洲",
   ];
 
   const industryOptions = [
-    "大厂 (Big Tech)",
-    "金融 (Finance)",
-    "科技初创 (Tech Startup)",
+    "大厂",
+    "金融",
+    "科技初创",
     "AI/ML",
-    "跨境电商 (Cross-border E-commerce)",
-    "投资 (Investment)",
-    "咨询 (Consulting)",
-    "消费品 (Consumer Goods)",
-    "艺术/设计 (Arts/Design)",
-    "教育 (Education)",
-    "医疗 (Healthcare)",
-    "政府/公共 (Government/Public)",
-    "其他 (Other)",
+    "跨境电商",
+    "投资",
+    "咨询",
+    "消费品",
+    "艺术/设计",
+    "教育",
+    "医疗",
+    "政府/公共",
+    "其他",
   ];
 
   const toggleLanguage = (lang: string) => {
