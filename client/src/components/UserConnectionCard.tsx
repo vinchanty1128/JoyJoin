@@ -170,30 +170,49 @@ export default function UserConnectionCard({
                         </div>
                       )}
 
-                      {/* Education · Industry */}
-                      {(educationDisplay || attendee.industry) && (
+                      {/* Education · Field of Study */}
+                      {(educationDisplay || attendee.fieldOfStudy) && (
                         <div className="flex items-center gap-1.5 text-foreground">
-                          {educationDisplay && (
-                            <>
-                              <GraduationCap className="h-3 w-3 text-muted-foreground" />
-                              <span>{educationDisplay}</span>
-                            </>
-                          )}
-                          {educationDisplay && attendee.industry && <span className="text-muted-foreground">·</span>}
-                          {attendee.industry && (
-                            <>
-                              {!educationDisplay && <Briefcase className="h-3 w-3 text-muted-foreground" />}
-                              <span>{attendee.industry}</span>
-                            </>
-                          )}
+                          <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                          <span>
+                            {educationDisplay && <span>{educationDisplay}</span>}
+                            {educationDisplay && attendee.fieldOfStudy && <span className="text-muted-foreground"> · </span>}
+                            {attendee.fieldOfStudy && <span className="text-muted-foreground">{attendee.fieldOfStudy}</span>}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Industry · Seniority */}
+                      {(attendee.industry || attendee.seniority) && (
+                        <div className="flex items-center gap-1.5 text-foreground">
+                          <Briefcase className="h-3 w-3 text-muted-foreground" />
+                          <span>
+                            {attendee.industry && <span>{attendee.industry}</span>}
+                            {attendee.industry && attendee.seniority && <span className="text-muted-foreground"> · </span>}
+                            {attendee.seniority && (
+                              <span className="text-muted-foreground">
+                                {attendee.seniority === "Junior" ? "初级" : 
+                                 attendee.seniority === "Mid" ? "中级" : 
+                                 attendee.seniority === "Senior" ? "高级" :
+                                 attendee.seniority === "Founder" ? "创始人" : attendee.seniority}
+                              </span>
+                            )}
+                          </span>
                         </div>
                       )}
 
                       {/* Hometown */}
-                      {attendee.hometown && (
+                      {attendee.hometownRegionCity && (
                         <div className="flex items-center gap-1.5 text-foreground">
                           <MapPin className="h-3 w-3 text-muted-foreground" />
-                          <span>{attendee.hometown}</span>
+                          <span>{attendee.hometownRegionCity}</span>
+                        </div>
+                      )}
+
+                      {/* Languages */}
+                      {attendee.languagesComfort && attendee.languagesComfort.length > 0 && (
+                        <div className="text-muted-foreground leading-relaxed">
+                          🌐 {attendee.languagesComfort.join(" · ")}
                         </div>
                       )}
                     </div>
@@ -235,7 +254,7 @@ export default function UserConnectionCard({
             </Card>
           </div>
 
-          {/* Back Side - Mystery Badges */}
+          {/* Back Side - Mystery Badges Only */}
           <div
             className="absolute inset-0 w-full h-full"
             style={{
@@ -246,7 +265,7 @@ export default function UserConnectionCard({
           >
             <Card className="h-full overflow-hidden border-2 hover-elevate transition-all">
               <CardContent className="p-4 h-full flex flex-col">
-                {/* Header with flip back button */}
+                {/* Header with title and flip back button */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-sm font-medium text-muted-foreground">
                     ✨ 我们的潜在契合点

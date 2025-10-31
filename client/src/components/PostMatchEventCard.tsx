@@ -2,16 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import MeetYourTable from "./MeetYourTable";
 import WhyThisTable from "./WhyThisTable";
 import { Users } from "lucide-react";
-
-interface AttendeeData {
-  userId: string;
-  displayName: string;
-  archetype?: string;
-  topInterests?: string[];
-  industry?: string;
-  ageVisible?: boolean;
-  industryVisible?: boolean;
-}
+import type { AttendeeData } from "@/lib/attendeeAnalytics";
 
 interface PostMatchEventCardProps {
   matchedAttendees?: AttendeeData[];
