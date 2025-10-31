@@ -97,6 +97,13 @@ export default function UserConnectionCard({
                           attendee.educationLevel === "Master's" ? "硕士" :
                           attendee.educationLevel === "Doctorate" ? "博士" :
                           attendee.educationLevel || "";
+  
+  // Match number color to energy ring tier
+  const numberColorClass = {
+    epic: 'text-[#F59E0B]',    // Gold for epic
+    rare: 'text-[#8B5CF6]',    // Purple for rare
+    common: 'text-[#6B7280]'   // Gray for common
+  }[matchQuality.qualityTier];
 
   return (
     <div
@@ -204,7 +211,7 @@ export default function UserConnectionCard({
                     strokeWidth={8}
                   >
                     <div className="flex flex-col items-center justify-center">
-                      <div className="text-5xl font-bold text-primary">
+                      <div className={`text-5xl font-bold ${numberColorClass}`}>
                         {connectionTags.length}
                       </div>
                       <div className="text-xs font-medium text-muted-foreground mt-1 text-center px-2">

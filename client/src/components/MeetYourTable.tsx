@@ -12,6 +12,8 @@ interface MeetYourTableProps {
   userRelationshipStatus?: string;
   userStudyLocale?: string;
   userSeniority?: string;
+  userFieldOfStudy?: string;
+  userLanguages?: string[];
 }
 
 export default function MeetYourTable({
@@ -23,6 +25,8 @@ export default function MeetYourTable({
   userRelationshipStatus,
   userStudyLocale,
   userSeniority,
+  userFieldOfStudy,
+  userLanguages,
 }: MeetYourTableProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +42,8 @@ export default function MeetYourTable({
     userRelationshipStatus,
     userStudyLocale,
     userSeniority,
+    userFieldOfStudy,
+    userLanguages,
   };
 
   const interestIcons: Record<string, string> = {

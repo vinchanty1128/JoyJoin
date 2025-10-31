@@ -219,6 +219,8 @@ export default function BlindBoxEventDetailPage() {
             userRelationshipStatus={user?.relationshipStatus || "Single"}
             userStudyLocale={user?.studyLocale || "Overseas"}
             userSeniority={user?.seniority || "Mid"}
+            userFieldOfStudy={user?.fieldOfStudy || undefined}
+            userLanguages={user?.languagesComfort as string[] | undefined}
           />
         )}
 

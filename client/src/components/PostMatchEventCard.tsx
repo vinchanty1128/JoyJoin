@@ -24,6 +24,8 @@ interface PostMatchEventCardProps {
   userRelationshipStatus?: string;
   userStudyLocale?: string;
   userSeniority?: string;
+  userFieldOfStudy?: string;
+  userLanguages?: string[];
 }
 
 export default function PostMatchEventCard({ 
@@ -36,6 +38,8 @@ export default function PostMatchEventCard({
   userRelationshipStatus,
   userStudyLocale,
   userSeniority,
+  userFieldOfStudy,
+  userLanguages,
 }: PostMatchEventCardProps) {
   if (!matchedAttendees || matchedAttendees.length === 0) {
     return null;
@@ -59,6 +63,8 @@ export default function PostMatchEventCard({
           userRelationshipStatus={userRelationshipStatus}
           userStudyLocale={userStudyLocale}
           userSeniority={userSeniority}
+          userFieldOfStudy={userFieldOfStudy}
+          userLanguages={userLanguages}
         />
         {matchExplanation && <WhyThisTable explanation={matchExplanation} />}
       </CardContent>
