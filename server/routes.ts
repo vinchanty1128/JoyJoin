@@ -511,6 +511,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const { db } = await import("./db");
       const { blindBoxEvents } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      // Check if user already has demo events
+      const existingEvents = await db.select().from(blindBoxEvents).where(eq(blindBoxEvents.userId, userId));
+      const hasMatchedDemo = existingEvents.some(e => e.status === 'matched' && e.restaurantName?.includes('Sushi'));
+      const hasCompletedDemo = existingEvents.some(e => e.status === 'completed' && e.restaurantName?.includes('Tap House'));
+      
+      if (hasMatchedDemo && hasCompletedDemo) {
+        console.log("✅ Demo events already exist for user:", userId);
+        return res.json({ message: "Demo events already exist" });
+      }
       
       // Create a matched event (tomorrow evening)
       const tomorrow = new Date();
