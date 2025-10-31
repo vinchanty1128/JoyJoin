@@ -39,10 +39,9 @@ export const users = pgTable("users", {
   hasCompletedVoiceQuiz: boolean("has_completed_voice_quiz").default(false),
   
   // Registration fields - Identity
-  birthdate: date("birthdate"), // Used to compute age_band
-  age: integer("age"), // Deprecated in favor of birthdate
-  ageBand: varchar("age_band"), // 18-22, 23-27, 28-34, 35-44, 45-54, 55+
-  ageVisibility: varchar("age_visibility").default("show_band_only"), // hide_all, show_band_only, show_exact_age
+  birthdate: date("birthdate"), // Used to calculate age
+  age: integer("age"), // Deprecated - calculated from birthdate
+  ageVisibility: varchar("age_visibility").default("hide_all"), // hide_all, show_exact_age
   gender: varchar("gender"), // Woman, Man, Nonbinary, Self-describe, Prefer not to say
   pronouns: varchar("pronouns"), // She/Her, He/Him, They/Them, Self-describe, Prefer not to say
   
@@ -315,7 +314,7 @@ export const blindBoxEvents = pgTable("blind_box_events", {
   isGirlsNight: boolean("is_girls_night").default(false),
   
   // Matched attendee data (populated when status = matched)
-  matchedAttendees: jsonb("matched_attendees"), // Array of {userId, displayName, archetype, topInterests, ageBand, industry, ageVisible, industryVisible}
+  matchedAttendees: jsonb("matched_attendees"), // Array of {userId, displayName, archetype, topInterests, age, industry, ageVisible, industryVisible}
   matchExplanation: text("match_explanation"), // "Why This Table?" auto-generated narrative
   
   // Invite info
@@ -399,11 +398,8 @@ export const roleResults = pgTable("role_results", {
 export const registerUserSchema = z.object({
   // Identity
   displayName: z.string().min(1, "请输入昵称"),
-  birthdate: z.string().optional(), // ISO date string
-  ageBand: z.enum(["18-22", "23-27", "28-34", "35-44", "45-54", "55+"], {
-    errorMap: () => ({ message: "请选择年龄段" }),
-  }),
-  ageVisibility: z.enum(["hide_all", "show_band_only", "show_exact_age"]).default("show_band_only"),
+  birthdate: z.string().min(1, "请选择生日"), // ISO date string - now required
+  ageVisibility: z.enum(["hide_all", "show_exact_age"]).default("hide_all"),
   gender: z.enum(["Woman", "Man", "Nonbinary", "Self-describe", "Prefer not to say"], {
     errorMap: () => ({ message: "请选择性别" }),
   }),
