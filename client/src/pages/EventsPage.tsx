@@ -3,12 +3,12 @@ import BottomNav from "@/components/BottomNav";
 import PendingMatchCard from "@/components/PendingMatchCard";
 import MatchedEventCard from "@/components/MatchedEventCard";
 import CompletedEventCard from "@/components/CompletedEventCard";
+import SlidingTabs from "@/components/SlidingTabs";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function EventsPage() {
   const [activeTab, setActiveTab] = useState<"pending" | "matched" | "completed">("pending");
@@ -63,50 +63,30 @@ export default function EventsPage() {
     );
   }
 
+  const tabs = [
+    { value: "pending", label: "匹配中", count: pendingEvents.length },
+    { value: "matched", label: "已匹配", count: matchedEvents.length },
+    { value: "completed", label: "已完成", count: completedEvents.length },
+  ];
+
   return (
     <div className="min-h-screen bg-background pb-16">
       <MobileHeader title="活动" />
       
-      <div className="px-4 py-4 space-y-4">
-        <p className="text-sm text-muted-foreground">
+      <div className="py-4 space-y-4">
+        <p className="text-sm text-muted-foreground px-4">
           展示你已报名的盲盒与已匹配活动
         </p>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="w-full">
-            <TabsList className="w-full grid grid-cols-3 h-12 bg-muted/50" data-testid="tabs-event-status">
-              <TabsTrigger 
-                value="pending" 
-                className="text-base data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                data-testid="tab-pending"
-              >
-                匹配中
-                {pendingEvents.length > 0 && (
-                  <span className="ml-1.5 text-xs text-muted-foreground">({pendingEvents.length})</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="matched" 
-                className="text-base data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                data-testid="tab-matched"
-              >
-                已匹配
-                {matchedEvents.length > 0 && (
-                  <span className="ml-1.5 text-xs text-muted-foreground">({matchedEvents.length})</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="completed" 
-                className="text-base data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                data-testid="tab-completed"
-              >
-                已完成
-                {completedEvents.length > 0 && (
-                  <span className="ml-1.5 text-xs text-muted-foreground">({completedEvents.length})</span>
-                )}
-              </TabsTrigger>
-            </TabsList>
+        <SlidingTabs 
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={(value) => setActiveTab(value as typeof activeTab)}
+        />
 
-            <TabsContent value="pending" className="mt-4 space-y-3">
+        <div className="px-4">
+          {activeTab === "pending" && (
+            <div className="space-y-3">
               {pendingEvents.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="mb-4">
@@ -128,9 +108,11 @@ export default function EventsPage() {
                   />
                 ))
               )}
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="matched" className="mt-4 space-y-3">
+          {activeTab === "matched" && (
+            <div className="space-y-3">
               {matchedEvents.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="mb-4">
@@ -148,9 +130,11 @@ export default function EventsPage() {
                   <MatchedEventCard key={event.id} event={event} />
                 ))
               )}
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="completed" className="mt-4 space-y-3">
+          {activeTab === "completed" && (
+            <div className="space-y-3">
               {completedEvents.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="mb-4">
@@ -175,8 +159,9 @@ export default function EventsPage() {
                   );
                 })
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
+        </div>
       </div>
 
       <BottomNav />
