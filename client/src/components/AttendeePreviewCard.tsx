@@ -195,7 +195,7 @@ export default function AttendeePreviewCard({
             transform: "rotateY(180deg)",
           }}
         >
-          <CardContent className="p-3 space-y-2.5 h-[320px] flex flex-col">
+          <CardContent className="p-3 space-y-3 h-[320px] flex flex-col">
             <div className="flex items-start justify-between">
               <div className="font-semibold text-lg">
                 {attendee.displayName}
@@ -203,58 +203,63 @@ export default function AttendeePreviewCard({
               <RotateCw className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </div>
 
-            <div className="space-y-1.5 text-sm">
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-foreground">
-                {genderDisplay && (
-                  <div className="flex items-center gap-1">
-                    <User className="h-3.5 w-3.5" />
-                    <span>{genderDisplay}</span>
-                  </div>
-                )}
-                {attendee.age && (
-                  <span>{attendee.age}岁</span>
-                )}
-              </div>
+            <div className="space-y-2.5 text-sm flex-shrink-0">
+              {(genderDisplay || attendee.age) && (
+                <div className="flex items-center gap-2 text-foreground">
+                  {genderDisplay && (
+                    <div className="flex items-center gap-1">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{genderDisplay}</span>
+                    </div>
+                  )}
+                  {attendee.age && (
+                    <span className="text-muted-foreground">{attendee.age}岁</span>
+                  )}
+                </div>
+              )}
 
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-foreground">
-                {educationDisplay && (
-                  <div className="flex items-center gap-1">
-                    <GraduationCap className="h-3.5 w-3.5" />
-                    <span>{educationDisplay}</span>
+              {(educationDisplay || attendee.fieldOfStudy) && (
+                <div className="flex items-start gap-1.5 text-foreground">
+                  <GraduationCap className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex flex-col gap-0.5">
+                    {educationDisplay && <span>{educationDisplay}</span>}
+                    {attendee.fieldOfStudy && (
+                      <span className="text-xs text-muted-foreground">{attendee.fieldOfStudy}</span>
+                    )}
                   </div>
-                )}
-                {attendee.fieldOfStudy && (
-                  <span className="text-muted-foreground">· {attendee.fieldOfStudy}</span>
-                )}
-              </div>
+                </div>
+              )}
 
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-foreground">
-                {attendee.industry && (
-                  <div className="flex items-center gap-1">
-                    <Briefcase className="h-3.5 w-3.5" />
-                    <span>{attendee.industry}</span>
+              {(attendee.industry || attendee.seniority) && (
+                <div className="flex items-start gap-1.5 text-foreground">
+                  <Briefcase className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex flex-col gap-0.5">
+                    {attendee.industry && <span>{attendee.industry}</span>}
+                    {attendee.seniority && (
+                      <span className="text-xs text-muted-foreground">
+                        {attendee.seniority === "Junior" ? "初级" : 
+                         attendee.seniority === "Mid" ? "中级" : 
+                         attendee.seniority === "Senior" ? "高级" :
+                         attendee.seniority === "Founder" ? "创始人" : attendee.seniority}
+                      </span>
+                    )}
                   </div>
-                )}
-                {attendee.seniority && (
-                  <span className="text-muted-foreground">
-                    · {attendee.seniority === "Junior" ? "初级" : 
-                       attendee.seniority === "Mid" ? "中级" : 
-                       attendee.seniority === "Senior" ? "高级" :
-                       attendee.seniority === "Founder" ? "创始人" : attendee.seniority}
-                  </span>
-                )}
-              </div>
+                </div>
+              )}
 
               {attendee.hometownRegionCity && (
-                <div className="flex items-center gap-1 text-foreground">
-                  <MapPin className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-1.5 text-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                   <span>{attendee.hometownRegionCity}</span>
                 </div>
               )}
 
               {attendee.languagesComfort && attendee.languagesComfort.length > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  🌐 {attendee.languagesComfort.join(" · ")}
+                <div className="flex items-start gap-1.5">
+                  <span className="text-muted-foreground">🌐</span>
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    {attendee.languagesComfort.join(" · ")}
+                  </span>
                 </div>
               )}
             </div>
