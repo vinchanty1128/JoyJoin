@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
+import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
 import ParticipantAvatars from "@/components/ParticipantAvatars";
 import type { Event } from "@shared/schema";
 
@@ -16,6 +18,12 @@ type EventWithParticipants = Event & {
 
 export default function ChatsPage() {
   const [, setLocation] = useLocation();
+  const markAsRead = useMarkNotificationsAsRead();
+
+  // Auto-clear chat notifications when entering the page
+  useEffect(() => {
+    markAsRead.mutate('chat');
+  }, []);
   
   const { data: joinedEvents, isLoading } = useQuery<Array<EventWithParticipants>>({
     queryKey: ["/api/events/joined"],

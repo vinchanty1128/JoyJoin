@@ -9,8 +9,9 @@ import LocationPickerSheet from "@/components/LocationPickerSheet";
 import { Sparkles, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VIBE_TAGS } from "@/lib/vibes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
 
 const mockEvents = [
   {
@@ -220,6 +221,12 @@ export default function DiscoverPage() {
   const [selectedCity, setSelectedCity] = useState<"香港" | "深圳">("深圳");
   const [selectedArea, setSelectedArea] = useState<string>("南山区");
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const markAsRead = useMarkNotificationsAsRead();
+
+  // Auto-clear discover notifications when entering the page
+  useEffect(() => {
+    markAsRead.mutate('discover');
+  }, []);
 
   const handleLocationSave = (city: "香港" | "深圳", area: string) => {
     setSelectedCity(city);

@@ -4,16 +4,23 @@ import PendingMatchCard from "@/components/PendingMatchCard";
 import MatchedEventCard from "@/components/MatchedEventCard";
 import CompletedEventCard from "@/components/CompletedEventCard";
 import SlidingTabs from "@/components/SlidingTabs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 
 export default function EventsPage() {
   const [activeTab, setActiveTab] = useState<"pending" | "matched" | "completed">("pending");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const markAsRead = useMarkNotificationsAsRead();
+
+  // Auto-clear activities notifications when entering the page
+  useEffect(() => {
+    markAsRead.mutate('activities');
+  }, []);
 
   const { data: events, isLoading } = useQuery<Array<BlindBoxEvent>>({
     queryKey: ["/api/my-events"],
