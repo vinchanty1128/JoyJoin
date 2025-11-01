@@ -65,7 +65,7 @@ export const users = pgTable("users", {
   // Registration fields - Culture & Language
   hometownCountry: varchar("hometown_country"),
   hometownRegionCity: varchar("hometown_region_city"),
-  hometownAffinityOptin: boolean("hometown_affinity_optin").default(false),
+  hometownAffinityOptin: boolean("hometown_affinity_optin").default(true),
   languagesComfort: text("languages_comfort").array(), // English, Mandarin, Cantonese, etc.
   
   // Registration fields - Deprecated/Legacy

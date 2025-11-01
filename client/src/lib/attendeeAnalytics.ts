@@ -9,11 +9,16 @@ export interface AttendeeData {
   ageVisible?: boolean;
   industryVisible?: boolean;
   gender?: string;
+  pronouns?: string;
   educationLevel?: string;
+  hometownCountry?: string;
   hometownRegionCity?: string;
+  hometownAffinityOptin?: boolean;
   educationVisible?: boolean;
   relationshipStatus?: string;
+  children?: string;
   studyLocale?: string;
+  overseasRegions?: string[];
   seniority?: string;
   fieldOfStudy?: string;
   languagesComfort?: string[];
