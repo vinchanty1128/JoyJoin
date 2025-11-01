@@ -217,11 +217,17 @@ export interface SparkPredictionContext {
   userEducationLevel?: string;
   userIndustry?: string;
   userAge?: number;
+  userGender?: string;
   userRelationshipStatus?: string;
+  userChildren?: string;
   userStudyLocale?: string;
+  userOverseasRegions?: string[];
   userSeniority?: string;
   userFieldOfStudy?: string;
   userLanguages?: string[];
+  userHometownCountry?: string;
+  userHometownRegionCity?: string;
+  userHometownAffinityOptin?: boolean;
 }
 
 export type RarityLevel = 'common' | 'rare' | 'epic';
@@ -372,9 +378,112 @@ export function generateSparkPredictions(
     }
   }
   
-  // Priority 7: Hometown matching (COMMON/RARE - regional connection)
-  // Note: We don't have userHometown in context yet, so we'll skip for now
-  // This can be enabled once we add hometown to SparkPredictionContext
+  // Priority 6.5: Gender matching (COMMON - identity connection)
+  if (userContext.userGender && attendee.gender && 
+      userContext.userGender === attendee.gender &&
+      userContext.userGender !== "Prefer not to say") {
+    const genderLabels: Record<string, string> = {
+      "Woman": "同为女性",
+      "Man": "同为男性",
+      "Nonbinary": "同为非二元性别"
+    };
+    
+    if (genderLabels[userContext.userGender]) {
+      predictions.push({ 
+        text: genderLabels[userContext.userGender], 
+        rarity: 'common' 
+      });
+    }
+  }
+  
+  // Priority 6.6: Children/Family status matching (RARE/EPIC - life stage connection)
+  if (userContext.userChildren && attendee.children && 
+      userContext.userChildren !== "Prefer not to say" &&
+      attendee.children !== "Prefer not to say") {
+    
+    if (userContext.userChildren === "Expecting" && attendee.children === "Expecting") {
+      predictions.push({ text: "都在期待新生命", rarity: 'epic' }); // Very specific life stage
+    } else if (userContext.userChildren === attendee.children && userContext.userChildren !== "No kids") {
+      const childrenLabels: Record<string, { text: string; rarity: RarityLevel }> = {
+        "0-5": { text: "都有学龄前孩子", rarity: 'rare' },
+        "6-12": { text: "都有小学阶段的孩子", rarity: 'rare' },
+        "13-18": { text: "都有青少年孩子", rarity: 'rare' },
+        "Adult": { text: "都有成年子女", rarity: 'rare' }
+      };
+      
+      if (childrenLabels[userContext.userChildren]) {
+        predictions.push(childrenLabels[userContext.userChildren]);
+      }
+    } else if (userContext.userChildren === "No kids" && attendee.children === "No kids") {
+      predictions.push({ text: "都是丁克一族", rarity: 'common' });
+    }
+  }
+  
+  // Priority 6.7: Specific overseas regions matching (RARE - deeper connection than just "Overseas")
+  if (userContext.userOverseasRegions && userContext.userOverseasRegions.length > 0 &&
+      attendee.overseasRegions && attendee.overseasRegions.length > 0) {
+    
+    const commonRegions = userContext.userOverseasRegions.filter(region => 
+      attendee.overseasRegions!.includes(region)
+    );
+    
+    if (commonRegions.length > 0) {
+      const regionLabels: Record<string, string> = {
+        "North America": "北美",
+        "Europe": "欧洲",
+        "East Asia (excl. China)": "东亚",
+        "Southeast Asia": "东南亚",
+        "Oceania": "大洋洲",
+        "South America": "南美",
+        "Africa": "非洲",
+        "Middle East": "中东"
+      };
+      
+      const firstRegion = commonRegions[0];
+      const regionName = regionLabels[firstRegion] || firstRegion;
+      
+      predictions.push({ 
+        text: `都在${regionName}留过学`, 
+        rarity: 'rare' 
+      });
+    }
+  }
+  
+  // Priority 7: Hometown matching (RARE/EPIC - 老乡 connection, default enabled)
+  // Only match if both users have opted in (default is true, so most will match)
+  const userOptedIn = userContext.userHometownAffinityOptin !== false; // default true
+  const attendeeOptedIn = attendee.hometownAffinityOptin !== false; // default true
+  
+  if (userOptedIn && attendeeOptedIn) {
+    // Same city/region - EPIC (very specific)
+    if (userContext.userHometownRegionCity && attendee.hometownRegionCity &&
+        userContext.userHometownRegionCity === attendee.hometownRegionCity) {
+      predictions.push({ 
+        text: `老乡！都来自${userContext.userHometownRegionCity}`, 
+        rarity: 'epic' 
+      });
+    }
+    // Same country but different cities - RARE
+    else if (userContext.userHometownCountry && attendee.hometownCountry &&
+             userContext.userHometownCountry === attendee.hometownCountry &&
+             userContext.userHometownCountry !== "中国") { // China is too broad to be rare
+      const countryLabels: Record<string, string> = {
+        "美国": "美国",
+        "英国": "英国",
+        "加拿大": "加拿大",
+        "澳大利亚": "澳大利亚",
+        "新加坡": "新加坡",
+        "日本": "日本",
+        "韩国": "韩国"
+      };
+      
+      const countryName = countryLabels[userContext.userHometownCountry] || userContext.userHometownCountry;
+      predictions.push({ 
+        text: `都来自${countryName}`, 
+        rarity: 'rare' 
+      });
+    }
+  }
   
   // Priority 8: Archetype matching (COMMON - personality alignment)
   if (attendee.archetype) {
