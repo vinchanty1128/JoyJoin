@@ -156,11 +156,31 @@ export const matchHistory = pgTable("match_history", {
   connectionPointTypes: text("connection_point_types").array(), // Types of connection points that led to this match (for feedback correlation)
 });
 
-// Chat messages table
+// Chat messages table (for event group chats)
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   eventId: varchar("event_id").notNull().references(() => events.id),
   userId: varchar("user_id").notNull().references(() => users.id),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Direct message threads table (1-on-1 chats unlocked via mutual matching)
+export const directMessageThreads = pgTable("direct_message_threads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user1Id: varchar("user1_id").notNull().references(() => users.id),
+  user2Id: varchar("user2_id").notNull().references(() => users.id),
+  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id), // Event where they matched
+  unlockedAt: timestamp("unlocked_at").defaultNow(), // When mutual matching unlocked the thread
+  lastMessageAt: timestamp("last_message_at"), // For sorting threads by activity
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Direct messages table (1-on-1 private messages)
+export const directMessages = pgTable("direct_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  threadId: varchar("thread_id").notNull().references(() => directMessageThreads.id),
+  senderId: varchar("sender_id").notNull().references(() => users.id),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -257,6 +277,19 @@ export const insertEventAttendanceSchema = createInsertSchema(eventAttendance).p
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   eventId: true,
+  message: true,
+}).extend({
+  message: z.string().min(1, "消息不能为空"),
+});
+
+export const insertDirectMessageThreadSchema = createInsertSchema(directMessageThreads).pick({
+  user1Id: true,
+  user2Id: true,
+  eventId: true,
+});
+
+export const insertDirectMessageSchema = createInsertSchema(directMessages).pick({
+  threadId: true,
   message: true,
 }).extend({
   message: z.string().min(1, "消息不能为空"),
@@ -478,6 +511,8 @@ export type InterestsTopics = z.infer<typeof interestsTopicsSchema>;
 export type Event = typeof events.$inferSelect;
 export type EventAttendance = typeof eventAttendance.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+export type DirectMessageThread = typeof directMessageThreads.$inferSelect;
+export type DirectMessage = typeof directMessages.$inferSelect;
 export type EventFeedback = typeof eventFeedback.$inferSelect;
 export type BlindBoxEvent = typeof blindBoxEvents.$inferSelect;
 export type PersonalityQuestion = typeof personalityQuestions.$inferSelect;
@@ -486,6 +521,8 @@ export type RoleResult = typeof roleResults.$inferSelect;
 
 export type InsertEventAttendance = z.infer<typeof insertEventAttendanceSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type InsertDirectMessageThread = z.infer<typeof insertDirectMessageThreadSchema>;
+export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
 export type InsertEventFeedback = z.infer<typeof insertEventFeedbackSchema>;
 export type InsertBlindBoxEvent = z.infer<typeof insertBlindBoxEventSchema>;
 export type InsertTestResponse = z.infer<typeof insertTestResponseSchema>;
