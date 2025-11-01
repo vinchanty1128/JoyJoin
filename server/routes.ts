@@ -1292,6 +1292,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create notification
+  app.post('/api/notifications', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { category, type, title, message, relatedResourceId } = req.body;
+      
+      if (!category || !type || !title) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      await storage.createNotification({
+        userId,
+        category,
+        type,
+        title,
+        message,
+        relatedResourceId,
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error creating notification:", error);
+      res.status(500).json({ message: "Failed to create notification" });
+    }
+  });
+
   // Demo: Create sample notifications
   app.post('/api/notifications/seed-demo', isPhoneAuthenticated, async (req: any, res) => {
     try {
