@@ -195,13 +195,13 @@ export default function EventFeedbackFlow() {
           />
         )}
         
-        {currentStep === "traits" && event.matchedAttendees && Array.isArray(event.matchedAttendees) && (
+        {currentStep === "traits" && event?.matchedAttendees && Array.isArray(event.matchedAttendees) ? (
           <TraitTagsWall
             attendees={event.matchedAttendees as Array<{userId: string; displayName: string; archetype?: string}>}
             initialTraits={feedbackData.attendeeTraits}
             onNext={handleNext}
           />
-        )}
+        ) : null}
         
         {currentStep === "radar" && (
           <ConnectionRadar
