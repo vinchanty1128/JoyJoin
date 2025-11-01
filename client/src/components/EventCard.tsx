@@ -2,7 +2,6 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Users, Sparkles } from "lucide-react";
-import VibePill from "./VibePill";
 import AttendeeAvatars from "./AttendeeAvatars";
 
 interface EventCardProps {
@@ -10,7 +9,6 @@ interface EventCardProps {
   date: string;
   time: string;
   location: string;
-  vibes: Array<{ label: string; icon?: any }>;
   attendees: Array<{ name: string; initials: string }>;
   spotsLeft: number;
   matchScore: number;
@@ -23,7 +21,6 @@ export default function EventCard({
   date,
   time,
   location,
-  vibes,
   attendees,
   spotsLeft,
   matchScore,
@@ -43,11 +40,6 @@ export default function EventCard({
       
       <CardHeader className="pb-3">
         <h3 className="font-semibold text-lg leading-tight">{title}</h3>
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {vibes.slice(0, 3).map((vibe, i) => (
-            <VibePill key={i} icon={vibe.icon} label={vibe.label} />
-          ))}
-        </div>
       </CardHeader>
 
       <CardContent className="space-y-3 pb-3">

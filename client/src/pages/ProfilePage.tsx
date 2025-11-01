@@ -1,6 +1,5 @@
 import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
-import VibeProfileCard from "@/components/VibeProfileCard";
 import PersonalityProfile from "@/components/PersonalityProfile";
 import SocialRoleCard from "@/components/SocialRoleCard";
 import QuizIntro from "@/components/QuizIntro";
@@ -63,12 +62,23 @@ export default function ProfilePage() {
       <MobileHeader title="我的" showSettings={true} />
       
       <div className="px-4 py-4 space-y-4">
-        <VibeProfileCard
-          name={getUserName()}
-          initials={getInitials()}
-          eventsAttended={user?.eventsAttended || 0}
-          matchesMade={user?.matchesMade || 0}
-        />
+        {/* Profile Header Card */}
+        <Card className="border shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-400 flex items-center justify-center text-white text-2xl font-bold">
+                {getInitials()}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold">{getUserName()}</h2>
+                <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+                  <span>{user?.eventsAttended || 0} 次活动</span>
+                  <span>{user?.matchesMade || 0} 个匹配</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Social Role Card - Show if test completed */}
         {hasCompletedQuiz && personalityResults && (

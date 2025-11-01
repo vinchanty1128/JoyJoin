@@ -128,16 +128,6 @@ export default function ChatsPage() {
                         )}
                       </div>
                     </div>
-
-                    {event.vibes && event.vibes.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {event.vibes.slice(0, 3).map((vibe, i) => (
-                          <Badge key={i} variant="outline" className="text-[10px] h-5 px-2">
-                            {vibe}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -2,7 +2,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, MapPin, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import VibeChip from "./VibeChip";
 import MatchScoreBadge from "./MatchScoreBadge";
 import ParticipantAvatars from "./ParticipantAvatars";
 
@@ -12,15 +11,13 @@ interface JoyEventCardProps {
   time: string;
   area: string;
   price: string;
-  vibes: Array<{ emoji: string; label: string; gradient: string }>;
   spotsLeft: number;
   myFit: number;
   groupSpark?: "High" | "Medium" | "Low";
-  vibeGradient: string;
   iconName?: string;
   socialProof?: string;
   discount?: number;
-  participants?: Array<{ id: string; displayName: string | null; vibes: string[] | null }>;
+  participants?: Array<{ id: string; displayName: string | null }>;
   attendeeCount?: number;
 }
 
@@ -29,7 +26,6 @@ export default function JoyEventCard({
   title,
   time,
   area,
-  vibes,
   spotsLeft,
   myFit,
   groupSpark,
@@ -52,11 +48,6 @@ export default function JoyEventCard({
                     <span className="text-xs font-semibold">-{discount}%</span>
                   </Badge>
                 )}
-              </div>
-              <div className="flex gap-1.5 flex-wrap">
-                {vibes.slice(0, 3).map((vibe, i) => (
-                  <VibeChip key={i} emoji={vibe.emoji} label={vibe.label} gradient={vibe.gradient} />
-                ))}
               </div>
             </div>
             <MatchScoreBadge myFit={myFit} groupSpark={groupSpark} />

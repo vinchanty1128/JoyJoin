@@ -8,7 +8,6 @@ import HeroWelcome from "@/components/HeroWelcome";
 import LocationPickerSheet from "@/components/LocationPickerSheet";
 import { Sparkles, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { VIBE_TAGS } from "@/lib/vibes";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
