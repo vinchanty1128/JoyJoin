@@ -6,6 +6,9 @@ import { generateSparkPredictions, normalizeInterestName, type AttendeeData } fr
 interface MeetYourTableProps {
   attendees: AttendeeData[];
   userInterests?: string[];
+  userTopicsHappy?: string[];
+  userTopicsAvoid?: string[];
+  userDebateComfort?: number;
   userEducationLevel?: string;
   userIndustry?: string;
   userAge?: number;
@@ -20,11 +23,15 @@ interface MeetYourTableProps {
   userHometownCountry?: string;
   userHometownRegionCity?: string;
   userHometownAffinityOptin?: boolean;
+  userArchetype?: string;
 }
 
 export default function MeetYourTable({
   attendees,
   userInterests = [],
+  userTopicsHappy,
+  userTopicsAvoid,
+  userDebateComfort,
   userEducationLevel,
   userIndustry,
   userAge,
@@ -39,6 +46,7 @@ export default function MeetYourTable({
   userHometownCountry,
   userHometownRegionCity,
   userHometownAffinityOptin,
+  userArchetype,
 }: MeetYourTableProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -48,6 +56,9 @@ export default function MeetYourTable({
 
   const userContext = {
     userInterests,
+    userTopicsHappy,
+    userTopicsAvoid,
+    userDebateComfort,
     userEducationLevel,
     userIndustry,
     userAge,
@@ -62,6 +73,7 @@ export default function MeetYourTable({
     userHometownCountry,
     userHometownRegionCity,
     userHometownAffinityOptin,
+    userArchetype,
   };
 
   const interestIcons: Record<string, string> = {

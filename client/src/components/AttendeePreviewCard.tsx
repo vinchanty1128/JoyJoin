@@ -49,6 +49,9 @@ const interestIcons: Record<string, string> = {
 interface AttendeePreviewCardProps {
   attendee: AttendeeData;
   userInterests?: string[];
+  userTopicsHappy?: string[];
+  userTopicsAvoid?: string[];
+  userDebateComfort?: number;
   userEducationLevel?: string;
   userIndustry?: string;
   userAge?: number;
@@ -62,11 +65,16 @@ interface AttendeePreviewCardProps {
   userHometownCountry?: string;
   userHometownRegionCity?: string;
   userHometownAffinityOptin?: boolean;
+  userArchetype?: string;
+  userLanguages?: string[];
 }
 
 export default function AttendeePreviewCard({
   attendee,
   userInterests = [],
+  userTopicsHappy,
+  userTopicsAvoid,
+  userDebateComfort,
   userEducationLevel,
   userIndustry,
   userAge,
@@ -80,6 +88,8 @@ export default function AttendeePreviewCard({
   userHometownCountry,
   userHometownRegionCity,
   userHometownAffinityOptin,
+  userArchetype,
+  userLanguages,
 }: AttendeePreviewCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const archetypeIcon = attendee.archetype
@@ -94,6 +104,9 @@ export default function AttendeePreviewCard({
   const sparkPredictions = generateSparkPredictions(
     {
       userInterests,
+      userTopicsHappy,
+      userTopicsAvoid,
+      userDebateComfort,
       userEducationLevel,
       userIndustry,
       userAge,
@@ -107,6 +120,8 @@ export default function AttendeePreviewCard({
       userHometownCountry,
       userHometownRegionCity,
       userHometownAffinityOptin,
+      userArchetype,
+      userLanguages,
     },
     attendee
   );
