@@ -11,7 +11,6 @@ import InterestsTopicsPage from "@/pages/InterestsTopicsPage";
 import PersonalityTestPage from "@/pages/PersonalityTestPage";
 import PersonalityTestResultPage from "@/pages/PersonalityTestResultPage";
 import ProfileSetupPage from "@/pages/ProfileSetupPage";
-import OnboardingQuizPage from "@/pages/OnboardingQuizPage";
 import DiscoverPage from "@/pages/DiscoverPage";
 import EventsPage from "@/pages/EventsPage";
 import ChatsPage from "@/pages/ChatsPage";
@@ -57,16 +56,8 @@ function RedirectToSetup() {
   return null;
 }
 
-function RedirectToQuiz() {
-  const [, setLocation] = useLocation();
-  useEffect(() => {
-    setLocation("/onboarding/quiz");
-  }, [setLocation]);
-  return null;
-}
-
 function AuthenticatedRouter() {
-  const { needsRegistration, needsInterestsTopics, needsPersonalityTest, needsProfileSetup, needsVoiceQuiz } = useAuth();
+  const { needsRegistration, needsInterestsTopics, needsPersonalityTest, needsProfileSetup } = useAuth();
 
   if (needsRegistration) {
     return (
@@ -105,15 +96,6 @@ function AuthenticatedRouter() {
     );
   }
 
-  if (needsVoiceQuiz) {
-    return (
-      <Switch>
-        <Route path="/onboarding/quiz" component={OnboardingQuizPage} />
-        <Route path="*" component={RedirectToQuiz} />
-      </Switch>
-    );
-  }
-
   return (
     <Switch>
       <Route path="/" component={DiscoverPage} />
@@ -128,7 +110,6 @@ function AuthenticatedRouter() {
       <Route path="/chats/:eventId" component={EventChatDetailPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/event/:id" component={EventDetailPage} />
-      <Route path="/onboarding/quiz" component={OnboardingQuizPage} />
       <Route path="/personality-test/results" component={PersonalityTestResultPage} />
       <Route component={NotFound} />
     </Switch>
