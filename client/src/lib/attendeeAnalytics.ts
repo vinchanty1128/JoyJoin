@@ -1040,5 +1040,122 @@ export function calculateGroupInsights(attendees: AttendeeData[]): GroupInsight[
     });
   }
   
+  // 🎯 NEW: Group role composition (balanced conversation dynamics)
+  const roleCategories = {
+    storytellers: 0, // 讲故事的人, 智者
+    listeners: 0,    // 稳定器, 协调者, 肯定者
+    energizers: 0,   // 发光体, 火花塞, 氛围组
+    questioners: 0,  // 探索者, 挑战者
+    connectors: 0    // 连接者
+  };
+  
+  attendees.forEach(attendee => {
+    if (!attendee.archetype) return;
+    
+    if (["讲故事的人", "智者"].includes(attendee.archetype)) {
+      roleCategories.storytellers++;
+    } else if (["稳定器", "协调者", "肯定者"].includes(attendee.archetype)) {
+      roleCategories.listeners++;
+    } else if (["发光体", "火花塞", "氛围组"].includes(attendee.archetype)) {
+      roleCategories.energizers++;
+    } else if (["探索者", "挑战者"].includes(attendee.archetype)) {
+      roleCategories.questioners++;
+    } else if (attendee.archetype === "连接者") {
+      roleCategories.connectors++;
+    }
+  });
+  
+  // Ideal composition: balanced roles (no single role > 50%)
+  const totalWithRoles = Object.values(roleCategories).reduce((a, b) => a + b, 0);
+  const maxRoleCount = Math.max(...Object.values(roleCategories));
+  const roleBalance = totalWithRoles > 0 ? maxRoleCount / totalWithRoles : 0;
+  
+  if (roleBalance <= 0.5 && totalWithRoles >= 4) {
+    insights.push({
+      type: 'personality',
+      label: '角色平衡，对话流畅',
+      icon: '🎭'
+    });
+  } else if (roleCategories.energizers >= 2 && roleCategories.storytellers >= 1) {
+    insights.push({
+      type: 'personality',
+      label: '活力满满的分享局',
+      icon: '✨'
+    });
+  } else if (roleCategories.listeners >= 2 && roleCategories.storytellers >= 2) {
+    insights.push({
+      type: 'personality',
+      label: '倾听与分享兼备',
+      icon: '💬'
+    });
+  }
+  
+  // 🎯 NEW: Diversity balance scoring (60% similarity, 40% difference)
+  // Calculate similarity across multiple dimensions
+  const calculateDiversityScore = (): number => {
+    if (attendees.length < 2) return 0;
+    
+    let totalDimensions = 0;
+    let similarityScore = 0;
+    
+    // Industry similarity
+    if (industries.size > 0) {
+      totalDimensions++;
+      const industryDiversity = industries.size / attendees.length;
+      similarityScore += (1 - industryDiversity); // Higher when fewer industries (more similar)
+    }
+    
+    // Age similarity (within 5 years = similar)
+    const ages = attendees.filter(a => a.age).map(a => a.age!);
+    if (ages.length >= 2) {
+      totalDimensions++;
+      const avgAge = ages.reduce((a, b) => a + b, 0) / ages.length;
+      const ageVariance = ages.reduce((sum, age) => sum + Math.abs(age - avgAge), 0) / ages.length;
+      const ageSimilarity = Math.max(0, 1 - (ageVariance / 10)); // Normalize to 0-1
+      similarityScore += ageSimilarity;
+    }
+    
+    // Relationship status similarity
+    const relationshipStatuses = new Set(attendees.filter(a => a.relationshipStatus).map(a => a.relationshipStatus!));
+    if (relationshipStatuses.size > 0) {
+      totalDimensions++;
+      const relationshipDiversity = relationshipStatuses.size / attendees.length;
+      similarityScore += (1 - relationshipDiversity);
+    }
+    
+    // Education level similarity
+    const educationLevels = new Set(attendees.filter(a => a.educationLevel).map(a => a.educationLevel!));
+    if (educationLevels.size > 0) {
+      totalDimensions++;
+      const educationDiversity = educationLevels.size / attendees.length;
+      similarityScore += (1 - educationDiversity);
+    }
+    
+    return totalDimensions > 0 ? (similarityScore / totalDimensions) * 100 : 0;
+  };
+  
+  const diversityScore = calculateDiversityScore();
+  
+  // Ideal range: 50-70% similarity (60% target)
+  if (diversityScore >= 50 && diversityScore <= 70) {
+    insights.push({
+      type: 'balance',
+      label: '相似与差异的完美平衡',
+      icon: '⚖️'
+    });
+  } else if (diversityScore >= 70) {
+    insights.push({
+      type: 'balance',
+      label: '背景相似，易产生共鸣',
+      icon: '🤝'
+    });
+  } else if (diversityScore <= 40 && industries.size >= 3) {
+    insights.push({
+      type: 'balance',
+      label: '多元视角碰撞',
+      icon: '🌈'
+    });
+  }
+  
   return insights.slice(0, 4);
 }

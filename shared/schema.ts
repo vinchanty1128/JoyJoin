@@ -141,6 +141,18 @@ export const eventAttendance = pgTable("event_attendance", {
   userId: varchar("user_id").notNull().references(() => users.id),
   joinedAt: timestamp("joined_at").defaultNow(),
   status: varchar("status").default("confirmed"), // confirmed, cancelled, attended
+  intent: varchar("intent"), // Event-specific intent: networking, friends, discussion, fun, romance
+});
+
+// Match history table - tracks who has been matched together before (anti-repetition)
+export const matchHistory = pgTable("match_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user1Id: varchar("user1_id").notNull().references(() => users.id),
+  user2Id: varchar("user2_id").notNull().references(() => users.id),
+  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id),
+  matchedAt: timestamp("matched_at").defaultNow(),
+  connectionQuality: integer("connection_quality"), // Post-event feedback: 1-5 score
+  wouldMeetAgain: boolean("would_meet_again"), // Whether they'd want to be matched again
 });
 
 // Chat messages table
