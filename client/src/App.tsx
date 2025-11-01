@@ -15,6 +15,7 @@ import DiscoverPage from "@/pages/DiscoverPage";
 import EventsPage from "@/pages/EventsPage";
 import ChatsPage from "@/pages/ChatsPage";
 import EventChatDetailPage from "@/pages/EventChatDetailPage";
+import DirectChatPage from "@/pages/DirectChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
@@ -108,6 +109,7 @@ function AuthenticatedRouter() {
       <Route path="/events" component={EventsPage} />
       <Route path="/chats" component={ChatsPage} />
       <Route path="/chats/:eventId" component={EventChatDetailPage} />
+      <Route path="/direct-chat/:threadId" component={DirectChatPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/event/:id" component={EventDetailPage} />
       <Route path="/personality-test/results" component={PersonalityTestResultPage} />
