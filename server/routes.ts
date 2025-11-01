@@ -253,6 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save responses and result
       await storage.saveTestResponses(userId, responses);
       const roleResult = await storage.saveRoleResult(userId, {
+        userId,
         primaryRole,
         primaryRoleScore,
         secondaryRole,
@@ -399,10 +400,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Event not found" });
       }
 
-      // Check if group chat is open (24 hours before event)
+      // Check if group chat is open (24 hours before event OR event has passed)
       const now = new Date();
       const eventTime = new Date(event.dateTime);
       const hoursUntilEvent = (eventTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      // Chat unlocks 24 hours before event, and remains accessible after event completes
       const chatUnlocked = hoursUntilEvent <= 24;
 
       if (!chatUnlocked) {
@@ -436,10 +438,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Event not found" });
       }
 
-      // Check if group chat is open (24 hours before event)
+      // Check if group chat is open (24 hours before event OR event has passed)
       const now = new Date();
       const eventTime = new Date(event.dateTime);
       const hoursUntilEvent = (eventTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      // Chat unlocks 24 hours before event, and remains accessible after event completes
       const chatUnlocked = hoursUntilEvent <= 24;
 
       if (!chatUnlocked) {
