@@ -38,11 +38,11 @@ export default function ChatsPage() {
   const { toast } = useToast();
   const [isCreatingDemo, setIsCreatingDemo] = useState(false);
 
-  const { data: joinedEvents, isLoading: isLoadingEvents } = useQuery<Array<EventWithParticipants>>({
+  const { data: joinedEvents, isLoading: isLoadingEvents, refetch: refetchEvents } = useQuery<Array<EventWithParticipants>>({
     queryKey: ["/api/events/joined"],
   });
 
-  const { data: directThreads, isLoading: isLoadingThreads } = useQuery<Array<DirectThreadWithUser>>({
+  const { data: directThreads, isLoading: isLoadingThreads, refetch: refetchThreads } = useQuery<Array<DirectThreadWithUser>>({
     queryKey: ["/api/direct-messages"],
   });
 
@@ -63,17 +63,16 @@ export default function ChatsPage() {
       setIsCreatingDemo(true);
       const response: any = await apiRequest("POST", "/api/chats/seed-demo", {});
       
-      if (response.success) {
-        toast({
-          title: "演示数据创建成功",
-          description: "已创建3个演示聊天窗口",
-        });
-        
-        // Invalidate and refetch
-        await queryClient.invalidateQueries({ queryKey: ["/api/events/joined"] });
-        await queryClient.invalidateQueries({ queryKey: ["/api/direct-messages"] });
-      }
+      toast({
+        title: "演示数据创建成功",
+        description: "已创建3个演示聊天窗口",
+      });
+      
+      // Force refetch to update UI
+      await refetchEvents();
+      await refetchThreads();
     } catch (error) {
+      console.error("Error creating demo chats:", error);
       toast({
         title: "创建失败",
         description: "请稍后重试",
