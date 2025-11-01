@@ -896,20 +896,28 @@ export function generateSparkPredictions(
     }
   }
   
-  // 🎯 Intent-based matching - RARE (same event motivation = strong alignment)
-  if (userContext.userIntent && attendee.intent && 
-      userContext.userIntent === attendee.intent) {
+  // 🎯 Intent-based matching - flexible and specific intents
+  // Logic: 
+  // - Both "flexible" → common (both open-minded, good chemistry)
+  // - "flexible" + specific → neutral (no bonus, flexible people adapt)
+  // - Same specific intent → rare/epic (strong alignment)
+  // - Different specific intents → neutral (no forced mismatch)
+  if (userContext.userIntent && attendee.intent) {
     const intentLabels: Record<string, { text: string; rarity: RarityLevel }> = {
+      "flexible": { text: "都保持开放心态", rarity: 'common' },
       "networking": { text: "都为职业社交而来", rarity: 'rare' },
       "friends": { text: "都想认识新朋友", rarity: 'rare' },
       "discussion": { text: "都期待深度对话", rarity: 'rare' },
       "fun": { text: "都想轻松玩乐", rarity: 'common' },
-      "romance": { text: "都在寻找另一半", rarity: 'epic' } // Very rare and specific
+      "romance": { text: "都在寻找另一半", rarity: 'epic' }
     };
     
-    if (intentLabels[userContext.userIntent]) {
+    // Only add connection point if intents match
+    if (userContext.userIntent === attendee.intent && intentLabels[userContext.userIntent]) {
       predictions.push(intentLabels[userContext.userIntent]);
     }
+    // Note: flexible + specific intent = neutral (no bonus, no penalty)
+    // Different specific intents = neutral (no forced match)
   }
   
   // 🎯 Anti-repetition scoring - penalize if matched before
