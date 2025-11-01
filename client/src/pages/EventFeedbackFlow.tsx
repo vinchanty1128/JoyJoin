@@ -216,19 +216,17 @@ export default function EventFeedbackFlow() {
           />
         )}
         
-        {currentStep === "selectConnections" && event?.matchedAttendees && Array.isArray(event.matchedAttendees) && (
+        {currentStep === "selectConnections" && event?.matchedAttendees && Array.isArray(event.matchedAttendees) ? (
           <SelectConnectionsStep
-            attendees={event.matchedAttendees
-              .filter((a: any) => a.userId !== event.hostUserId) // 排除自己
-              .map((a: any) => ({
-                userId: a.userId,
-                displayName: a.displayName,
-                archetype: a.archetype,
-              }))}
+            attendees={event.matchedAttendees.map((a: any) => ({
+              userId: a.userId,
+              displayName: a.displayName,
+              archetype: a.archetype,
+            }))}
             initialConnections={feedbackData.connections}
             onNext={handleNext}
           />
-        )}
+        ) : null}
         
         {currentStep === "improvement" && (
           <ImprovementCards
