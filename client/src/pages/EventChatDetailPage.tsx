@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Send, Users, Star, Zap, Smile, PartyPopper, Compass, Flame, Mountain, Palette } from "lucide-react";
+import { ArrowLeft, Send, Users, Star } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, ChatMessage, EventFeedback } from "@shared/schema";
@@ -127,42 +127,6 @@ export default function EventChatDetailPage() {
   const isEventPast = event && event.dateTime && new Date(event.dateTime) < new Date();
   const hasFeedback = !!existingFeedback;
 
-  const getEnergyBadge = (level: number | null) => {
-    if (!level) return null;
-    if (level >= 80) return { label: "超强", color: "from-orange-500 to-red-500" };
-    if (level >= 60) return { label: "高能", color: "from-yellow-500 to-orange-500" };
-    if (level >= 40) return { label: "中等", color: "from-blue-500 to-indigo-500" };
-    return { label: "温和", color: "from-teal-500 to-cyan-500" };
-  };
-
-  const getVibeIcon = (vibes: string[] | null) => {
-    if (!vibes || vibes.length === 0) return { Icon: Smile, color: "from-gray-400 to-gray-500" };
-    
-    const vibeMap: Record<string, { icon: any; color: string }> = {
-      "悠闲": { icon: Smile, color: "from-blue-400 to-cyan-400" },
-      "relaxed": { icon: Smile, color: "from-blue-400 to-cyan-400" },
-      "chill": { icon: Smile, color: "from-blue-400 to-cyan-400" },
-      "玩乐": { icon: PartyPopper, color: "from-pink-400 to-rose-400" },
-      "playful": { icon: PartyPopper, color: "from-pink-400 to-rose-400" },
-      "活力": { icon: Zap, color: "from-orange-400 to-red-500" },
-      "energetic": { icon: Zap, color: "from-orange-400 to-red-500" },
-      "探索": { icon: Compass, color: "from-purple-400 to-indigo-400" },
-      "exploratory": { icon: Compass, color: "from-purple-400 to-indigo-400" },
-      "curious": { icon: Compass, color: "from-purple-400 to-indigo-400" },
-      "温馨": { icon: Flame, color: "from-amber-400 to-yellow-400" },
-      "cozy": { icon: Flame, color: "from-amber-400 to-yellow-400" },
-      "冒险": { icon: Mountain, color: "from-emerald-400 to-teal-400" },
-      "adventurous": { icon: Mountain, color: "from-emerald-400 to-teal-400" },
-      "社交": { icon: Users, color: "from-violet-400 to-purple-400" },
-      "social": { icon: Users, color: "from-violet-400 to-purple-400" },
-      "创意": { icon: Palette, color: "from-fuchsia-400 to-pink-400" },
-      "creative": { icon: Palette, color: "from-fuchsia-400 to-pink-400" },
-    };
-    
-    const firstVibe = vibes[0].toLowerCase();
-    const config = vibeMap[firstVibe] || vibeMap[vibes[0]];
-    return config ? { Icon: config.icon, color: config.color } : { Icon: Smile, color: "from-gray-400 to-gray-500" };
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -258,16 +222,26 @@ export default function EventChatDetailPage() {
         <TabsContent value="participants" className="flex-1 overflow-y-auto p-4 m-0">
           <div className="space-y-3">
             {participants?.map((participant) => {
-              const energyBadge = getEnergyBadge(participant.energyLevel);
-              const vibeIcon = getVibeIcon(participant.vibes);
-              const VibeIconComponent = vibeIcon.Icon;
+              const archetypeIcons: Record<string, string> = {
+                "火花塞": "🙌",
+                "探索者": "🧭",
+                "故事家": "🗣️",
+                "挑战者": "💪",
+                "连接者": "🤗",
+                "协调者": "🧘",
+                "氛围组": "🕺",
+                "肯定者": "🙏",
+              };
+              const archetypeIcon = participant.archetype && archetypeIcons[participant.archetype] 
+                ? archetypeIcons[participant.archetype] 
+                : "✨";
               
               return (
                 <Card key={participant.id} className="border shadow-sm">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <div className={`h-12 w-12 flex-shrink-0 rounded-full bg-gradient-to-br ${vibeIcon.color} flex items-center justify-center shadow-sm`}>
-                        <VibeIconComponent className="h-5 w-5 text-white" />
+                      <div className="h-12 w-12 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shadow-sm text-2xl">
+                        {archetypeIcon}
                       </div>
                       
                       <div className="flex-1 min-w-0">
@@ -275,21 +249,13 @@ export default function EventChatDetailPage() {
                           <h3 className="font-semibold truncate">
                             {participant.displayName || participant.firstName || "用户"}
                           </h3>
-                          {energyBadge && (
-                            <Badge className={`bg-gradient-to-r ${energyBadge.color} text-white border-0 text-[10px] h-5`}>
-                              <Zap className="h-2.5 w-2.5 mr-0.5" />
-                              {energyBadge.label}
-                            </Badge>
-                          )}
                         </div>
                         
-                        {participant.vibes && participant.vibes.length > 0 && (
+                        {participant.archetype && (
                           <div className="flex flex-wrap gap-1">
-                            {participant.vibes.slice(0, 4).map((vibe, i) => (
-                              <Badge key={i} variant="outline" className="text-[10px] h-5 px-2">
-                                {vibe}
-                              </Badge>
-                            ))}
+                            <Badge variant="secondary" className="text-xs">
+                              {participant.archetype}
+                            </Badge>
                           </div>
                         )}
                       </div>
