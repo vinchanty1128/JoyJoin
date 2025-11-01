@@ -14,6 +14,18 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, ChatMessage, EventFeedback } from "@shared/schema";
 
+// Archetype configuration for displaying icons and colors
+const archetypeConfig: Record<string, { icon: string; color: string }> = {
+  "火花塞": { icon: "🙌", color: "text-orange-600 dark:text-orange-400" },
+  "探索者": { icon: "🧭", color: "text-cyan-600 dark:text-cyan-400" },
+  "故事家": { icon: "🗣️", color: "text-purple-600 dark:text-purple-400" },
+  "挑战者": { icon: "💪", color: "text-red-600 dark:text-red-400" },
+  "连接者": { icon: "🤗", color: "text-emerald-600 dark:text-emerald-400" },
+  "协调者": { icon: "🧘", color: "text-indigo-600 dark:text-indigo-400" },
+  "氛围组": { icon: "🕺", color: "text-fuchsia-600 dark:text-fuchsia-400" },
+  "肯定者": { icon: "🙏", color: "text-teal-600 dark:text-teal-400" },
+};
+
 export default function EventChatDetailPage() {
   const { eventId } = useParams();
   const [, setLocation] = useLocation();
@@ -201,30 +213,41 @@ export default function EventChatDetailPage() {
                     <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
                   </div>
                 ) : messages && messages.length > 0 ? (
-                  messages.map((msg) => (
-                    <div key={msg.id} className="flex items-start gap-3">
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        {msg.user.profileImageUrl ? (
-                          <AvatarImage src={msg.user.profileImageUrl} />
-                        ) : (
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                            {msg.user.displayName?.[0] || msg.user.firstName?.[0] || "U"}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-medium truncate">
-                            {msg.user.displayName || msg.user.firstName || "用户"}
-                          </span>
-                          <span className="text-xs text-muted-foreground flex-shrink-0">
-                            {new Date(msg.createdAt!).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}
-                          </span>
+                  messages.map((msg) => {
+                    const archetypeData = msg.user.archetype && archetypeConfig[msg.user.archetype]
+                      ? archetypeConfig[msg.user.archetype]
+                      : { icon: "✨", color: "text-muted-foreground" };
+                    
+                    return (
+                      <div key={msg.id} className="flex items-start gap-3">
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          {msg.user.profileImageUrl ? (
+                            <AvatarImage src={msg.user.profileImageUrl} />
+                          ) : (
+                            <AvatarFallback className="bg-primary/10 text-lg">
+                              {archetypeData.icon}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2 flex-wrap">
+                            <span className="text-sm font-medium truncate">
+                              {msg.user.displayName || msg.user.firstName || "用户"}
+                            </span>
+                            {msg.user.archetype && (
+                              <Badge variant="secondary" className={`text-[10px] h-5 ${archetypeData.color}`}>
+                                {msg.user.archetype}
+                              </Badge>
+                            )}
+                            <span className="text-xs text-muted-foreground flex-shrink-0">
+                              {new Date(msg.createdAt!).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <p className="text-sm mt-0.5 break-words">{msg.message}</p>
                         </div>
-                        <p className="text-sm mt-0.5 break-words">{msg.message}</p>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <p className="text-sm">还没有消息，开始聊天吧！</p>
