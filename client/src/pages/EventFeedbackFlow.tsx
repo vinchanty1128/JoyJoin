@@ -57,10 +57,26 @@ export default function EventFeedbackFlow() {
     mutationFn: async (data: FeedbackData) => {
       return await apiRequest("POST", `/api/events/${eventId}/feedback`, data);
     },
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: [`/api/events/${eventId}/feedback`] });
       queryClient.invalidateQueries({ queryKey: ["/api/my-events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/my-feedbacks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct-messages"] });
+      
+      // Check for mutual matches
+      if (response.mutualMatches && response.mutualMatches.length > 0) {
+        const matchCount = response.mutualMatches.length;
+        const names = response.mutualMatches
+          .map((m: any) => m.displayName || "某位参与者")
+          .join("、");
+        
+        toast({
+          title: "🎉 双向匹配成功！",
+          description: `你和${names}互相选择了对方！现在可以开始1对1私聊了～`,
+          duration: 6000,
+        });
+      }
+      
       setCurrentStep("completion");
     },
     onError: (error) => {
