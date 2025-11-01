@@ -153,6 +153,7 @@ export const matchHistory = pgTable("match_history", {
   matchedAt: timestamp("matched_at").defaultNow(),
   connectionQuality: integer("connection_quality"), // Post-event feedback: 1-5 score
   wouldMeetAgain: boolean("would_meet_again"), // Whether they'd want to be matched again
+  connectionPointTypes: text("connection_point_types").array(), // Types of connection points that led to this match (for feedback correlation)
 });
 
 // Chat messages table

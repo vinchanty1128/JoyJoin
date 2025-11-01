@@ -1186,3 +1186,106 @@ export function calculateGroupInsights(attendees: AttendeeData[]): GroupInsight[
   
   return insights.slice(0, 4);
 }
+
+/**
+ * Extract connection point types from predictions for feedback correlation
+ * This enables tracking which types of connections lead to successful matches
+ */
+export function extractConnectionPointTypes(predictions: SparkPrediction[]): string[] {
+  const types = new Set<string>();
+  
+  predictions.forEach(prediction => {
+    const text = prediction.text.toLowerCase();
+    
+    // Categorize based on prediction text patterns
+    if (text.includes('兴趣') || text.includes('interest') || text.includes('爱好')) {
+      types.add('shared_interests');
+    }
+    if (text.includes('话题') || text.includes('topic')) {
+      types.add('shared_topics');
+    }
+    if (text.includes('辩论') || text.includes('对话风格') || text.includes('debate')) {
+      types.add('debate_comfort');
+    }
+    if (text.includes('行业') || text.includes('industry') || text.includes('职业')) {
+      types.add('industry');
+    }
+    if (text.includes('学历') || text.includes('education')) {
+      types.add('education');
+    }
+    if (text.includes('人生阶段') || text.includes('life_stage') || text.includes('expecting') || text.includes('parent')) {
+      types.add('life_stage');
+    }
+    if (text.includes('语言') || text.includes('language')) {
+      types.add('language');
+    }
+    if (text.includes('性别') || text.includes('gender')) {
+      types.add('gender');
+    }
+    if (text.includes('老乡') || text.includes('hometown')) {
+      types.add('hometown');
+    }
+    if (text.includes('海外') || text.includes('overseas')) {
+      types.add('overseas_experience');
+    }
+    if (text.includes('社交') || text.includes('交友') || text.includes('对话') || text.includes('玩乐') || text.includes('另一半')) {
+      types.add('intent_alignment');
+    }
+    if (text.includes('性格') || text.includes('archetype') || text.includes('角色')) {
+      types.add('personality_archetype');
+    }
+    if (text.includes('沟通风格') || text.includes('communication')) {
+      types.add('communication_style');
+    }
+    if (text.includes('家庭') || text.includes('family')) {
+      types.add('family_status');
+    }
+  });
+  
+  return Array.from(types);
+}
+
+/**
+ * Calculate weighted match score with feedback-based adjustments
+ * This is where anti-repetition and feedback loop correlation would be applied
+ */
+export function calculateWeightedMatchScore(
+  predictions: SparkPrediction[],
+  attendeeId: string,
+  userContext: SparkPredictionContext,
+  feedbackWeights?: Record<string, number> // Future: from feedback correlation analysis
+): number {
+  let score = 0;
+  const connectionTypes = extractConnectionPointTypes(predictions);
+  
+  // Base scoring by rarity
+  predictions.forEach(prediction => {
+    switch (prediction.rarity) {
+      case 'epic':
+        score += 10;
+        break;
+      case 'rare':
+        score += 5;
+        break;
+      case 'common':
+        score += 2;
+        break;
+    }
+  });
+  
+  // Apply feedback-based weights (future enhancement)
+  if (feedbackWeights) {
+    connectionTypes.forEach(type => {
+      if (feedbackWeights[type]) {
+        score *= feedbackWeights[type];
+      }
+    });
+  }
+  
+  // Anti-repetition penalty
+  if (userContext.userMatchedBefore && userContext.userMatchedBefore.includes(attendeeId)) {
+    score *= 0.5; // Reduce score by 50% for repeat matches
+  }
+  
+  return score;
+}
