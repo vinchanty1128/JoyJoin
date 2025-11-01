@@ -387,12 +387,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat routes
+  // Chat routes (group chat opens 24 hours before event)
   app.get('/api/events/:eventId/messages', isPhoneAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.session.userId;
       const { eventId } = req.params;
+      
+      // Get event to check time
+      const event = await storage.getBlindBoxEventById(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      // Check if group chat is open (24 hours before event)
+      const now = new Date();
+      const eventTime = new Date(event.dateTime);
+      const hoursUntilEvent = (eventTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      const chatUnlocked = hoursUntilEvent <= 24;
+
+      if (!chatUnlocked) {
+        return res.json({
+          chatUnlocked: false,
+          hoursUntilUnlock: Math.max(0, hoursUntilEvent - 24),
+          messages: [],
+        });
+      }
+
       const messages = await storage.getEventMessages(eventId);
-      res.json(messages);
+      res.json({
+        chatUnlocked: true,
+        hoursUntilUnlock: 0,
+        messages,
+      });
     } catch (error) {
       console.error("Error fetching messages:", error);
       res.status(500).json({ message: "Failed to fetch messages" });
@@ -403,6 +429,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { eventId } = req.params;
+      
+      // Get event to check time
+      const event = await storage.getBlindBoxEventById(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      // Check if group chat is open (24 hours before event)
+      const now = new Date();
+      const eventTime = new Date(event.dateTime);
+      const hoursUntilEvent = (eventTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      const chatUnlocked = hoursUntilEvent <= 24;
+
+      if (!chatUnlocked) {
+        return res.status(403).json({ 
+          message: "群聊将在活动开始前24小时开放",
+          hoursUntilUnlock: Math.max(0, hoursUntilEvent - 24),
+        });
+      }
+
       const result = insertChatMessageSchema.safeParse({
         ...req.body,
         eventId,
