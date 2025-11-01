@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema } from "@shared/schema";
+import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema } from "@shared/schema";
 
 // Role mapping based on question responses
 const roleMapping: Record<string, Record<string, string>> = {
@@ -417,6 +417,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating message:", error);
       res.status(500).json({ message: "Failed to create message" });
+    }
+  });
+
+  // Direct message routes (1-on-1 chats unlocked via mutual matching)
+  app.get('/api/direct-messages', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const threads = await storage.getUserDirectMessageThreads(userId);
+      res.json(threads);
+    } catch (error) {
+      console.error("Error fetching direct message threads:", error);
+      res.status(500).json({ message: "Failed to fetch direct message threads" });
+    }
+  });
+
+  app.get('/api/direct-messages/:threadId', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const { threadId } = req.params;
+      const messages = await storage.getThreadMessages(threadId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching thread messages:", error);
+      res.status(500).json({ message: "Failed to fetch thread messages" });
+    }
+  });
+
+  app.post('/api/direct-messages/:threadId', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const { threadId } = req.params;
+      const result = insertDirectMessageSchema.safeParse({
+        ...req.body,
+        threadId,
+      });
+      
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      const message = await storage.sendDirectMessage(userId, result.data);
+      res.json(message);
+    } catch (error) {
+      console.error("Error sending direct message:", error);
+      res.status(500).json({ message: "Failed to send direct message" });
     }
   });
 
