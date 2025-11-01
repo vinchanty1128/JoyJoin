@@ -338,7 +338,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const user = await storage.updatePersonality(userId, result.data);
-      await storage.markVoiceQuizComplete(userId);
       
       res.json(user);
     } catch (error) {
