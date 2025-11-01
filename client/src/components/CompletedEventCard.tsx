@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, Users, Star, MessageSquare, CheckCircle2 } from "lucide-react";
+import { MapPin, DollarSign, Users, Star, MessageSquare, CheckCircle2, Sparkles } from "lucide-react";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 import { getCurrencySymbol } from "@/lib/currency";
 import { useLocation } from "wouter";
@@ -36,33 +36,36 @@ export default function CompletedEventCard({ event, feedback }: CompletedEventCa
     return `${event.totalParticipants}人`;
   };
 
-  // Calculate average score from feedback
-  const getAverageScore = () => {
+  // Extract individual scores from feedback
+  const getFeedbackScores = () => {
     if (!feedback) return null;
     
-    const scores: number[] = [];
+    const scores: { label: string; score: number }[] = [];
     
     // Add atmosphere score (1-5)
     if (feedback.atmosphereScore) {
-      scores.push(feedback.atmosphereScore);
+      scores.push({ label: "活动氛围", score: feedback.atmosphereScore });
     }
     
     // Add connection radar scores (1-5 each)
     if (feedback.connectionRadar && typeof feedback.connectionRadar === 'object') {
       const radar = feedback.connectionRadar as any;
-      if (radar.topicResonance) scores.push(radar.topicResonance);
-      if (radar.personalityMatch) scores.push(radar.personalityMatch);
-      if (radar.backgroundDiversity) scores.push(radar.backgroundDiversity);
-      if (radar.overallFit) scores.push(radar.overallFit);
+      if (radar.topicResonance) scores.push({ label: "话题共鸣", score: radar.topicResonance });
+      if (radar.personalityMatch) scores.push({ label: "性格契合", score: radar.personalityMatch });
+      if (radar.backgroundDiversity) scores.push({ label: "背景多元", score: radar.backgroundDiversity });
+      if (radar.overallFit) scores.push({ label: "整体匹配", score: radar.overallFit });
     }
     
     if (scores.length === 0) return null;
     
-    const average = scores.reduce((a, b) => a + b, 0) / scores.length;
-    return Math.round(average * 10) / 10; // Round to 1 decimal
+    const average = scores.reduce((a, b) => a + b.score, 0) / scores.length;
+    return {
+      scores,
+      average: Math.round(average * 10) / 10,
+    };
   };
 
-  const averageScore = getAverageScore();
+  const feedbackScores = getFeedbackScores();
   const hasFeedback = !!feedback;
 
   return (
@@ -71,17 +74,27 @@ export default function CompletedEventCard({ event, feedback }: CompletedEventCa
       onClick={() => setLocation(`/blind-box-events/${event.id}`)}
       data-testid={`card-completed-${event.id}`}
     >
-      {/* "已完成" Stamp Effect - Top Right Corner */}
+      {/* Status Badge - Top Right Corner */}
       <div className="absolute top-0 right-0 z-10">
         <div className="relative">
           <div className="absolute -top-1 -right-1">
-            <Badge 
-              variant="secondary" 
-              className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-semibold px-3 py-1 shadow-sm"
-            >
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              已完成
-            </Badge>
+            {hasFeedback ? (
+              <Badge 
+                variant="secondary" 
+                className="rounded-full bg-primary/10 text-primary border-primary/30 font-semibold px-3 py-1 shadow-sm"
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                已反馈
+              </Badge>
+            ) : (
+              <Badge 
+                variant="secondary" 
+                className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-semibold px-3 py-1 shadow-sm"
+              >
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                已完成
+              </Badge>
+            )}
           </div>
         </div>
       </div>
@@ -99,18 +112,44 @@ export default function CompletedEventCard({ event, feedback }: CompletedEventCa
               </Badge>
             )}
           </div>
-          
-          {/* Average Score Display */}
-          {hasFeedback && averageScore && (
-            <div className="flex items-center gap-1.5 text-sm">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="font-semibold text-amber-600 dark:text-amber-400">
-                {averageScore}
-              </span>
-              <span className="text-muted-foreground text-xs">/ 5.0 活动评分</span>
-            </div>
-          )}
         </div>
+
+        {/* Feedback Scores Display */}
+        {hasFeedback && feedbackScores && (
+          <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  {feedbackScores.average}
+                </span>
+                <span className="text-muted-foreground text-xs">/ 5.0</span>
+              </div>
+              <span className="text-xs text-primary font-medium">你的评分</span>
+            </div>
+            
+            {/* Individual Scores */}
+            <div className="grid grid-cols-2 gap-2">
+              {feedbackScores.scores.map((item, index) => (
+                <div key={index} className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-3 w-3 ${
+                          i < item.score
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-muted-foreground/30"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 人数与性别 */}
         <div className="flex items-center gap-2 text-sm">
