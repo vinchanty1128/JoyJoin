@@ -34,7 +34,6 @@ export const users = pgTable("users", {
   
   // Profile fields
   displayName: varchar("display_name"),
-  vibes: text("vibes").array(),
   hasCompletedProfileSetup: boolean("has_completed_profile_setup").default(false),
   hasCompletedVoiceQuiz: boolean("has_completed_voice_quiz").default(false),
   
@@ -128,8 +127,6 @@ export const events = pgTable("events", {
   price: integer("price"),
   maxAttendees: integer("max_attendees").default(10),
   currentAttendees: integer("current_attendees").default(0),
-  vibes: text("vibes").array(),
-  vibeGradient: varchar("vibe_gradient"),
   iconName: varchar("icon_name"),
   hostId: varchar("host_id").references(() => users.id),
   status: varchar("status").default("upcoming"), // upcoming, ongoing, completed, cancelled
@@ -223,10 +220,8 @@ export const upsertUserSchema = createInsertSchema(users).pick({
 
 export const updateProfileSchema = createInsertSchema(users).pick({
   displayName: true,
-  vibes: true,
 }).extend({
   displayName: z.string().min(1, "请输入昵称"),
-  vibes: z.array(z.string()).min(1, "请至少选择一个标签"),
 });
 
 export const updatePersonalitySchema = createInsertSchema(users).pick({
