@@ -4,7 +4,9 @@ import {
   type InsertEventAttendance, type InsertChatMessage, type InsertEventFeedback,
   type RegisterUser, type InsertTestResponse, type InsertRoleResult, type RoleResult, type InterestsTopics,
   type Notification, type InsertNotification, type NotificationCounts,
-  users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents, testResponses, roleResults, notifications
+  type DirectMessageThread, type DirectMessage, type InsertDirectMessageThread, type InsertDirectMessage,
+  users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents, testResponses, roleResults, notifications,
+  directMessageThreads, directMessages
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -41,8 +43,16 @@ export interface IStorage {
   // Feedback operations
   getUserAllFeedbacks(userId: string): Promise<Array<EventFeedback>>;
   getUserFeedback(userId: string, eventId: string): Promise<EventFeedback | undefined>;
+  getEventFeedbacks(eventId: string): Promise<Array<EventFeedback>>;
   createEventFeedback(userId: string, feedback: InsertEventFeedback): Promise<EventFeedback>;
   updateEventFeedbackDeep(userId: string, eventId: string, deepData: any): Promise<EventFeedback>;
+
+  // Direct message operations
+  findDirectMessageThread(userId1: string, userId2: string, eventId: string): Promise<DirectMessageThread | undefined>;
+  createDirectMessageThread(data: InsertDirectMessageThread): Promise<DirectMessageThread>;
+  getUserDirectMessageThreads(userId: string): Promise<Array<DirectMessageThread & { otherUser: User; lastMessage?: DirectMessage }>>;
+  getThreadMessages(threadId: string): Promise<Array<DirectMessage & { sender: User }>>;
+  sendDirectMessage(senderId: string, data: InsertDirectMessage): Promise<DirectMessage>;
 
   // Blind Box Event operations
   getUserBlindBoxEvents(userId: string): Promise<Array<BlindBoxEvent>>;
@@ -449,6 +459,14 @@ export class DatabaseStorage implements IStorage {
     return newFeedback;
   }
 
+  async getEventFeedbacks(eventId: string): Promise<Array<EventFeedback>> {
+    const feedbacks = await db
+      .select()
+      .from(eventFeedback)
+      .where(eq(eventFeedback.eventId, eventId));
+    return feedbacks;
+  }
+
   async updateEventFeedbackDeep(userId: string, eventId: string, deepData: any): Promise<EventFeedback> {
     const [updatedFeedback] = await db
       .update(eventFeedback)
@@ -461,6 +479,103 @@ export class DatabaseStorage implements IStorage {
       )
       .returning();
     return updatedFeedback;
+  }
+
+  // Direct message operations
+  async findDirectMessageThread(userId1: string, userId2: string, eventId: string): Promise<DirectMessageThread | undefined> {
+    const [thread] = await db
+      .select()
+      .from(directMessageThreads)
+      .where(
+        and(
+          eq(directMessageThreads.eventId, eventId),
+          sql`(
+            (${directMessageThreads.user1Id} = ${userId1} AND ${directMessageThreads.user2Id} = ${userId2})
+            OR
+            (${directMessageThreads.user1Id} = ${userId2} AND ${directMessageThreads.user2Id} = ${userId1})
+          )`
+        )
+      );
+    return thread;
+  }
+
+  async createDirectMessageThread(data: InsertDirectMessageThread): Promise<DirectMessageThread> {
+    const [thread] = await db
+      .insert(directMessageThreads)
+      .values(data)
+      .returning();
+    return thread;
+  }
+
+  async getUserDirectMessageThreads(userId: string): Promise<Array<DirectMessageThread & { otherUser: User; lastMessage?: DirectMessage }>> {
+    const threads = await db
+      .select()
+      .from(directMessageThreads)
+      .where(
+        sql`${directMessageThreads.user1Id} = ${userId} OR ${directMessageThreads.user2Id} = ${userId}`
+      )
+      .orderBy(desc(directMessageThreads.lastMessageAt));
+
+    // Fetch other user data and last message for each thread
+    const threadsWithData = await Promise.all(
+      threads.map(async (thread) => {
+        const otherUserId = thread.user1Id === userId ? thread.user2Id : thread.user1Id;
+        const otherUser = await this.getUser(otherUserId);
+        
+        const [lastMessage] = await db
+          .select()
+          .from(directMessages)
+          .where(eq(directMessages.threadId, thread.id))
+          .orderBy(desc(directMessages.createdAt))
+          .limit(1);
+
+        return {
+          ...thread,
+          otherUser: otherUser!,
+          lastMessage,
+        };
+      })
+    );
+
+    return threadsWithData;
+  }
+
+  async getThreadMessages(threadId: string): Promise<Array<DirectMessage & { sender: User }>> {
+    const messages = await db
+      .select()
+      .from(directMessages)
+      .where(eq(directMessages.threadId, threadId))
+      .orderBy(directMessages.createdAt);
+
+    const messagesWithUser = await Promise.all(
+      messages.map(async (message) => {
+        const sender = await this.getUser(message.senderId);
+        return {
+          ...message,
+          sender: sender!,
+        };
+      })
+    );
+
+    return messagesWithUser;
+  }
+
+  async sendDirectMessage(senderId: string, data: InsertDirectMessage): Promise<DirectMessage> {
+    const [message] = await db
+      .insert(directMessages)
+      .values({
+        ...data,
+        senderId,
+      })
+      .returning();
+
+    // Update thread's lastMessageAt
+    await db
+      .update(directMessageThreads)
+      .set({ lastMessageAt: new Date() })
+      .where(eq(directMessageThreads.id, data.threadId));
+
+    return message;
   }
 
   // Blind Box Event operations

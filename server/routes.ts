@@ -460,10 +460,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Award points for completing feedback
       const feedback = await storage.createEventFeedback(userId, result.data);
       
+      // Check for mutual matches if user has new connections
+      const mutualMatches: string[] = [];
+      if (feedback.hasNewConnections && feedback.connections && feedback.connections.length > 0) {
+        // Get all feedbacks for this event to check for mutual matches
+        const eventFeedbacks = await storage.getEventFeedbacks(eventId);
+        
+        for (const selectedUserId of feedback.connections) {
+          // Find the feedback from the selected user
+          const otherUserFeedback = eventFeedbacks.find(f => f.userId === selectedUserId);
+          
+          // Check if they also selected the current user
+          if (otherUserFeedback?.hasNewConnections && 
+              otherUserFeedback.connections && 
+              otherUserFeedback.connections.includes(userId)) {
+            mutualMatches.push(selectedUserId);
+            
+            // Create direct message thread if it doesn't exist
+            const existingThread = await storage.findDirectMessageThread(userId, selectedUserId, eventId);
+            if (!existingThread) {
+              await storage.createDirectMessageThread({
+                user1Id: userId,
+                user2Id: selectedUserId,
+                eventId: eventId,
+              });
+              
+              // Send mutual match notifications to both users
+              await storage.createNotification({
+                userId: userId,
+                category: 'chat',
+                type: 'mutual_match',
+                title: '🎉 双向匹配成功',
+                message: `你和另一位参与者互相选择，现在可以开始私聊了！`,
+                relatedResourceId: eventId,
+              });
+              
+              await storage.createNotification({
+                userId: selectedUserId,
+                category: 'chat',
+                type: 'mutual_match',
+                title: '🎉 双向匹配成功',
+                message: `你和另一位参与者互相选择，现在可以开始私聊了！`,
+                relatedResourceId: eventId,
+              });
+            }
+          }
+        }
+      }
+      
       // Note: In a real app, you'd update user points here
       // await storage.awardFeedbackPoints(userId, 50);
       
-      res.json(feedback);
+      res.json({ ...feedback, mutualMatches });
     } catch (error) {
       console.error("Error creating feedback:", error);
       res.status(500).json({ message: "Failed to create feedback" });
