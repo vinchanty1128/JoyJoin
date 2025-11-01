@@ -60,6 +60,7 @@ export default function EventFeedbackFlow() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/events/${eventId}/feedback`] });
       queryClient.invalidateQueries({ queryKey: ["/api/my-events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-feedbacks"] });
       setCurrentStep("completion");
     },
     onError: (error) => {
