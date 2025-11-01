@@ -6,16 +6,43 @@ This social networking platform, JoyJoin (悦聚·Joy), aims to connect individu
 
 ## Recent Changes (November 1, 2025)
 
-**Enhanced Matching Algorithm with Demographics (Latest):** Improved the AI-driven matching algorithm to utilize previously unused demographic fields, providing richer connection points and better matches. Changes include:
+**Comprehensive Matching Algorithm Overhaul (Latest - 13 New Enhancement Types):** Massive upgrade to AI-driven matchmaking using previously collected but unused data. Zero new friction for users, maximum matching intelligence. Changes include:
+
+*Core Matching Enhancements (uses existing data):*
+- ✅ Topics matching: Shared topicsHappy interests (2+ overlap = rare, 3+ = epic) - more specific than general interests
+- ✅ Topics anti-matching: Prevents disasters where one person's happy topic is another's avoid topic
+- ✅ Debate comfort alignment: Scores closeness on 1-7 scale (≤1 diff = rare, ≤2 = common) for conversation style compatibility
+- ✅ Life stage detection: Auto-detects transitions from existing data (expecting parent = epic, new parent/career transition = rare)
+- ✅ Enhanced language matching: Finds 2+ shared languages beyond Chinese/English (rare)
+- ✅ Communication style matching: Derived from archetype + debate comfort (storyteller, listener, energizer, questioner, facilitator)
+
+*Group Intelligence Features:*
+- ✅ Group role composition: Balances storytellers, listeners, energizers, questioners, connectors for optimal conversation dynamics
+- ✅ Diversity balance scoring: Calculates optimal 60% similarity / 40% difference across age, industry, education, relationship status
+
+*Database Infrastructure:*
+- ✅ Added `matchHistory` table for tracking who's matched before (anti-repetition scoring)
+- ✅ Added `intent` field to eventAttendance for event-specific motivations (networking, friends, discussion, fun, romance)
+- ✅ Pushed schema changes with `npm run db:push`
+
+*Component Updates:*
+- ✅ Updated `AttendeeData` interface: added topicsHappy, topicsAvoid, debateComfort
+- ✅ Updated `SparkPredictionContext` interface: added all new matching fields + archetype
+- ✅ Updated MeetYourTable.tsx, AttendeePreviewCard.tsx to pass new fields
+- ✅ Fixed TypeScript error in BlindBoxEventDetailPage.tsx (conditional rendering pattern)
+
+*Remaining Work (backend/future):*
+- ⏳ Anti-repetition scoring implementation (needs backend logic to query matchHistory)
+- ⏳ Intent-based matching (needs event signup UI to collect intent)
+- ⏳ Connection point type tracking for feedback-driven weight adjustment
+- ⏳ Feedback loop correlation (connect post-event ratings to connection point types)
+
+**Enhanced Matching Algorithm with Demographics:** Improved the AI-driven matching algorithm to utilize previously unused demographic fields, providing richer connection points and better matches. Changes include:
 - Changed `hometownAffinityOptin` default from `false` to `true` in schema (老乡 connections are culturally valued in Chinese culture)
 - Added gender-based connection points (same gender = common rarity)
 - Added family status matching (same parenting stage = rare, both expecting = epic)
 - Added specific overseas regions matching (same region like 'North America' or 'Europe' = rare)
 - Added hometown matching: same country = rare, same city/region = epic (老乡! connection)
-- Updated `AttendeeData` interface to include: gender, children, overseasRegions, hometownCountry, hometownRegionCity, hometownAffinityOptin
-- Updated `SparkPredictionContext` interface to pass all new demographic fields
-- Updated components chain: AttendeePreviewCard, MeetYourTable, PostMatchEventCard, BlindBoxEventDetailPage to pass new fields
-- Pushed schema changes to database with `npm run db:push`
 
 **Vibe Tags System Removal:** Simplified the codebase by completely removing the decorative vibe tags system (Chill, Playful, High-Energy, etc.) which was not used in the matching algorithm. Changes include:
 - Removed `vibes` field from users and events tables in the database schema
