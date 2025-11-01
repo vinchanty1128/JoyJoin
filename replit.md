@@ -2,7 +2,21 @@
 
 ## Overview
 
-This social networking platform, JoyJoin (悦聚·Joy), aims to connect individuals through small, curated micro-events (5-10 attendees) using AI-driven matchmaking. It focuses on fostering psychological safety, inclusivity, and meaningful local connections. The platform's core purpose is to help users build communities by matching them with events and people based on their social vibe, interests, and energy levels, all presented through a warm and approachable design. The platform targets the Hong Kong/Shenzhen market, emphasizing Chinese-localized authentication and user experience.
+This social networking platform, JoyJoin (悦聚·Joy), aims to connect individuals through small, curated micro-events (5-10 attendees) using AI-driven matchmaking. It focuses on fostering psychological safety, inclusivity, and meaningful local connections. The platform's core purpose is to help users build communities by matching them with events and people based on their interests, personality archetypes, and social compatibility, all presented through a warm and approachable design. The platform targets the Hong Kong/Shenzhen market, emphasizing Chinese-localized authentication and user experience.
+
+## Recent Changes (November 1, 2025)
+
+**Vibe Tags System Removal:** Simplified the codebase by completely removing the decorative vibe tags system (Chill, Playful, High-Energy, etc.) which was not used in the matching algorithm. Changes include:
+- Removed `vibes` field from users and events tables in the database schema
+- Removed `vibeGradient` field from events table
+- Deleted vibe UI components: VibeChip.tsx, VibePill.tsx, VibeProfileCard.tsx
+- Deleted vibe configuration library: client/src/lib/vibes.ts
+- Updated ParticipantAvatars to use generic User icons instead of vibe-based colors
+- Simplified ProfileSetupPage to only collect displayName (removed vibe selection)
+- Updated all event cards and pages to remove vibe tag displays
+- Updated design_guidelines.md to reflect simplified design
+
+**Note:** The matching algorithm continues to use interests, personality archetypes (14 social roles), and industries for AI-driven event and people matching.
 
 ## User Preferences
 
@@ -14,8 +28,8 @@ Preferred communication style: Simple, everyday language.
 - **Frameworks:** React 18 with TypeScript, Vite, Wouter for routing.
 - **UI/Styling:** Radix UI primitives, shadcn/ui (New York style), Tailwind CSS with custom design tokens. Emphasizes warmth, accessibility, and mobile-first design.
 - **State Management:** TanStack Query for server state, React hooks for UI state.
-- **Design Principles:** Mobile-first responsive design, dark mode, purple-centric warm color palette, custom 8-tag vibe taxonomy (Chill, Playful, High-Energy, Curious, Cozy, Adventurous, Social, Creative). Bilingual support (Chinese primary, English secondary).
-- **Key UI Patterns:** Bottom navigation, event cards with visual vibe encoding, two-part match scoring ("My Fit" + "Group Spark") with transparent explanations, personality radar charts, social role cards, and clear information categorization on attendee cards.
+- **Design Principles:** Mobile-first responsive design, dark mode, purple-centric warm color palette. Bilingual support (Chinese primary, English secondary).
+- **Key UI Patterns:** Bottom navigation, event cards, two-part match scoring ("My Fit" + "Group Spark") with transparent explanations, personality radar charts, social role cards, and clear information categorization on attendee cards.
 
 ### Backend Architecture
 - **Runtime:** Node.js with Express.js, TypeScript.
