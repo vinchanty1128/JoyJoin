@@ -685,6 +685,32 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     
+    // Create corresponding event record for chat/attendance tracking
+    const [correspondingEvent] = await db
+      .insert(events)
+      .values({
+        title,
+        description: `${eventData.eventType} · ${budgetTier}`,
+        dateTime,
+        location: `${district}`,
+        area: district,
+        price: null,
+        maxAttendees: 6,
+        currentAttendees: 1,
+        hostId: userId,
+        status: 'upcoming',
+      })
+      .returning();
+    
+    // Create event attendance record for the creator
+    await db
+      .insert(eventAttendance)
+      .values({
+        eventId: correspondingEvent.id,
+        userId,
+        status: 'confirmed',
+      });
+    
     return newEvent;
   }
 

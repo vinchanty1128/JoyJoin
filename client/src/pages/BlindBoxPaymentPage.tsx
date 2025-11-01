@@ -30,6 +30,8 @@ export default function BlindBoxPaymentPage() {
     onSuccess: () => {
       // 立即刷新Event Tab数据
       queryClient.invalidateQueries({ queryKey: ["/api/my-events"] });
+      // 刷新聊天页面数据（群聊列表）
+      queryClient.invalidateQueries({ queryKey: ["/api/events/joined"] });
       // 清除临时数据
       localStorage.removeItem("blindbox_event_data");
       // 跳转到活动页面
