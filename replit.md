@@ -36,7 +36,8 @@ Preferred communication style: Simple, everyday language.
 - **AI-Driven Matchmaking:** Uses AI for event and people matching, with an emphasis on explainability through connection points and a deep feedback system.
 - **Two-Tier Feedback Architecture:** Implements a basic 4-step feedback flow followed by an optional, anonymous deep feedback system (3 modules) to calibrate the matching algorithm, evaluate conversation dynamics, and capture evolving user preferences.
 - **Event Management:** Features detailed event pages with reordered sections for improved UX, clear navigation for event states ("匹配中", "已匹配", "已完成"), and enhanced attendee cards.
-- **Personality Assessment System:** Includes a 10-question test, scoring engine with 8 social roles, and a PersonalityRadarChart for visualization.
+- **Personality Assessment System:** Includes a 10-question test, scoring engine with 14 social role archetypes (8 core + 2 demo-specific + 4 legacy), and a PersonalityRadarChart for visualization. Voice quiz flow has been disabled; all users complete the standard written personality test.
+- **Streamlined Onboarding:** Registration → Interests/Topics → Personality Test (10 questions) → Profile Setup → Discover. Voice quiz option has been removed from the user journey.
 - **Shared Schema Pattern:** Ensures type safety and code reuse across client and server.
 - **Vite Middleware Mode:** Streamlines development with Hot Module Replacement (HMR).
 - **Component-First Architecture:** Promotes modular and testable UI components.
