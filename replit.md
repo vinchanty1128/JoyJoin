@@ -30,8 +30,13 @@ This social networking platform, JoyJoin (悦聚·Joy), aims to connect individu
 - ✅ Updated `AttendeeData` interface: added topicsHappy, topicsAvoid, debateComfort, intent
 - ✅ Updated `SparkPredictionContext` interface: added all new matching fields + archetype + userIntent + userMatchedBefore
 - ✅ Updated MeetYourTable.tsx, AttendeePreviewCard.tsx to pass new fields
-- ✅ Added intent selection UI to JoinBlindBoxSheet (5 options: networking, friends, discussion, fun, romance)
-- ✅ Implemented intent-based matching logic (same intent = rare/epic connection point)
+- ✅ Added intent selection UI to JoinBlindBoxSheet (6 options: flexible/都可以, networking, friends, discussion, fun, romance)
+- ✅ Intent selection is optional with toggle behavior and clear button
+- ✅ Implemented smart intent-based matching logic:
+  - Both "flexible" → common level ("都保持开放心态")
+  - Same specific intent → rare/epic level (strong alignment)
+  - "flexible" + specific → neutral (no bonus, flexible people adapt well)
+  - Different specific intents → neutral (avoids forced mismatches)
 - ✅ Implemented anti-repetition scoring (50% penalty for repeat matches in calculateWeightedMatchScore)
 - ✅ Created extractConnectionPointTypes() for tracking which connection types led to matches
 - ✅ Created calculateWeightedMatchScore() with feedback-based weight adjustment infrastructure
