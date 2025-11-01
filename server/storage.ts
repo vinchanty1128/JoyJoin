@@ -223,7 +223,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({
         displayName: data.displayName,
-        ageBand: data.ageBand,
+        birthdate: data.birthdate,
         ageVisibility: data.ageVisibility,
         gender: data.gender,
         pronouns: data.pronouns,

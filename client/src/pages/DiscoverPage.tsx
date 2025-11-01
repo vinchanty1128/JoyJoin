@@ -251,7 +251,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-screen bg-background pb-16">
-      <MobileHeader showLogo={true} showNotification={true} />
+      <MobileHeader showLogo={true} />
       
       <div className="space-y-4">
         {/* Hero 欢迎区 */}

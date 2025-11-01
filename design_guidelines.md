@@ -37,7 +37,7 @@
 - Warning: 35 80% 65%
 
 **Accent Colors (used sparingly):**
-- Vibe Tags: 160 45% 50% (teal - compatibility), 45 75% 60% (coral - energy), 200 50% 55% (sky blue - calm)
+- Compatibility indicators: 160 45% 50% (teal), 45 75% 60% (coral), 200 50% 55% (sky blue)
 
 ---
 
@@ -70,7 +70,7 @@
 **Grid System:**
 - Mobile: grid-cols-1
 - Tablet: grid-cols-2 (event cards, features)
-- Desktop: grid-cols-3 (event discovery), grid-cols-4 (vibe tags)
+- Desktop: grid-cols-3 (event discovery), grid-cols-4 (category filters)
 
 **Container Widths:**
 - Full-width sections: w-full with max-w-7xl mx-auto
@@ -88,14 +88,14 @@
 - **Breadcrumbs:** For event detail flows, text-sm with > separators
 
 ### Event Cards
-- **Compact Card:** Rounded-2xl, overflow-hidden, image aspect-video, gradient overlay on image, vibe tags as pills (rounded-full px-3 py-1), attendee count badge, match % indicator
+- **Compact Card:** Rounded-2xl, overflow-hidden, image aspect-video, gradient overlay on image, attendee count badge, match % indicator
 - **Detailed Card:** Adds host info, venue details, accessibility icons, "Why this match?" expandable section
 - **Grid Layout:** grid gap-6, 1 col mobile, 2 cols tablet, 3 cols desktop
 
-### Vibe Profile Components
-- **Tag Pills:** Rounded-full px-4 py-2, border with subtle bg, icon + text, grouped by category
+### Profile Components
 - **Compatibility Bar:** Horizontal progress bar with gradient, percentage label, animated fill
-- **Personality Radar:** SVG chart showing 5-6 dimensions (energy, conversational style, etc.)
+- **Personality Radar:** SVG chart showing 5-6 dimensions (personality traits from Big Five model)
+- **Social Role Cards:** Display user's primary and secondary social role archetypes
 
 ### Forms & Questionnaires
 - **Progress Indicator:** Stepped circles with connecting lines, current step highlighted
@@ -111,11 +111,11 @@
 ### Feedback & Ratings
 - **Star Rating:** Large interactive stars (text-3xl), with hover states
 - **Match Quality Slider:** 0-10 scale with emoji indicators at key points
-- **Quick Reactions:** Emoji-based buttons for speed (😊 Great vibes, 🤝 Made connections, etc.)
+- **Quick Reactions:** Emoji-based buttons for speed (😊 Great atmosphere, 🤝 Made connections, etc.)
 
 ### Admin Panel
 - **Data Tables:** Striped rows, sortable headers, search/filter bar, action buttons right-aligned
-- **Event Creator:** Multi-step form (Details → Attendees → Vibe Mix → Schedule → Review)
+- **Event Creator:** Multi-step form (Details → Attendees → Schedule → Review)
 - **Dashboard Cards:** Stats with icons, trend indicators, charts using recharts library
 
 ### Trust & Safety
@@ -183,4 +183,4 @@
 
 **Event Detail:** Image hero → Sticky booking sidebar (desktop) / bottom CTA (mobile) → Info tabs (Details, Attendees, Host, Venue) → Similar events carousel
 
-**User Profile:** Cover gradient + avatar → Stats row (events attended, matches made) → Vibe tags grid → Activity timeline
+**User Profile:** Cover gradient + avatar → Stats row (events attended, matches made) → Social role cards → Personality profile → Activity timeline

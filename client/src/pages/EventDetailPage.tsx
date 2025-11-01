@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, MapPin, DollarSign, Users, ChevronDown, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
-import VibeChip from "@/components/VibeChip";
 import GroupSparkMeter from "@/components/GroupSparkMeter";
 import { useState } from "react";
 
@@ -66,12 +65,6 @@ export default function EventDetailPage() {
                 </CardContent>
               </Card>
             )}
-
-            <div className="flex gap-1.5 flex-wrap">
-              <VibeChip emoji="⚡" label="活力" gradient="from-orange-400 to-red-500" />
-              <VibeChip emoji="🎈" label="玩乐" gradient="from-pink-400 to-rose-400" />
-              <VibeChip emoji="🤝" label="社交" gradient="from-violet-400 to-purple-400" />
-            </div>
             
             <p className="text-sm text-muted-foreground">
               快节奏游戏+精酿啤酒。期待欢笑、团队轮换和友好的主持人。
