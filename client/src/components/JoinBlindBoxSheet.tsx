@@ -323,14 +323,15 @@ export default function JoinBlindBoxSheet({
                 </div>
               </div>
 
-              {/* B. 参与意图 (Event-specific intent) */}
+              {/* B. 参与意图 (Event-specific intent) - 可选 */}
               <div>
                 <div className="mb-3">
                   <h3 className="text-base font-semibold mb-1">参与这场活动的主要目的？</h3>
-                  <p className="text-xs text-muted-foreground">帮助AI匹配志同道合的桌友</p>
+                  <p className="text-xs text-muted-foreground">选填 · 帮助AI匹配，也可以保持开放心态不选</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
+                    { value: "flexible", label: "都可以", icon: "✨" },
                     { value: "networking", label: "职业社交", icon: "💼" },
                     { value: "friends", label: "交友", icon: "👋" },
                     { value: "discussion", label: "深度对话", icon: "💬" },
@@ -339,7 +340,7 @@ export default function JoinBlindBoxSheet({
                   ].map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => setSelectedIntent(option.value)}
+                      onClick={() => setSelectedIntent(selectedIntent === option.value ? "" : option.value)}
                       className={`px-3 py-3 rounded-lg border-2 text-sm transition-all hover-elevate ${
                         selectedIntent === option.value
                           ? 'border-primary bg-primary/5 font-medium'
@@ -352,6 +353,17 @@ export default function JoinBlindBoxSheet({
                     </button>
                   ))}
                 </div>
+                {selectedIntent && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedIntent("")}
+                    className="mt-2 w-full text-xs text-muted-foreground"
+                    data-testid="button-clear-intent"
+                  >
+                    清空选择
+                  </Button>
+                )}
               </div>
 
               {/* C. 我的偏好 */}
