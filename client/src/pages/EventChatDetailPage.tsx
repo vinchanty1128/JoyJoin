@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Send, Users, Star } from "lucide-react";
+import { ArrowLeft, Send, Users, Star, Clock } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, ChatMessage, EventFeedback } from "@shared/schema";
@@ -36,10 +36,18 @@ export default function EventChatDetailPage() {
 
   const event = joinedEvents?.find((e: any) => e.id === eventId);
 
-  const { data: messages, isLoading: messagesLoading } = useQuery<Array<ChatMessage & { user: User }>>({
+  const { data: messagesData, isLoading: messagesLoading } = useQuery<{
+    chatUnlocked: boolean;
+    hoursUntilUnlock: number;
+    messages: Array<ChatMessage & { user: User }>;
+  }>({
     queryKey: ["/api/events", eventId, "/messages"],
     refetchInterval: 5000,
   });
+
+  const messages = messagesData?.messages || [];
+  const chatUnlocked = messagesData?.chatUnlocked ?? false;
+  const hoursUntilUnlock = messagesData?.hoursUntilUnlock ?? 0;
 
   const { data: participants } = useQuery<Array<User>>({
     queryKey: ["/api/events", eventId, "/participants"],
@@ -160,63 +168,92 @@ export default function EventChatDetailPage() {
         </TabsList>
 
         <TabsContent value="chat" className="flex-1 flex flex-col m-0">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messagesLoading ? (
-              <div className="text-center py-8">
-                <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-              </div>
-            ) : messages && messages.length > 0 ? (
-              messages.map((msg) => (
-                <div key={msg.id} className="flex items-start gap-3">
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    {msg.user.profileImageUrl ? (
-                      <AvatarImage src={msg.user.profileImageUrl} />
-                    ) : (
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        {msg.user.displayName?.[0] || msg.user.firstName?.[0] || "U"}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm font-medium truncate">
-                        {msg.user.displayName || msg.user.firstName || "用户"}
-                      </span>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">
-                        {new Date(msg.createdAt!).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}
+          {!chatUnlocked ? (
+            <div className="flex-1 flex items-center justify-center p-8">
+              <Card className="max-w-sm w-full">
+                <CardContent className="p-8 text-center space-y-4">
+                  <Clock className="h-16 w-16 text-muted-foreground mx-auto" />
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-lg">群聊即将开放</h3>
+                    <p className="text-sm text-muted-foreground">
+                      群聊将在活动开始前24小时开放
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-medium">
+                        {Math.floor(hoursUntilUnlock)}小时{Math.round((hoursUntilUnlock % 1) * 60)}分钟后开放
                       </span>
                     </div>
-                    <p className="text-sm mt-0.5 break-words">{msg.message}</p>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">还没有消息，开始聊天吧！</p>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="border-t p-4">
-            <div className="flex gap-2">
-              <Input
-                placeholder="输入消息..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                data-testid="input-message"
-              />
-              <Button 
-                size="icon" 
-                onClick={handleSendMessage}
-                disabled={!message.trim() || sendMessageMutation.isPending}
-                data-testid="button-send"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+                  <p className="text-xs text-muted-foreground pt-4">
+                    届时你可以和其他参与者提前认识，聊聊期待～
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messagesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                  </div>
+                ) : messages && messages.length > 0 ? (
+                  messages.map((msg) => (
+                    <div key={msg.id} className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        {msg.user.profileImageUrl ? (
+                          <AvatarImage src={msg.user.profileImageUrl} />
+                        ) : (
+                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                            {msg.user.displayName?.[0] || msg.user.firstName?.[0] || "U"}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm font-medium truncate">
+                            {msg.user.displayName || msg.user.firstName || "用户"}
+                          </span>
+                          <span className="text-xs text-muted-foreground flex-shrink-0">
+                            {new Date(msg.createdAt!).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                        <p className="text-sm mt-0.5 break-words">{msg.message}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p className="text-sm">还没有消息，开始聊天吧！</p>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="border-t p-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="输入消息..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    data-testid="input-message"
+                  />
+                  <Button 
+                    size="icon" 
+                    onClick={handleSendMessage}
+                    disabled={!message.trim() || sendMessageMutation.isPending}
+                    data-testid="button-send"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="participants" className="flex-1 overflow-y-auto p-4 m-0">
