@@ -25,6 +25,7 @@ export interface AttendeeData {
   seniority?: string;
   fieldOfStudy?: string;
   languagesComfort?: string[];
+  intent?: string; // Event-specific intent
 }
 
 export interface CommonInterest {
@@ -39,7 +40,7 @@ export interface ArchetypeDistribution {
 }
 
 export interface GroupInsight {
-  type: 'industry' | 'interest' | 'experience';
+  type: 'industry' | 'interest' | 'experience' | 'personality' | 'balance';
   label: string;
   icon: string;
 }
@@ -235,6 +236,8 @@ export interface SparkPredictionContext {
   userHometownRegionCity?: string;
   userHometownAffinityOptin?: boolean;
   userArchetype?: string;
+  userIntent?: string; // Event-specific intent
+  userMatchedBefore?: string[]; // Array of user IDs previously matched with
 }
 
 export type RarityLevel = 'common' | 'rare' | 'epic';
@@ -891,6 +894,30 @@ export function generateSparkPredictions(
         rarity: 'rare' 
       });
     }
+  }
+  
+  // 🎯 Intent-based matching - RARE (same event motivation = strong alignment)
+  if (userContext.userIntent && attendee.intent && 
+      userContext.userIntent === attendee.intent) {
+    const intentLabels: Record<string, { text: string; rarity: RarityLevel }> = {
+      "networking": { text: "都为职业社交而来", rarity: 'rare' },
+      "friends": { text: "都想认识新朋友", rarity: 'rare' },
+      "discussion": { text: "都期待深度对话", rarity: 'rare' },
+      "fun": { text: "都想轻松玩乐", rarity: 'common' },
+      "romance": { text: "都在寻找另一半", rarity: 'epic' } // Very rare and specific
+    };
+    
+    if (intentLabels[userContext.userIntent]) {
+      predictions.push(intentLabels[userContext.userIntent]);
+    }
+  }
+  
+  // 🎯 Anti-repetition scoring - penalize if matched before
+  if (userContext.userMatchedBefore && userContext.userMatchedBefore.includes(attendee.userId)) {
+    // This person has been matched with the user before
+    // We don't add a negative connection point, but the backend matching algorithm
+    // should use this information to lower their overall match score
+    // and prioritize fresh connections instead
   }
   
   // Return top 6 predictions - perfect for 3x2 grid layout

@@ -75,6 +75,9 @@ export default function JoinBlindBoxSheet({
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTasteIntensity, setSelectedTasteIntensity] = useState<string[]>([]);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
+  
+  // 参与意图 - Event-specific intent
+  const [selectedIntent, setSelectedIntent] = useState<string>("");
 
   const budgetOptions = [
     { value: "100以下", label: "≤100" },
@@ -208,6 +211,7 @@ export default function JoinBlindBoxSheet({
         selectedCuisines,
         inviteFriends,
         friendsCount,
+        intent: selectedIntent, // Store user's event intent
       }));
       
       setShowConfirmDialog(false);
@@ -314,6 +318,37 @@ export default function JoinBlindBoxSheet({
                           <CheckCircle2 className="h-4 w-4 text-background" />
                         )}
                       </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* B. 参与意图 (Event-specific intent) */}
+              <div>
+                <div className="mb-3">
+                  <h3 className="text-base font-semibold mb-1">参与这场活动的主要目的？</h3>
+                  <p className="text-xs text-muted-foreground">帮助AI匹配志同道合的桌友</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "networking", label: "职业社交", icon: "💼" },
+                    { value: "friends", label: "交友", icon: "👋" },
+                    { value: "discussion", label: "深度对话", icon: "💬" },
+                    { value: "fun", label: "轻松玩乐", icon: "🎉" },
+                    { value: "romance", label: "寻找另一半", icon: "💕" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSelectedIntent(option.value)}
+                      className={`px-3 py-3 rounded-lg border-2 text-sm transition-all hover-elevate ${
+                        selectedIntent === option.value
+                          ? 'border-primary bg-primary/5 font-medium'
+                          : 'border-muted bg-muted/30'
+                      }`}
+                      data-testid={`button-intent-${option.value}`}
+                    >
+                      <span className="mr-1">{option.icon}</span>
+                      {option.label}
                     </button>
                   ))}
                 </div>
