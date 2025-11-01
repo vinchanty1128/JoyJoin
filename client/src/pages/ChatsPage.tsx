@@ -6,10 +6,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Calendar, MapPin, MessageSquare, Users, User, Lock, Clock } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
 import ParticipantAvatars from "@/components/ParticipantAvatars";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import type { Event, DirectMessageThread } from "@shared/schema";
 
 type EventWithParticipants = Event & { 
@@ -33,6 +35,8 @@ type DirectThreadWithUser = DirectMessageThread & {
 export default function ChatsPage() {
   const [, setLocation] = useLocation();
   const markAsRead = useMarkNotificationsAsRead();
+  const { toast } = useToast();
+  const [isCreatingDemo, setIsCreatingDemo] = useState(false);
 
   const { data: joinedEvents, isLoading: isLoadingEvents } = useQuery<Array<EventWithParticipants>>({
     queryKey: ["/api/events/joined"],
@@ -53,6 +57,32 @@ export default function ChatsPage() {
       return await apiRequest("POST", "/api/notifications", data);
     },
   });
+
+  const createDemoChats = async () => {
+    try {
+      setIsCreatingDemo(true);
+      const response: any = await apiRequest("POST", "/api/chats/seed-demo", {});
+      
+      if (response.success) {
+        toast({
+          title: "演示数据创建成功",
+          description: "已创建3个演示聊天窗口",
+        });
+        
+        // Invalidate and refetch
+        await queryClient.invalidateQueries({ queryKey: ["/api/events/joined"] });
+        await queryClient.invalidateQueries({ queryKey: ["/api/direct-messages"] });
+      }
+    } catch (error) {
+      toast({
+        title: "创建失败",
+        description: "请稍后重试",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingDemo(false);
+    }
+  };
 
   // Check if chat is unlocked (24 hours before event or event has passed)
   const isChatUnlocked = (eventDateTime: Date | null) => {
@@ -163,9 +193,18 @@ export default function ChatsPage() {
             <CardContent className="p-8 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-semibold mb-2">暂无聊天</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-4">
                 参加活动并与其他参与者匹配后，就可以在这里聊天了
               </p>
+              <Button 
+                onClick={createDemoChats}
+                disabled={isCreatingDemo}
+                variant="outline"
+                size="sm"
+                data-testid="button-create-demo"
+              >
+                {isCreatingDemo ? "创建中..." : "创建演示聊天（测试用）"}
+              </Button>
             </CardContent>
           </Card>
         </div>
