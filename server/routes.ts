@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages } from "@shared/schema";
+import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -1346,6 +1346,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
+      // Create demo users with different archetypes
+      const [demoUser1] = await db.insert(users).values({
+        displayName: '小明',
+        archetype: '火花塞',
+        hasCompletedProfileSetup: true,
+      }).returning();
+
+      const [demoUser2] = await db.insert(users).values({
+        displayName: '小红',
+        archetype: '连接者',
+        hasCompletedProfileSetup: true,
+      }).returning();
+
+      const [demoUser3] = await db.insert(users).values({
+        displayName: '阿杰',
+        archetype: '探索者',
+        hasCompletedProfileSetup: true,
+      }).returning();
+
       // Create demo events with different unlock states
       const now = new Date();
       
@@ -1371,11 +1390,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'confirmed',
       });
 
-      // Create demo messages for event 1
+      // Create demo messages for event 1 with different users
       const demoMessages = [
-        { message: '大家好！很期待明天的聚会 👋', userId },
-        { message: '我也是！有人知道这家店的招牌菜是什么吗？', userId },
-        { message: '听说他们的菠萝包和奶茶超赞！', userId },
+        { message: '大家好！很期待明天的聚会 👋', userId: demoUser1.id },
+        { message: '我也是！有人知道这家店的招牌菜是什么吗？', userId: demoUser2.id },
+        { message: '听说他们的菠萝包和奶茶超赞！', userId: demoUser3.id },
       ];
 
       for (const msg of demoMessages) {
@@ -1432,11 +1451,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'confirmed',
       });
 
-      // Create demo messages for past event
+      // Create demo messages for past event with different users
       const pastMessages = [
-        { message: '今天玩得太开心了！', userId },
-        { message: '狼人杀太刺激了哈哈', userId },
-        { message: '下次还要一起玩！', userId },
+        { message: '今天玩得太开心了！', userId: demoUser2.id },
+        { message: '狼人杀太刺激了哈哈', userId: demoUser1.id },
+        { message: '下次还要一起玩！', userId: demoUser3.id },
       ];
 
       for (const msg of pastMessages) {
