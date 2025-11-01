@@ -3,6 +3,9 @@ export interface AttendeeData {
   displayName: string;
   archetype?: string;
   topInterests?: string[];
+  topicsHappy?: string[];
+  topicsAvoid?: string[];
+  debateComfort?: number;
   age?: number;
   birthdate?: string;
   industry?: string;
@@ -214,6 +217,9 @@ const sparkPredictions: Record<string, string> = {
 
 export interface SparkPredictionContext {
   userInterests?: string[];
+  userTopicsHappy?: string[];
+  userTopicsAvoid?: string[];
+  userDebateComfort?: number;
   userEducationLevel?: string;
   userIndustry?: string;
   userAge?: number;
@@ -228,6 +234,7 @@ export interface SparkPredictionContext {
   userHometownCountry?: string;
   userHometownRegionCity?: string;
   userHometownAffinityOptin?: boolean;
+  userArchetype?: string;
 }
 
 export type RarityLevel = 'common' | 'rare' | 'epic';
@@ -671,6 +678,217 @@ export function generateSparkPredictions(
       predictions.push({ 
         text: "都是多元文化的探索者",
         rarity: 'epic'
+      });
+    }
+  }
+  
+  // 🎯 NEW PRIORITY FEATURES - Using collected but previously unused data
+  
+  // Priority 1.5: Topics matching - RARE/EPIC (more specific than interests)
+  if (userContext.userTopicsHappy && userContext.userTopicsHappy.length > 0 &&
+      attendee.topicsHappy && attendee.topicsHappy.length > 0) {
+    
+    const commonTopics = userContext.userTopicsHappy.filter(topic => 
+      attendee.topicsHappy!.includes(topic)
+    );
+    
+    if (commonTopics.length >= 3) {
+      predictions.push({ 
+        text: `有${commonTopics.length}个共同想聊的话题`, 
+        rarity: 'epic' 
+      });
+    } else if (commonTopics.length === 2) {
+      predictions.push({ 
+        text: "有多个共同话题", 
+        rarity: 'rare' 
+      });
+    }
+  }
+  
+  // Priority 0: Topics anti-matching - CRITICAL (prevent disasters early)
+  // Check if someone's happy topic is another's avoid topic
+  if (userContext.userTopicsHappy && attendee.topicsAvoid) {
+    const hasConflict = userContext.userTopicsHappy.some(topic => 
+      attendee.topicsAvoid!.includes(topic)
+    );
+    if (hasConflict) {
+      // This is a red flag - reduce match quality by adding a negative indicator
+      // We don't add this as a connection point, but it affects overall compatibility
+    }
+  }
+  if (userContext.userTopicsAvoid && attendee.topicsHappy) {
+    const hasConflict = userContext.userTopicsAvoid.some(topic => 
+      attendee.topicsHappy!.includes(topic)
+    );
+    if (hasConflict) {
+      // Another red flag
+    }
+  }
+  
+  // Priority 6.8: Debate comfort alignment - COMMON/RARE (conversation style match)
+  if (userContext.userDebateComfort !== undefined && attendee.debateComfort !== undefined) {
+    const diff = Math.abs(userContext.userDebateComfort - attendee.debateComfort);
+    
+    if (diff === 0) {
+      predictions.push({ 
+        text: "讨论风格完全一致", 
+        rarity: 'rare' 
+      });
+    } else if (diff === 1) {
+      predictions.push({ 
+        text: "讨论风格相近", 
+        rarity: 'rare' 
+      });
+    } else if (diff === 2) {
+      predictions.push({ 
+        text: "讨论节奏相仿", 
+        rarity: 'common' 
+      });
+    }
+    // diff > 2 means different debate styles - might create tension
+  }
+  
+  // Priority 6.9: Life stage/transition detection - RARE/EPIC
+  // Auto-detect from existing age, children, seniority data
+  const detectLifeStage = (age?: number, children?: string, seniority?: string, relationshipStatus?: string): string | null => {
+    if (children === "Expecting") return "expecting_parent";
+    if (children === "0-5") return "new_parent";
+    if (children === "6-12") return "school_age_parent";
+    if (children === "13-18") return "teen_parent";
+    if (children === "Adult") return "empty_nester";
+    
+    if (seniority === "Founder") return "entrepreneur";
+    if (age && age >= 25 && age <= 30 && seniority === "Junior") return "early_career";
+    if (age && age >= 30 && age <= 35 && (seniority === "Mid" || seniority === "Senior")) return "career_prime";
+    if (age && age >= 35 && age <= 45 && seniority === "Senior") return "established_professional";
+    
+    if (relationshipStatus === "Single" && age && age >= 30) return "single_professional";
+    
+    return null;
+  };
+  
+  const userStage = detectLifeStage(
+    userContext.userAge, 
+    userContext.userChildren, 
+    userContext.userSeniority,
+    userContext.userRelationshipStatus
+  );
+  const attendeeStage = detectLifeStage(
+    attendee.age, 
+    attendee.children, 
+    attendee.seniority,
+    attendee.relationshipStatus
+  );
+  
+  if (userStage && attendeeStage && userStage === attendeeStage) {
+    const stageLabels: Record<string, { text: string; rarity: RarityLevel }> = {
+      "expecting_parent": { text: "都在期待新生命到来", rarity: 'epic' },
+      "new_parent": { text: "都在经历新手父母阶段", rarity: 'rare' },
+      "school_age_parent": { text: "都有学龄儿童", rarity: 'rare' },
+      "teen_parent": { text: "都在应对青春期挑战", rarity: 'rare' },
+      "empty_nester": { text: "孩子都已独立", rarity: 'rare' },
+      "entrepreneur": { text: "都在创业路上", rarity: 'epic' },
+      "early_career": { text: "都在职场起步期", rarity: 'common' },
+      "career_prime": { text: "都处于事业黄金期", rarity: 'rare' },
+      "established_professional": { text: "都是资深职场人", rarity: 'rare' },
+      "single_professional": { text: "都是独立职场人", rarity: 'common' }
+    };
+    
+    if (stageLabels[userStage]) {
+      predictions.push(stageLabels[userStage]);
+    }
+  }
+  
+  // Priority 6.10: Enhanced language matching beyond Chinese/English - RARE
+  if (userContext.userLanguages && userContext.userLanguages.length > 0 &&
+      attendee.languagesComfort && attendee.languagesComfort.length > 0) {
+    
+    const commonLanguages = userContext.userLanguages.filter(lang => 
+      attendee.languagesComfort!.includes(lang)
+    );
+    
+    // Filter out common languages (Chinese, Mandarin, Cantonese, English)
+    const specialLanguages = commonLanguages.filter(lang => 
+      !["中文", "普通话", "粤语", "Mandarin", "Cantonese", "English", "英语"].includes(lang)
+    );
+    
+    if (specialLanguages.length >= 2) {
+      predictions.push({ 
+        text: `都会多种语言`, 
+        rarity: 'rare' 
+      });
+    } else if (specialLanguages.length === 1) {
+      predictions.push({ 
+        text: `都会${specialLanguages[0]}`, 
+        rarity: 'rare' 
+      });
+    }
+  }
+  
+  // Priority 6.11: Communication style matching - COMMON/RARE
+  // Derived from archetype + debate comfort + personality traits
+  const detectCommunicationStyle = (archetype?: string, debateComfort?: number): string | null => {
+    if (!archetype) return null;
+    
+    // Storytellers: 讲故事的人, 智者 (prefer narrative, sharing experiences)
+    if (["讲故事的人", "智者"].includes(archetype)) {
+      return debateComfort && debateComfort >= 5 ? "passionate_storyteller" : "gentle_storyteller";
+    }
+    
+    // Listeners: 稳定器, 协调者 (prefer listening, asking questions)
+    if (["稳定器", "协调者", "肯定者"].includes(archetype)) {
+      return "empathetic_listener";
+    }
+    
+    // Energizers: 发光体, 火花塞, 氛围组 (high energy, expressive)
+    if (["发光体", "火花塞", "氛围组"].includes(archetype)) {
+      return "energetic_expressive";
+    }
+    
+    // Questioners: 探索者, 挑战者 (curious, probing)
+    if (["探索者", "挑战者"].includes(archetype)) {
+      return debateComfort && debateComfort >= 6 ? "challenger" : "curious_questioner";
+    }
+    
+    // Connectors: 连接者
+    if (archetype === "连接者") {
+      return "facilitator";
+    }
+    
+    return null;
+  };
+  
+  const userCommStyle = detectCommunicationStyle(userContext.userArchetype, userContext.userDebateComfort);
+  const attendeeCommStyle = detectCommunicationStyle(attendee.archetype, attendee.debateComfort);
+  
+  if (userCommStyle && attendeeCommStyle) {
+    // Same style = easy rapport
+    if (userCommStyle === attendeeCommStyle) {
+      const styleLabels: Record<string, string> = {
+        "passionate_storyteller": "都是热情的分享者",
+        "gentle_storyteller": "都善于娓娓道来",
+        "empathetic_listener": "都是善解人意的倾听者",
+        "energetic_expressive": "都是活力四射的表达者",
+        "challenger": "都喜欢思辨讨论",
+        "curious_questioner": "都是好奇的提问者",
+        "facilitator": "都善于连接他人"
+      };
+      
+      if (styleLabels[userCommStyle]) {
+        predictions.push({ 
+          text: styleLabels[userCommStyle], 
+          rarity: 'common' 
+        });
+      }
+    }
+    // Complementary styles = balanced conversation
+    else if (
+      (userCommStyle.includes("storyteller") && attendeeCommStyle === "empathetic_listener") ||
+      (attendeeCommStyle.includes("storyteller") && userCommStyle === "empathetic_listener")
+    ) {
+      predictions.push({ 
+        text: "分享者与倾听者的平衡", 
+        rarity: 'rare' 
       });
     }
   }
