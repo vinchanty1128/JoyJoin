@@ -9,11 +9,17 @@ interface MeetYourTableProps {
   userEducationLevel?: string;
   userIndustry?: string;
   userAge?: number;
+  userGender?: string;
   userRelationshipStatus?: string;
+  userChildren?: string;
   userStudyLocale?: string;
+  userOverseasRegions?: string[];
   userSeniority?: string;
   userFieldOfStudy?: string;
   userLanguages?: string[];
+  userHometownCountry?: string;
+  userHometownRegionCity?: string;
+  userHometownAffinityOptin?: boolean;
 }
 
 export default function MeetYourTable({
@@ -22,11 +28,17 @@ export default function MeetYourTable({
   userEducationLevel,
   userIndustry,
   userAge,
+  userGender,
   userRelationshipStatus,
+  userChildren,
   userStudyLocale,
+  userOverseasRegions,
   userSeniority,
   userFieldOfStudy,
   userLanguages,
+  userHometownCountry,
+  userHometownRegionCity,
+  userHometownAffinityOptin,
 }: MeetYourTableProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -39,11 +51,17 @@ export default function MeetYourTable({
     userEducationLevel,
     userIndustry,
     userAge,
+    userGender,
     userRelationshipStatus,
+    userChildren,
     userStudyLocale,
+    userOverseasRegions,
     userSeniority,
     userFieldOfStudy,
     userLanguages,
+    userHometownCountry,
+    userHometownRegionCity,
+    userHometownAffinityOptin,
   };
 
   const interestIcons: Record<string, string> = {

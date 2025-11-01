@@ -11,11 +11,17 @@ interface PostMatchEventCardProps {
   userEducationLevel?: string;
   userIndustry?: string;
   userAge?: number;
+  userGender?: string;
   userRelationshipStatus?: string;
+  userChildren?: string;
   userStudyLocale?: string;
+  userOverseasRegions?: string[];
   userSeniority?: string;
   userFieldOfStudy?: string;
   userLanguages?: string[];
+  userHometownCountry?: string;
+  userHometownRegionCity?: string;
+  userHometownAffinityOptin?: boolean;
 }
 
 export default function PostMatchEventCard({ 
@@ -25,11 +31,17 @@ export default function PostMatchEventCard({
   userEducationLevel,
   userIndustry,
   userAge,
+  userGender,
   userRelationshipStatus,
+  userChildren,
   userStudyLocale,
+  userOverseasRegions,
   userSeniority,
   userFieldOfStudy,
   userLanguages,
+  userHometownCountry,
+  userHometownRegionCity,
+  userHometownAffinityOptin,
 }: PostMatchEventCardProps) {
   if (!matchedAttendees || matchedAttendees.length === 0) {
     return null;
@@ -50,11 +62,17 @@ export default function PostMatchEventCard({
           userEducationLevel={userEducationLevel}
           userIndustry={userIndustry}
           userAge={userAge}
+          userGender={userGender}
           userRelationshipStatus={userRelationshipStatus}
+          userChildren={userChildren}
           userStudyLocale={userStudyLocale}
+          userOverseasRegions={userOverseasRegions}
           userSeniority={userSeniority}
           userFieldOfStudy={userFieldOfStudy}
           userLanguages={userLanguages}
+          userHometownCountry={userHometownCountry}
+          userHometownRegionCity={userHometownRegionCity}
+          userHometownAffinityOptin={userHometownAffinityOptin}
         />
         {matchExplanation && <WhyThisTable explanation={matchExplanation} />}
       </CardContent>

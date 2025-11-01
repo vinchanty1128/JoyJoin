@@ -6,6 +6,17 @@ This social networking platform, JoyJoin (悦聚·Joy), aims to connect individu
 
 ## Recent Changes (November 1, 2025)
 
+**Enhanced Matching Algorithm with Demographics (Latest):** Improved the AI-driven matching algorithm to utilize previously unused demographic fields, providing richer connection points and better matches. Changes include:
+- Changed `hometownAffinityOptin` default from `false` to `true` in schema (老乡 connections are culturally valued in Chinese culture)
+- Added gender-based connection points (same gender = common rarity)
+- Added family status matching (same parenting stage = rare, both expecting = epic)
+- Added specific overseas regions matching (same region like 'North America' or 'Europe' = rare)
+- Added hometown matching: same country = rare, same city/region = epic (老乡! connection)
+- Updated `AttendeeData` interface to include: gender, children, overseasRegions, hometownCountry, hometownRegionCity, hometownAffinityOptin
+- Updated `SparkPredictionContext` interface to pass all new demographic fields
+- Updated components chain: AttendeePreviewCard, MeetYourTable, PostMatchEventCard, BlindBoxEventDetailPage to pass new fields
+- Pushed schema changes to database with `npm run db:push`
+
 **Vibe Tags System Removal:** Simplified the codebase by completely removing the decorative vibe tags system (Chill, Playful, High-Energy, etc.) which was not used in the matching algorithm. Changes include:
 - Removed `vibes` field from users and events tables in the database schema
 - Removed `vibeGradient` field from events table
@@ -16,7 +27,7 @@ This social networking platform, JoyJoin (悦聚·Joy), aims to connect individu
 - Updated all event cards and pages to remove vibe tag displays
 - Updated design_guidelines.md to reflect simplified design
 
-**Note:** The matching algorithm continues to use interests, personality archetypes (14 social roles), and industries for AI-driven event and people matching.
+**Note:** The matching algorithm now uses interests, personality archetypes (14 social roles), industries, AND demographic data (gender, family status, overseas regions, hometown) for comprehensive AI-driven matching.
 
 ## User Preferences
 

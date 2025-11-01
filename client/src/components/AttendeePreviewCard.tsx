@@ -52,9 +52,16 @@ interface AttendeePreviewCardProps {
   userEducationLevel?: string;
   userIndustry?: string;
   userAge?: number;
+  userGender?: string;
   userRelationshipStatus?: string;
+  userChildren?: string;
   userStudyLocale?: string;
+  userOverseasRegions?: string[];
   userSeniority?: string;
+  userFieldOfStudy?: string;
+  userHometownCountry?: string;
+  userHometownRegionCity?: string;
+  userHometownAffinityOptin?: boolean;
 }
 
 export default function AttendeePreviewCard({
@@ -63,9 +70,16 @@ export default function AttendeePreviewCard({
   userEducationLevel,
   userIndustry,
   userAge,
+  userGender,
   userRelationshipStatus,
+  userChildren,
   userStudyLocale,
+  userOverseasRegions,
   userSeniority,
+  userFieldOfStudy,
+  userHometownCountry,
+  userHometownRegionCity,
+  userHometownAffinityOptin,
 }: AttendeePreviewCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const archetypeIcon = attendee.archetype
@@ -83,9 +97,16 @@ export default function AttendeePreviewCard({
       userEducationLevel,
       userIndustry,
       userAge,
+      userGender,
       userRelationshipStatus,
+      userChildren,
       userStudyLocale,
+      userOverseasRegions,
       userSeniority,
+      userFieldOfStudy,
+      userHometownCountry,
+      userHometownRegionCity,
+      userHometownAffinityOptin,
     },
     attendee
   );

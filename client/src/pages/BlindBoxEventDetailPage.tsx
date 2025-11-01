@@ -143,7 +143,7 @@ export default function BlindBoxEventDetailPage() {
         </Card>
 
         {/* 地点信息 (仅已匹配或已完成显示) */}
-        {(event.status === "matched" || event.status === "completed") && event.restaurantName ? (
+        {(event.status === "matched" || event.status === "completed") && event.restaurantName && (<>
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">地点信息</CardTitle>
@@ -171,7 +171,7 @@ export default function BlindBoxEventDetailPage() {
               </Button>
             </CardContent>
           </Card>
-        ) : null}
+        </>)}
 
         {/* 预算与菜式 */}
         <Card>
@@ -216,11 +216,17 @@ export default function BlindBoxEventDetailPage() {
             userEducationLevel={user?.educationLevel || "Master's"}
             userIndustry={user?.industry || "科技"}
             userAge={user?.birthdate ? calculateAge(user.birthdate) : undefined}
+            userGender={user?.gender || undefined}
             userRelationshipStatus={user?.relationshipStatus || "Single"}
+            userChildren={user?.children || undefined}
             userStudyLocale={user?.studyLocale || "Overseas"}
+            userOverseasRegions={user?.overseasRegions as string[] | undefined}
             userSeniority={user?.seniority || "Mid"}
             userFieldOfStudy={user?.fieldOfStudy || undefined}
             userLanguages={user?.languagesComfort as string[] | undefined}
+            userHometownCountry={user?.hometownCountry || undefined}
+            userHometownRegionCity={user?.hometownRegionCity || undefined}
+            userHometownAffinityOptin={user?.hometownAffinityOptin ?? undefined}
           />
         )}
 
