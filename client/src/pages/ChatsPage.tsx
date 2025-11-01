@@ -3,12 +3,13 @@ import BottomNav from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Calendar, MapPin, MessageSquare, Users, User } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Calendar, MapPin, MessageSquare, Users, User, Lock, Clock } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
 import ParticipantAvatars from "@/components/ParticipantAvatars";
+import { apiRequest } from "@/lib/queryClient";
 import type { Event, DirectMessageThread } from "@shared/schema";
 
 type EventWithParticipants = Event & { 
@@ -33,11 +34,6 @@ export default function ChatsPage() {
   const [, setLocation] = useLocation();
   const markAsRead = useMarkNotificationsAsRead();
 
-  // Auto-clear chat notifications when entering the page
-  useEffect(() => {
-    markAsRead.mutate('chat');
-  }, []);
-  
   const { data: joinedEvents, isLoading: isLoadingEvents } = useQuery<Array<EventWithParticipants>>({
     queryKey: ["/api/events/joined"],
   });
@@ -45,6 +41,82 @@ export default function ChatsPage() {
   const { data: directThreads, isLoading: isLoadingThreads } = useQuery<Array<DirectThreadWithUser>>({
     queryKey: ["/api/direct-messages"],
   });
+
+  const createNotificationMutation = useMutation({
+    mutationFn: async (data: {
+      category: string;
+      type: string;
+      title: string;
+      message: string;
+      relatedResourceId?: string;
+    }) => {
+      return await apiRequest("POST", "/api/notifications", data);
+    },
+  });
+
+  // Check if chat is unlocked (24 hours before event or event has passed)
+  const isChatUnlocked = (eventDateTime: Date | null) => {
+    if (!eventDateTime) return false;
+    const now = new Date();
+    const eventDate = new Date(eventDateTime);
+    const hoursUntilEvent = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntilEvent <= 24 || now > eventDate;
+  };
+
+  // Get unlock countdown text
+  const getUnlockCountdown = (eventDateTime: Date | null) => {
+    if (!eventDateTime) return "";
+    const now = new Date();
+    const eventDate = new Date(eventDateTime);
+    const unlockTime = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000); // 24 hours before
+    
+    if (now >= unlockTime) return "";
+    
+    const msUntilUnlock = unlockTime.getTime() - now.getTime();
+    const days = Math.floor(msUntilUnlock / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((msUntilUnlock % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((msUntilUnlock % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (days > 0) {
+      return `${days}天${hours}小时后开放`;
+    } else if (hours > 0) {
+      return `${hours}小时${minutes}分钟后开放`;
+    } else {
+      return `${minutes}分钟后开放`;
+    }
+  };
+
+  // Auto-clear chat notifications when entering the page
+  useEffect(() => {
+    markAsRead.mutate('chat');
+  }, []);
+
+  // Check for newly unlocked chats and send notifications
+  useEffect(() => {
+    if (!joinedEvents || joinedEvents.length === 0) return;
+
+    const notifiedChats = JSON.parse(localStorage.getItem('chat_unlock_notified') || '[]');
+    
+    joinedEvents.forEach((event) => {
+      const isUnlocked = isChatUnlocked(event.dateTime);
+      const alreadyNotified = notifiedChats.includes(event.id);
+      
+      if (isUnlocked && !alreadyNotified) {
+        // Send unlock notification
+        createNotificationMutation.mutate({
+          category: 'chat',
+          type: 'chat_unlocked',
+          title: '群聊已开放',
+          message: `「${event.title}」的群聊已开放，快来认识新朋友吧！`,
+          relatedResourceId: event.id,
+        });
+        
+        // Mark as notified
+        const updated = [...notifiedChats, event.id];
+        localStorage.setItem('chat_unlock_notified', JSON.stringify(updated));
+      }
+    });
+  }, [joinedEvents]);
 
   const formatDate = (dateTime: Date | null) => {
     if (!dateTime) return "";
@@ -171,11 +243,15 @@ export default function ChatsPage() {
 
               {joinedEvents.map((event) => {
                 const isPast = isEventPast(event.dateTime);
+                const chatUnlocked = isChatUnlocked(event.dateTime);
+                const countdown = getUnlockCountdown(event.dateTime);
                 
                 return (
                   <Card 
                     key={event.id} 
-                    className="hover-elevate active-elevate-2 transition-all cursor-pointer" 
+                    className={`hover-elevate active-elevate-2 transition-all cursor-pointer ${
+                      !chatUnlocked && !isPast ? 'opacity-60' : ''
+                    }`}
                     onClick={() => setLocation(`/chats/${event.id}`)}
                     data-testid={`card-event-${event.id}`}
                   >
@@ -183,14 +259,29 @@ export default function ChatsPage() {
                       <div className="space-y-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
-                            <h3 className="font-semibold">{event.title}</h3>
-                            {isPast && (
-                              <Badge variant="secondary" className="mt-1 text-[10px] h-5">
-                                已结束
-                              </Badge>
-                            )}
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold">{event.title}</h3>
+                              {!chatUnlocked && !isPast && (
+                                <Lock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              {isPast && (
+                                <Badge variant="secondary" className="text-[10px] h-5">
+                                  已结束
+                                </Badge>
+                              )}
+                              {!chatUnlocked && !isPast && countdown && (
+                                <Badge variant="outline" className="text-[10px] h-5 border-primary/30 text-primary">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  {countdown}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          <MessageSquare className={`h-5 w-5 flex-shrink-0 ${
+                            chatUnlocked || isPast ? 'text-primary' : 'text-muted-foreground'
+                          }`} />
                         </div>
                         
                         <div className="space-y-2 text-xs text-muted-foreground">
