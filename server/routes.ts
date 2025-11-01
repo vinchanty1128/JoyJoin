@@ -4,7 +4,9 @@ import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema } from "@shared/schema";
+import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Role mapping based on question responses
 const roleMapping: Record<string, Record<string, string>> = {
@@ -394,15 +396,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const { eventId } = req.params;
       
-      // Get event to check time
-      const event = await storage.getBlindBoxEventById(eventId, userId);
+      // Try to get event from events table first (for demo/regular events)
+      const [event] = await db.select().from(events).where(eq(events.id, eventId));
+      
+      // If not found in events table, try blindBoxEvents table
+      let eventDateTime = event?.dateTime;
       if (!event) {
-        return res.status(404).json({ message: "Event not found" });
+        const blindBoxEvent = await storage.getBlindBoxEventById(eventId, userId);
+        if (!blindBoxEvent) {
+          return res.status(404).json({ message: "Event not found" });
+        }
+        eventDateTime = blindBoxEvent.dateTime;
       }
 
       // Check if group chat is open (24 hours before event OR event has passed)
       const now = new Date();
-      const eventTime = new Date(event.dateTime);
+      const eventTime = new Date(eventDateTime);
       const hoursUntilEvent = (eventTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       // Chat unlocks 24 hours before event, and remains accessible after event completes
       const chatUnlocked = hoursUntilEvent <= 24;
@@ -432,15 +441,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const { eventId } = req.params;
       
-      // Get event to check time
-      const event = await storage.getBlindBoxEventById(eventId, userId);
+      // Try to get event from events table first (for demo/regular events)
+      const [event] = await db.select().from(events).where(eq(events.id, eventId));
+      
+      // If not found in events table, try blindBoxEvents table
+      let eventDateTime = event?.dateTime;
       if (!event) {
-        return res.status(404).json({ message: "Event not found" });
+        const blindBoxEvent = await storage.getBlindBoxEventById(eventId, userId);
+        if (!blindBoxEvent) {
+          return res.status(404).json({ message: "Event not found" });
+        }
+        eventDateTime = blindBoxEvent.dateTime;
       }
 
       // Check if group chat is open (24 hours before event OR event has passed)
       const now = new Date();
-      const eventTime = new Date(event.dateTime);
+      const eventTime = new Date(eventDateTime);
       const hoursUntilEvent = (eventTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       // Chat unlocks 24 hours before event, and remains accessible after event completes
       const chatUnlocked = hoursUntilEvent <= 24;
@@ -1319,6 +1335,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating notification:", error);
       res.status(500).json({ message: "Failed to create notification" });
+    }
+  });
+
+  // Demo: Create sample chat data
+  app.post('/api/chats/seed-demo', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Create demo events with different unlock states
+      const now = new Date();
+      
+      // Event 1: Unlocked (event is in 12 hours - within 24h window)
+      const in12Hours = new Date(now.getTime() + 12 * 60 * 60 * 1000);
+      
+      const [event1] = await db.insert(events).values({
+        title: '今晚聚餐 · 港式茶餐厅',
+        description: '饭局 · ¥100-200',
+        dateTime: in12Hours,
+        location: '中环翠华餐厅',
+        area: '中环',
+        price: null,
+        maxAttendees: 6,
+        currentAttendees: 4,
+        hostId: userId,
+        status: 'upcoming',
+      }).returning();
+
+      await db.insert(eventAttendance).values({
+        eventId: event1.id,
+        userId,
+        status: 'confirmed',
+      });
+
+      // Create demo messages for event 1
+      const demoMessages = [
+        { message: '大家好！很期待明天的聚会 👋', userId },
+        { message: '我也是！有人知道这家店的招牌菜是什么吗？', userId },
+        { message: '听说他们的菠萝包和奶茶超赞！', userId },
+      ];
+
+      for (const msg of demoMessages) {
+        await db.insert(chatMessages).values({
+          eventId: event1.id,
+          userId: msg.userId,
+          message: msg.message,
+        });
+      }
+
+      // Event 2: Locked (event is in 3 days)
+      const in3Days = new Date(now);
+      in3Days.setDate(in3Days.getDate() + 3);
+      in3Days.setHours(14, 0, 0, 0);
+      
+      const [event2] = await db.insert(events).values({
+        title: '周日下午茶 · 咖啡厅',
+        description: '咖啡 · ¥≤100',
+        dateTime: in3Days,
+        location: '尖沙咀 % Arabica',
+        area: '尖沙咀',
+        price: null,
+        maxAttendees: 5,
+        currentAttendees: 3,
+        hostId: userId,
+        status: 'upcoming',
+      }).returning();
+
+      await db.insert(eventAttendance).values({
+        eventId: event2.id,
+        userId,
+        status: 'confirmed',
+      });
+
+      // Event 3: Past event (2 hours ago)
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+      
+      const [event3] = await db.insert(events).values({
+        title: '刚结束的桌游局',
+        description: '玩乐 · ¥200-300',
+        dateTime: twoHoursAgo,
+        location: '铜锣湾 Game On',
+        area: '铜锣湾',
+        price: null,
+        maxAttendees: 6,
+        currentAttendees: 5,
+        hostId: userId,
+        status: 'completed',
+      }).returning();
+
+      await db.insert(eventAttendance).values({
+        eventId: event3.id,
+        userId,
+        status: 'confirmed',
+      });
+
+      // Create demo messages for past event
+      const pastMessages = [
+        { message: '今天玩得太开心了！', userId },
+        { message: '狼人杀太刺激了哈哈', userId },
+        { message: '下次还要一起玩！', userId },
+      ];
+
+      for (const msg of pastMessages) {
+        await db.insert(chatMessages).values({
+          eventId: event3.id,
+          userId: msg.userId,
+          message: msg.message,
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: 'Demo chat data created',
+        events: [
+          { title: event1.title, status: 'unlocked', dateTime: event1.dateTime },
+          { title: event2.title, status: 'locked', dateTime: event2.dateTime },
+          { title: event3.title, status: 'past', dateTime: event3.dateTime },
+        ]
+      });
+    } catch (error) {
+      console.error("Error creating demo chat data:", error);
+      res.status(500).json({ message: "Failed to create demo chat data" });
     }
   });
 
