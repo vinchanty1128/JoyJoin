@@ -274,25 +274,25 @@ export default function ChatsPage() {
                     <Card 
                       key={event.id} 
                       className={`hover-elevate active-elevate-2 transition-all cursor-pointer overflow-hidden ${
-                        isLocked ? 'bg-[#F8F5FF] border-[#8A2BE2]' : ''
+                        isLocked ? 'bg-muted/30 border-muted' : ''
                       }`}
                       onClick={() => setLocation(`/chats/${event.id}`)}
                       data-testid={`card-event-${event.id}`}
                     >
-                      {/* 状态栏：锁定状态（紫色）或解锁状态（绿色） */}
+                      {/* 状态栏：锁定状态（灰色）或解锁状态（紫色） */}
                       {isLocked ? (
-                        <div className="bg-[#8A2BE2] text-white px-4 py-2.5 flex items-center gap-2">
+                        <div className="bg-muted text-muted-foreground px-4 py-2.5 flex items-center gap-2">
                           <Lock className="h-4 w-4 flex-shrink-0" />
                           <span className="text-base font-bold">
                             聊天 {countdown} 开放
                           </span>
                         </div>
                       ) : (
-                        <div className="bg-[#4CAF50] text-white px-4 py-2 flex items-center gap-2">
+                        <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center gap-2">
                           <MessageSquare className="h-4 w-4 flex-shrink-0" />
                           <span className="font-semibold text-sm">聊天已开放</span>
                           {isPast && (
-                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-white/20 border-0">
+                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary-foreground/20 border-0">
                               已结束
                             </Badge>
                           )}
