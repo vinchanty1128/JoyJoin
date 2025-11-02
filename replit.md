@@ -12,6 +12,20 @@ Preferred communication style: Simple, everyday language.
 
 ### November 2, 2025
 
+**Private Chat List Enhancement - Expandable User Profiles:** Implemented progressive information disclosure for private chat list with click-to-expand user details. Features:
+- **Default State**: Clean, minimal display - avatar (archetype icon), name, last message, timestamp
+- **Click Avatar to Expand**: Smooth AnimatePresence animation reveals complete user profile
+- **Expanded Info**: Archetype description + info chips (性别·年龄, 学历, 行业) + languages (🗣 语言能力)
+- **Visual Consistency**: Matches SelectConnectionsStep and EventChatDetailPage styling patterns
+- **Event Handling**: Avatar click stops propagation, card click navigates to chat
+- **Type Safety**: Updated DirectThreadWithUser to use full User type instead of partial fields
+
+**Removed Relationship Status Display:** Cleaned up all interfaces to remove "单身" (Single) status chips for better privacy:
+- Removed from EventChatDetailPage participant Dialog
+- Removed from SelectConnectionsStep connection cards  
+- Removed from userFieldMappings imports across all components
+- Focus on professional/social info only: 性别·年龄, 学历, 行业
+
 **Participant Information Display Enhancement - Complete Localization:** Comprehensive upgrade to participant information display across SelectConnectionsStep and EventChatDetailPage with full Chinese localization. Changes include:
 
 *SelectConnectionsStep (Feedback Flow):*
