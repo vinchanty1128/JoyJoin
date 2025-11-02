@@ -41,11 +41,11 @@ export default function BottomNav() {
               }`}
               data-testid={item.testId}
             >
-              <div className="relative">
+              <div className="relative w-6 h-6 flex items-center justify-center">
                 <item.icon className={`h-5 w-5 ${isActive ? "fill-primary/20" : ""}`} />
                 {showBadge && (
                   <Badge 
-                    className="absolute -top-2 -right-2 h-[18px] min-w-[18px] px-1.5 flex items-center justify-center text-[11px] font-semibold bg-primary text-primary-foreground animate-pulse"
+                    className="absolute -top-2 -right-2 h-[18px] min-w-[18px] px-1.5 flex items-center justify-center text-[11px] font-semibold bg-primary text-primary-foreground animate-pulse pointer-events-none"
                     data-testid={`badge-${item.testId}`}
                   >
                     {badgeCount > 99 ? '99+' : badgeCount}
