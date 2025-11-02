@@ -9,8 +9,7 @@ import { archetypeConfig } from "@/lib/archetypes";
 import { 
   getGenderDisplay, 
   formatAge, 
-  getEducationDisplay, 
-  getRelationshipDisplay 
+  getEducationDisplay
 } from "@/lib/userFieldMappings";
 
 interface Attendee {
@@ -109,10 +108,6 @@ export default function SelectConnectionsStep({
                 
                 if (attendee.industry) {
                   infoChips.push(attendee.industry);
-                }
-                
-                if (attendee.relationshipStatus && attendee.relationshipStatus === "Single") {
-                  infoChips.push(getRelationshipDisplay(attendee.relationshipStatus));
                 }
 
                 return (

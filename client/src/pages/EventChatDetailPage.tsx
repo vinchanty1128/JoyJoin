@@ -15,8 +15,7 @@ import type { User, ChatMessage } from "@shared/schema";
 import { 
   getGenderDisplay, 
   formatAge, 
-  getEducationDisplay, 
-  getRelationshipDisplay 
+  getEducationDisplay
 } from "@/lib/userFieldMappings";
 
 // Archetype configuration with full descriptions
@@ -536,11 +535,6 @@ export default function EventChatDetailPage() {
                 {selectedParticipant.industry && (
                   <span className="text-xs bg-muted/50 px-3 py-1.5 rounded-full">
                     {selectedParticipant.industry}
-                  </span>
-                )}
-                {selectedParticipant.relationshipStatus && selectedParticipant.relationshipStatus === "Single" && (
-                  <span className="text-xs bg-muted/50 px-3 py-1.5 rounded-full">
-                    {getRelationshipDisplay(selectedParticipant.relationshipStatus)}
                   </span>
                 )}
               </div>
