@@ -8,6 +8,12 @@ This social networking platform, JoyJoin (悦聚·Joy), aims to connect individu
 
 ### November 2, 2025
 
+**User Level System Removal:** Removed the entire user level badge system (UserEnergyBadge component) from the application. Changes include:
+- Deleted UserEnergyBadge.tsx component (displayed level badges like "达人 Lv.3", "新人 Lv.1", etc.)
+- Removed UserEnergyBadge import and usage from DiscoverPage.tsx
+- Simplified Discover page header to show only HeroWelcome component
+- No database schema changes needed (level data was only used for display)
+
 **Feedback Consolidation - Removed Duplicate Feedback from Chat Window:** Streamlined the user experience by removing all feedback functionality from the chat window (EventChatDetailPage) and consolidating it into the unified EventFeedbackFlow. Changes include:
 - Removed "反馈" (Feedback) tab from EventChatDetailPage - chat window now only shows "聊天" (Chat) and "参与者" (Participants) tabs
 - Removed all feedback-related state, mutations, and handlers from chat window
