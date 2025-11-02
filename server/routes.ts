@@ -1529,7 +1529,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user2Id: demoUser1.id,
         eventId: event3.id, // They matched at the past event
         lastMessageAt: new Date(now.getTime() - 30 * 60 * 1000), // 30 mins ago
-        connectionPointTypes: ['same_topic', 'same_language'], // Shared interests for matching
       }).returning();
 
       // Messages in thread 1
@@ -1554,7 +1553,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user2Id: demoUser2.id,
         eventId: event3.id,
         lastMessageAt: new Date(now.getTime() - 10 * 60 * 1000), // 10 mins ago
-        connectionPointTypes: ['same_industry_broad', 'same_language'], // Similar backgrounds
       }).returning();
 
       // Messages in thread 2
