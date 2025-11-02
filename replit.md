@@ -8,6 +8,24 @@ JoyJoin (悦聚·Joy) is a social networking platform designed to foster meaning
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+### November 2, 2025
+
+**SelectConnectionsStep Enhancement - Rich Participant Information Display:** Upgraded the participant selection interface to display comprehensive user information with localized Chinese text. Changes include:
+- **Left Avatar**: Colored circle displaying archetype icon (🙌🧭📖⚡🤝🎯🎭🌟) instead of letter initials, using archetype-specific background colors
+- **Archetype Display**: Badge showing archetype name in Chinese without icon prefix (e.g., "连接者", "探索者")
+- **Information Chips**: Compact rounded chips displaying:
+  - Gender + Age: Combined format "女 · 25岁" / "男 · 28岁"
+  - Education: Localized levels "本科", "硕士", "博士"
+  - Industry: Direct display
+  - Relationship Status: Shows "单身" only if single
+- **Chinese Localization**: Created userFieldMappings.ts with complete mappings for gender (Woman→女), education (Bachelor's→本科), relationship status (Single→单身), and age formatting
+- **Shared Archetype Config**: Extracted archetypeConfig to lib/archetypes.ts for reuse across components
+- **Data Flow**: Updated EventFeedbackFlow to pass complete user data (8 fields) instead of just 3 fields
+- **Backend Verification**: Confirmed matchedAttendees includes all required fields in demo data
+- Improved visual hierarchy and information density while maintaining clean, readable layout
+
 ## System Architecture
 
 ### Frontend Architecture
