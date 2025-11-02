@@ -403,7 +403,7 @@ export default function EventChatDetailPage() {
                                     </span>
                                     <Badge 
                                       variant="secondary" 
-                                      className={`text-[10px] h-5 px-1.5 ${archetypeData.color} animate-pulse-glow`}
+                                      className={`text-[10px] h-5 px-1.5 ${archetypeData.color}`}
                                     >
                                       {msg.user.archetype}
                                     </Badge>
@@ -540,7 +540,7 @@ export default function EventChatDetailPage() {
                         
                         {participant.archetype && (
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary" className={`text-xs ${archetypeData.color} animate-pulse-glow`}>
+                            <Badge variant="secondary" className={`text-xs ${archetypeData.color}`}>
                               {participant.archetype}
                             </Badge>
                             <p className="text-xs text-muted-foreground">
@@ -718,24 +718,6 @@ export default function EventChatDetailPage() {
         )}
       </Tabs>
 
-      {/* Custom CSS for animations */}
-      <style>{`
-        @keyframes pulse-glow {
-          0%, 100% {
-            opacity: 0.9;
-            filter: brightness(1) drop-shadow(0 0 0px currentColor);
-          }
-          50% {
-            opacity: 1;
-            filter: brightness(1.15) drop-shadow(0 0 4px currentColor);
-          }
-        }
-        
-        .animate-pulse-glow {
-          animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-          will-change: opacity, filter;
-        }
-      `}</style>
     </div>
   );
 }
