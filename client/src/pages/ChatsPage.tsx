@@ -3,6 +3,7 @@ import BottomNav from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar, MapPin, MessageSquare, Users, User, Lock, Clock } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -68,7 +69,6 @@ export default function ChatsPage() {
         description: "已创建3个演示聊天窗口",
       });
       
-      // Force refetch to update UI
       await refetchEvents();
       await refetchThreads();
     } catch (error) {
@@ -83,7 +83,6 @@ export default function ChatsPage() {
     }
   };
 
-  // Check if chat is unlocked (24 hours before event or event has passed)
   const isChatUnlocked = (eventDateTime: Date | null) => {
     if (!eventDateTime) return false;
     const now = new Date();
@@ -92,12 +91,11 @@ export default function ChatsPage() {
     return hoursUntilEvent <= 24 || now > eventDate;
   };
 
-  // Get unlock countdown text
   const getUnlockCountdown = (eventDateTime: Date | null) => {
     if (!eventDateTime) return "";
     const now = new Date();
     const eventDate = new Date(eventDateTime);
-    const unlockTime = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000); // 24 hours before
+    const unlockTime = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000);
     
     if (now >= unlockTime) return "";
     
@@ -115,12 +113,10 @@ export default function ChatsPage() {
     }
   };
 
-  // Auto-clear chat notifications when entering the page
   useEffect(() => {
     markAsRead.mutate('chat');
   }, []);
 
-  // Check for newly unlocked chats and send notifications
   useEffect(() => {
     if (!joinedEvents || joinedEvents.length === 0) return;
 
@@ -131,7 +127,6 @@ export default function ChatsPage() {
       const alreadyNotified = notifiedChats.includes(event.id);
       
       if (isUnlocked && !alreadyNotified) {
-        // Send unlock notification
         createNotificationMutation.mutate({
           category: 'chat',
           type: 'chat_unlocked',
@@ -140,7 +135,6 @@ export default function ChatsPage() {
           relatedResourceId: event.id,
         });
         
-        // Mark as notified
         const updated = [...notifiedChats, event.id];
         localStorage.setItem('chat_unlock_notified', JSON.stringify(updated));
       }
@@ -157,9 +151,34 @@ export default function ChatsPage() {
     return `${month}月${day}日 ${hours}:${minutes}`;
   };
 
+  const formatMessageTime = (date: Date | null) => {
+    if (!date) return "";
+    const messageDate = new Date(date);
+    const now = new Date();
+    const diffMs = now.getTime() - messageDate.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return "刚刚";
+    if (diffMins < 60) return `${diffMins}分钟前`;
+    if (diffHours < 24) return `${diffHours}小时前`;
+    if (diffDays < 7) return `${diffDays}天前`;
+    
+    const month = messageDate.getMonth() + 1;
+    const day = messageDate.getDate();
+    return `${month}月${day}日`;
+  };
+
   const isEventPast = (dateTime: Date | null) => {
     if (!dateTime) return false;
     return new Date(dateTime) < new Date();
+  };
+
+  const getInitials = (name: string | null) => {
+    if (!name) return "?";
+    const chars = name.trim().split('');
+    return chars.length > 0 ? chars[0].toUpperCase() : "?";
   };
 
   const isLoading = isLoadingEvents || isLoadingThreads;
@@ -181,6 +200,8 @@ export default function ChatsPage() {
 
   const hasGroupChats = joinedEvents && joinedEvents.length > 0;
   const hasDirectChats = directThreads && directThreads.length > 0;
+  const groupCount = joinedEvents?.length || 0;
+  const directCount = directThreads?.length || 0;
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -208,153 +229,203 @@ export default function ChatsPage() {
           </Card>
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Direct chats section */}
-          {hasDirectChats && (
-            <div className="px-4 pt-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  私聊 ({directThreads.length})
-                </p>
-              </div>
+        <Tabs defaultValue="group" className="w-full">
+          <div className="sticky top-14 z-30 bg-background border-b">
+            <TabsList className="w-full justify-start rounded-none h-12 px-4 bg-transparent">
+              <TabsTrigger 
+                value="group" 
+                className="flex items-center gap-2 data-[state=active]:bg-muted"
+                data-testid="tab-group-chats"
+              >
+                <Users className="h-4 w-4" />
+                <span>群聊</span>
+                {groupCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">
+                    {groupCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="direct" 
+                className="flex items-center gap-2 data-[state=active]:bg-muted"
+                data-testid="tab-direct-chats"
+              >
+                <User className="h-4 w-4" />
+                <span>私聊</span>
+                {directCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">
+                    {directCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-              {directThreads.map((thread) => (
-                <Card 
-                  key={thread.id} 
-                  className="hover-elevate active-elevate-2 transition-all cursor-pointer" 
-                  onClick={() => setLocation(`/direct-chat/${thread.id}`)}
-                  data-testid={`card-direct-${thread.id}`}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {thread.otherUser.displayName?.[0] || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-semibold truncate">
-                            {thread.otherUser.displayName || "用户"}
-                          </h3>
-                          {thread.lastMessage && (
-                            <span className="text-xs text-muted-foreground flex-shrink-0">
-                              {new Date(thread.lastMessage.createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
-                            </span>
-                          )}
+          <TabsContent value="group" className="m-0 mt-4">
+            {hasGroupChats ? (
+              <div className="px-4 pb-4 space-y-3">
+                {joinedEvents.map((event) => {
+                  const isPast = isEventPast(event.dateTime);
+                  const chatUnlocked = isChatUnlocked(event.dateTime);
+                  const countdown = getUnlockCountdown(event.dateTime);
+                  
+                  return (
+                    <Card 
+                      key={event.id} 
+                      className={`hover-elevate active-elevate-2 transition-all cursor-pointer ${
+                        !chatUnlocked && !isPast ? 'opacity-60' : ''
+                      }`}
+                      onClick={() => setLocation(`/chats/${event.id}`)}
+                      data-testid={`card-event-${event.id}`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold">{event.title}</h3>
+                                {!chatUnlocked && !isPast && (
+                                  <Lock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                )}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2 mt-1">
+                                {isPast && (
+                                  <Badge variant="secondary" className="text-[10px] h-5">
+                                    已结束
+                                  </Badge>
+                                )}
+                                {!chatUnlocked && !isPast && countdown && (
+                                  <Badge variant="outline" className="text-[10px] h-5 border-primary/30 text-primary">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    {countdown}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <MessageSquare className={`h-5 w-5 flex-shrink-0 ${
+                              chatUnlocked || isPast ? 'text-primary' : 'text-muted-foreground'
+                            }`} />
+                          </div>
+                          
+                          <div className="space-y-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5" />
+                              <span>{formatDate(event.dateTime)}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="h-3.5 w-3.5" />
+                              <span>{event.location}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">参与者</span>
+                              <ParticipantAvatars 
+                                participants={event.participants || []} 
+                                maxDisplay={8}
+                                size="sm"
+                              />
+                              {event.attendeeCount > 8 && (
+                                <span className="text-xs text-muted-foreground ml-1">
+                                  共{event.attendeeCount}人
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        
-                        {thread.otherUser.archetype && (
-                          <Badge variant="secondary" className="text-[10px] h-5 mb-2">
-                            {thread.otherUser.archetype}
-                          </Badge>
-                        )}
-                        
-                        {thread.lastMessage ? (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {thread.lastMessage.content}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-muted-foreground italic">
-                            开始聊天吧
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-4 py-8">
+                <Card className="border shadow-sm">
+                  <CardContent className="p-8 text-center">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold mb-2">暂无群聊</h3>
+                    <p className="text-sm text-muted-foreground">
+                      参加活动后，群聊将在活动开始前24小时开放
+                    </p>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          )}
-
-          {/* Group chats section */}
-          {hasGroupChats && (
-            <div className="px-4 pb-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  群聊 ({joinedEvents.length})
-                </p>
               </div>
+            )}
+          </TabsContent>
 
-              {joinedEvents.map((event) => {
-                const isPast = isEventPast(event.dateTime);
-                const chatUnlocked = isChatUnlocked(event.dateTime);
-                const countdown = getUnlockCountdown(event.dateTime);
-                
-                return (
-                  <Card 
-                    key={event.id} 
-                    className={`hover-elevate active-elevate-2 transition-all cursor-pointer ${
-                      !chatUnlocked && !isPast ? 'opacity-60' : ''
-                    }`}
-                    onClick={() => setLocation(`/chats/${event.id}`)}
-                    data-testid={`card-event-${event.id}`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{event.title}</h3>
-                              {!chatUnlocked && !isPast && (
-                                <Lock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+          <TabsContent value="direct" className="m-0 mt-4">
+            {hasDirectChats ? (
+              <div className="px-4 pb-4 space-y-3">
+                {directThreads.map((thread) => {
+                  const otherUser = thread.otherUser;
+                  const lastMessage = thread.lastMessage;
+                  
+                  return (
+                    <Card 
+                      key={thread.id} 
+                      className="hover-elevate active-elevate-2 transition-all cursor-pointer"
+                      onClick={() => setLocation(`/direct-chat/${thread.id}`)}
+                      data-testid={`card-direct-${thread.id}`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <Avatar className="h-12 w-12 flex-shrink-0">
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                              {getInitials(otherUser.displayName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <h3 className="font-semibold truncate">
+                                {otherUser.displayName || "匿名用户"}
+                              </h3>
+                              {lastMessage && (
+                                <span className="text-xs text-muted-foreground flex-shrink-0">
+                                  {formatMessageTime(lastMessage.createdAt)}
+                                </span>
                               )}
                             </div>
-                            <div className="flex flex-wrap items-center gap-2 mt-1">
-                              {isPast && (
-                                <Badge variant="secondary" className="text-[10px] h-5">
-                                  已结束
-                                </Badge>
-                              )}
-                              {!chatUnlocked && !isPast && countdown && (
-                                <Badge variant="outline" className="text-[10px] h-5 border-primary/30 text-primary">
-                                  <Clock className="h-3 w-3 mr-1" />
-                                  {countdown}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <MessageSquare className={`h-5 w-5 flex-shrink-0 ${
-                            chatUnlocked || isPast ? 'text-primary' : 'text-muted-foreground'
-                          }`} />
-                        </div>
-                        
-                        <div className="space-y-2 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>{formatDate(event.dateTime)}</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5" />
-                            <span>{event.location}</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">参与者</span>
-                            <ParticipantAvatars 
-                              participants={event.participants || []} 
-                              maxDisplay={8}
-                              size="sm"
-                            />
-                            {event.attendeeCount > 8 && (
-                              <span className="text-xs text-muted-foreground ml-1">
-                                共{event.attendeeCount}人
-                              </span>
+                            
+                            {otherUser.archetype && (
+                              <Badge variant="secondary" className="text-[10px] h-5 mb-2">
+                                {otherUser.archetype}
+                              </Badge>
+                            )}
+                            
+                            {lastMessage ? (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {lastMessage.content}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground italic">
+                                暂无消息
+                              </p>
                             )}
                           </div>
+                          
+                          <MessageSquare className="h-5 w-5 text-primary flex-shrink-0" />
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-4 py-8">
+                <Card className="border shadow-sm">
+                  <CardContent className="p-8 text-center">
+                    <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold mb-2">暂无私聊</h3>
+                    <p className="text-sm text-muted-foreground">
+                      在活动中与其他参与者建立连接后，可以开始私聊
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       )}
 
       <BottomNav />
