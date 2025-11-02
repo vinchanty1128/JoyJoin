@@ -13,7 +13,14 @@ import ParticipantAvatars from "@/components/ParticipantAvatars";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import type { Event, DirectMessageThread } from "@shared/schema";
+import { motion, AnimatePresence } from "framer-motion";
+import { archetypeConfig } from "@/lib/archetypes";
+import { 
+  getGenderDisplay, 
+  formatAge, 
+  getEducationDisplay
+} from "@/lib/userFieldMappings";
+import type { Event, DirectMessageThread, User as UserType } from "@shared/schema";
 
 type EventWithParticipants = Event & { 
   attendanceStatus: string; 
@@ -22,11 +29,7 @@ type EventWithParticipants = Event & {
 };
 
 type DirectThreadWithUser = DirectMessageThread & {
-  otherUser: {
-    id: string;
-    displayName: string | null;
-    archetype: string | null;
-  };
+  otherUser: UserType;
   lastMessage: {
     content: string;
     createdAt: Date;
@@ -38,6 +41,7 @@ export default function ChatsPage() {
   const markAsRead = useMarkNotificationsAsRead();
   const { toast } = useToast();
   const [isCreatingDemo, setIsCreatingDemo] = useState(false);
+  const [expandedThreadId, setExpandedThreadId] = useState<string | null>(null);
 
   const { data: joinedEvents, isLoading: isLoadingEvents, refetch: refetchEvents } = useQuery<Array<EventWithParticipants>>({
     queryKey: ["/api/events/joined"],
@@ -370,21 +374,41 @@ export default function ChatsPage() {
                 {directThreads.map((thread) => {
                   const otherUser = thread.otherUser;
                   const lastMessage = thread.lastMessage;
+                  const isExpanded = expandedThreadId === thread.id;
+                  const archetypeData = otherUser.archetype && archetypeConfig[otherUser.archetype]
+                    ? archetypeConfig[otherUser.archetype]
+                    : null;
                   
                   return (
                     <Card 
                       key={thread.id} 
-                      className="hover-elevate active-elevate-2 transition-all cursor-pointer"
+                      className="hover-elevate active-elevate-2 transition-all cursor-pointer overflow-hidden"
                       onClick={() => setLocation(`/direct-chat/${thread.id}`)}
                       data-testid={`card-direct-${thread.id}`}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
-                          <Avatar className="h-12 w-12 flex-shrink-0">
-                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                              {getInitials(otherUser.displayName)}
-                            </AvatarFallback>
-                          </Avatar>
+                          {/* Avatar - clickable to expand */}
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedThreadId(isExpanded ? null : thread.id);
+                            }}
+                            className="cursor-pointer"
+                            data-testid={`avatar-expand-${thread.id}`}
+                          >
+                            {archetypeData ? (
+                              <div className={`h-12 w-12 flex-shrink-0 rounded-full ${archetypeData.bgColor} flex items-center justify-center text-2xl`}>
+                                {archetypeData.icon}
+                              </div>
+                            ) : (
+                              <Avatar className="h-12 w-12 flex-shrink-0">
+                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                  {getInitials(otherUser.displayName)}
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                          </div>
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2 mb-1">
@@ -413,6 +437,58 @@ export default function ChatsPage() {
                                 暂无消息
                               </p>
                             )}
+                            
+                            {/* Expandable User Info */}
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="overflow-hidden"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div className="pt-3 mt-3 border-t space-y-2">
+                                    {/* Archetype Description */}
+                                    {archetypeData && (
+                                      <div className="bg-muted/30 rounded-lg p-2.5">
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                          {archetypeData.description}
+                                        </p>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Info Chips */}
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {otherUser.gender && otherUser.age && (
+                                        <span className="text-xs bg-muted/50 px-2.5 py-1 rounded-full">
+                                          {getGenderDisplay(otherUser.gender)} · {formatAge(otherUser.age)}
+                                        </span>
+                                      )}
+                                      {otherUser.educationLevel && (
+                                        <span className="text-xs bg-muted/50 px-2.5 py-1 rounded-full">
+                                          {getEducationDisplay(otherUser.educationLevel)}
+                                        </span>
+                                      )}
+                                      {otherUser.industry && (
+                                        <span className="text-xs bg-muted/50 px-2.5 py-1 rounded-full">
+                                          {otherUser.industry}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    {/* Languages */}
+                                    {otherUser.languagesComfort && otherUser.languagesComfort.length > 0 && (
+                                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                        <span>🗣</span>
+                                        <span>{otherUser.languagesComfort.join(' · ')}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                           
                           <MessageSquare className="h-5 w-5 text-primary flex-shrink-0" />
