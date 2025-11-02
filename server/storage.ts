@@ -33,7 +33,7 @@ export interface IStorage {
   getRoleResult(userId: string): Promise<RoleResult | undefined>;
   
   // Event operations
-  getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number; participants: Array<{ id: string; displayName: string | null }> }>>;
+  getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number; participants: Array<{ id: string; displayName: string | null; archetype: string | null }> }>>;
   getEventParticipants(eventId: string): Promise<Array<User>>;
   
   // Chat operations
@@ -340,7 +340,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Event operations
-  async getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number; participants: Array<{ id: string; displayName: string | null }> }>> {
+  async getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number; participants: Array<{ id: string; displayName: string | null; archetype: string | null }> }>> {
     const result = await db
       .select({
         event: events,
@@ -359,6 +359,7 @@ export class DatabaseStorage implements IStorage {
           .select({
             id: users.id,
             displayName: users.displayName,
+            archetype: users.archetype,
           })
           .from(eventAttendance)
           .innerJoin(users, eq(eventAttendance.userId, users.id))

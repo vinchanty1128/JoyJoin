@@ -3,6 +3,7 @@ import { User } from "lucide-react";
 interface Participant {
   id: string;
   displayName: string | null;
+  archetype?: string | null;
 }
 
 interface ParticipantAvatarsProps {
@@ -10,6 +11,17 @@ interface ParticipantAvatarsProps {
   maxDisplay?: number;
   size?: "sm" | "md" | "lg";
 }
+
+const ARCHETYPE_EMOJIS: Record<string, string> = {
+  '火花塞': '🙌',
+  '探索者': '🧭',
+  '故事家': '🗣️',
+  '挑战者': '💪',
+  '连接者': '🤗',
+  '协调者': '🧘',
+  '氛围组': '🕺',
+  '肯定者': '🙏',
+};
 
 const GRADIENT_COLORS = [
   "from-purple-400 to-indigo-400",
@@ -48,15 +60,20 @@ export default function ParticipantAvatars({
     <div className="flex items-center -space-x-2">
       {displayedParticipants.map((participant, index) => {
         const gradientColor = getGradientColor(index);
+        const emoji = participant.archetype ? ARCHETYPE_EMOJIS[participant.archetype] : null;
         
         return (
           <div
             key={participant.id}
             className={`${SIZE_CLASSES[size]} rounded-full bg-gradient-to-br ${gradientColor} flex items-center justify-center text-white border-2 border-background shadow-sm transition-transform hover:scale-110 hover:z-10`}
             style={{ zIndex: displayedParticipants.length - index }}
-            title={participant.displayName || "用户"}
+            title={`${participant.displayName || "用户"}${participant.archetype ? ` · ${participant.archetype}` : ''}`}
           >
-            <User className={ICON_SIZE_CLASSES[size]} />
+            {emoji ? (
+              <span className="text-sm">{emoji}</span>
+            ) : (
+              <User className={ICON_SIZE_CLASSES[size]} />
+            )}
           </div>
         );
       })}
