@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowLeft, Send, Clock, ArrowDown, CheckCheck } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -111,6 +111,7 @@ export default function EventChatDetailPage() {
   const [message, setMessage] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<User | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -206,6 +207,7 @@ export default function EventChatDetailPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b">
         <div className="flex items-center h-14 px-4">
           <Button 
@@ -220,17 +222,44 @@ export default function EventChatDetailPage() {
             <h1 className="font-semibold truncate">{event?.title || "活动聊天"}</h1>
           </div>
         </div>
+        
+        {/* Participant Badges Row */}
+        {participants && participants.length > 0 && (
+          <TooltipProvider>
+            <div className="px-4 py-2 border-t flex items-center gap-2 overflow-x-auto">
+              <span className="text-xs text-muted-foreground flex-shrink-0">参与者:</span>
+              <div className="flex gap-2">
+                {participants.map((participant) => {
+                  const archetypeData = participant.archetype && archetypeConfig[participant.archetype]
+                    ? archetypeConfig[participant.archetype]
+                    : { icon: "✨", color: "text-muted-foreground", bgColor: "bg-muted", description: "独特个性" };
+                  
+                  return (
+                    <Tooltip key={participant.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setSelectedParticipant(participant)}
+                          className={`h-8 w-8 rounded-full ${archetypeData.bgColor} flex items-center justify-center text-lg hover-elevate active-elevate-2 transition-all cursor-pointer`}
+                          data-testid={`badge-participant-${participant.id}`}
+                        >
+                          {archetypeData.icon}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="font-semibold">{participant.displayName || participant.firstName || "用户"}</p>
+                        <p className="text-xs text-muted-foreground">{participant.archetype}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </div>
+          </TooltipProvider>
+        )}
       </div>
 
-      <Tabs defaultValue="chat" className="flex-1 flex flex-col">
-        <TabsList className="w-full justify-start rounded-none border-b h-12 px-4">
-          <TabsTrigger value="chat" data-testid="tab-chat">聊天</TabsTrigger>
-          <TabsTrigger value="participants" data-testid="tab-participants">
-            参与者 ({participants?.length || 0})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="chat" className="flex-1 flex flex-col m-0 relative">
+      {/* Chat Content */}
+      <div className="flex-1 flex flex-col relative">
           {!chatUnlocked ? (
             <div className="flex-1 flex items-center justify-center p-8">
               <Card className="max-w-sm w-full">
@@ -446,50 +475,56 @@ export default function EventChatDetailPage() {
               </div>
             </>
           )}
-        </TabsContent>
+      </div>
 
-        <TabsContent value="participants" className="flex-1 overflow-y-auto p-4 m-0">
-          <div className="space-y-3">
-            {participants?.map((participant) => {
-              const archetypeData = participant.archetype && archetypeConfig[participant.archetype]
-                ? archetypeConfig[participant.archetype]
-                : { icon: "✨", color: "text-muted-foreground", bgColor: "bg-muted", description: "独特个性" };
+      {/* Participant Details Dialog */}
+      {selectedParticipant && (
+        <Dialog open={true} onOpenChange={(open) => !open && setSelectedParticipant(null)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>参与者信息</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className={`h-16 w-16 flex-shrink-0 rounded-full ${
+                  selectedParticipant.archetype && archetypeConfig[selectedParticipant.archetype]
+                    ? archetypeConfig[selectedParticipant.archetype].bgColor
+                    : "bg-muted"
+                } flex items-center justify-center text-4xl`}>
+                  {selectedParticipant.archetype && archetypeConfig[selectedParticipant.archetype]
+                    ? archetypeConfig[selectedParticipant.archetype].icon
+                    : "✨"}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">
+                    {selectedParticipant.displayName || selectedParticipant.firstName || "用户"}
+                  </h3>
+                  {selectedParticipant.archetype && (
+                    <Badge variant="secondary" className="text-xs mt-1">
+                      {selectedParticipant.archetype}
+                    </Badge>
+                  )}
+                </div>
+              </div>
               
-              return (
-                <Card key={participant.id} className="border shadow-sm hover-elevate">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`h-12 w-12 flex-shrink-0 rounded-full ${archetypeData.bgColor} flex items-center justify-center shadow-sm text-2xl ring-2 ring-transparent hover:ring-primary/20 transition-all`}>
-                        {archetypeData.icon}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold truncate">
-                            {participant.displayName || participant.firstName || "用户"}
-                          </h3>
-                        </div>
-                        
-                        {participant.archetype && (
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary" className={`text-xs ${archetypeData.color}`}>
-                              {participant.archetype}
-                            </Badge>
-                            <p className="text-xs text-muted-foreground">
-                              {archetypeData.description}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </TabsContent>
-      </Tabs>
-
+              {selectedParticipant.archetype && archetypeConfig[selectedParticipant.archetype] && (
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-sm text-muted-foreground">
+                    {archetypeConfig[selectedParticipant.archetype].description}
+                  </p>
+                </div>
+              )}
+              
+              {selectedParticipant.industry && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">行业</p>
+                  <p className="text-sm">{selectedParticipant.industry}</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
