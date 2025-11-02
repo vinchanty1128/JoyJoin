@@ -1373,7 +1373,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasCompletedInterestsTopics: true,
         gender: 'Man',
         age: 28,
+        educationLevel: "Master's",
         industry: '科技',
+        relationshipStatus: 'Single',
         interestsTop: ['科技', '创业', '咖啡', '产品'],
         interestsRankedTop3: ['科技', '创业', '咖啡'],
         topicsHappy: ['AI发展', '产品设计', '创业故事'],
@@ -1390,7 +1392,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasCompletedInterestsTopics: true,
         gender: 'Woman',
         age: 26,
+        educationLevel: "Bachelor's",
         industry: '设计',
+        relationshipStatus: 'In a relationship',
         interestsTop: ['设计', '艺术', '旅行', '摄影'],
         interestsRankedTop3: ['设计', '艺术', '旅行'],
         topicsHappy: ['UI/UX设计', '摄影', '文化交流'],
@@ -1407,7 +1411,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasCompletedInterestsTopics: true,
         gender: 'Man',
         age: 30,
+        educationLevel: "Doctorate",
         industry: '金融',
+        relationshipStatus: 'Single',
         interestsTop: ['投资', '徒步', '读书', '历史'],
         interestsRankedTop3: ['投资', '徒步', '读书'],
         topicsHappy: ['股市分析', '户外运动', '历史'],
@@ -1435,11 +1441,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'upcoming',
       }).returning();
 
-      await db.insert(eventAttendance).values({
-        eventId: event1.id,
-        userId,
-        status: 'confirmed',
-      });
+      // Add current user and demo users to event 1
+      await db.insert(eventAttendance).values([
+        {
+          eventId: event1.id,
+          userId,
+          status: 'confirmed',
+        },
+        {
+          eventId: event1.id,
+          userId: demoUser1.id,
+          status: 'confirmed',
+        },
+        {
+          eventId: event1.id,
+          userId: demoUser2.id,
+          status: 'confirmed',
+        },
+        {
+          eventId: event1.id,
+          userId: demoUser3.id,
+          status: 'confirmed',
+        },
+      ]);
 
       // Create demo messages for event 1 with different users
       const demoMessages = [

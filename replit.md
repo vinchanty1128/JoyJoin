@@ -12,19 +12,33 @@ Preferred communication style: Simple, everyday language.
 
 ### November 2, 2025
 
-**SelectConnectionsStep Enhancement - Rich Participant Information Display:** Upgraded the participant selection interface to display comprehensive user information with localized Chinese text. Changes include:
-- **Left Avatar**: Colored circle displaying archetype icon (🙌🧭📖⚡🤝🎯🎭🌟) instead of letter initials, using archetype-specific background colors
+**Participant Information Display Enhancement - Complete Localization:** Comprehensive upgrade to participant information display across SelectConnectionsStep and EventChatDetailPage with full Chinese localization. Changes include:
+
+*SelectConnectionsStep (Feedback Flow):*
+- **Left Avatar**: Colored circle (h-14 w-14) displaying archetype icon (🙌🧭📖⚡🤝🎯🎭🌟) instead of letter initials, using archetype-specific background colors
 - **Archetype Display**: Badge showing archetype name in Chinese without icon prefix (e.g., "连接者", "探索者")
 - **Information Chips**: Compact rounded chips displaying:
   - Gender + Age: Combined format "女 · 25岁" / "男 · 28岁"
   - Education: Localized levels "本科", "硕士", "博士"
   - Industry: Direct display
   - Relationship Status: Shows "单身" only if single
+
+*EventChatDetailPage Participant Dialog:*
+- Added comprehensive participant information display in Dialog popup
+- Shows: Name, Archetype (badge + description), Gender + Age, Education, Industry, Relationship Status
+- Consistent visual style with SelectConnectionsStep using same Chinese localization
+
+*Shared Infrastructure:*
 - **Chinese Localization**: Created userFieldMappings.ts with complete mappings for gender (Woman→女), education (Bachelor's→本科), relationship status (Single→单身), and age formatting
-- **Shared Archetype Config**: Extracted archetypeConfig to lib/archetypes.ts for reuse across components
-- **Data Flow**: Updated EventFeedbackFlow to pass complete user data (8 fields) instead of just 3 fields
-- **Backend Verification**: Confirmed matchedAttendees includes all required fields in demo data
-- Improved visual hierarchy and information density while maintaining clean, readable layout
+- **Shared Archetype Config**: Extracted archetypeConfig to lib/archetypes.ts for reuse across EventChatDetailPage, DirectChatPage, and SelectConnectionsStep
+- **Data Flow**: Updated EventFeedbackFlow to pass complete user data (8 fields: userId, displayName, archetype, gender, age, educationLevel, industry, relationshipStatus)
+- **Demo Data Enhancement**: Added educationLevel and relationshipStatus to all demo users (小明: 硕士/单身, 小红: 本科/恋爱中, 阿杰: 博士/单身)
+- **Demo Data Fix**: Added all 3 demo users to event1 eventAttendance table so they appear in participant badge bar
+
+*Visual Improvements:*
+- Improved information density while maintaining clean, readable layout
+- Consistent chip-based display across all participant interfaces
+- All text properly localized to Chinese throughout the application
 
 ## System Architecture
 

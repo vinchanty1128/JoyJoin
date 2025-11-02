@@ -12,6 +12,12 @@ import { ArrowLeft, Send, Clock, ArrowDown, CheckCheck } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, ChatMessage } from "@shared/schema";
+import { 
+  getGenderDisplay, 
+  formatAge, 
+  getEducationDisplay, 
+  getRelationshipDisplay 
+} from "@/lib/userFieldMappings";
 
 // Archetype configuration with full descriptions
 const archetypeConfig: Record<string, { 
@@ -515,12 +521,29 @@ export default function EventChatDetailPage() {
                 </div>
               )}
               
-              {selectedParticipant.industry && (
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">行业</p>
-                  <p className="text-sm">{selectedParticipant.industry}</p>
-                </div>
-              )}
+              {/* Basic Info Chips */}
+              <div className="flex flex-wrap gap-2">
+                {selectedParticipant.gender && selectedParticipant.age && (
+                  <span className="text-xs bg-muted/50 px-3 py-1.5 rounded-full">
+                    {getGenderDisplay(selectedParticipant.gender)} · {formatAge(selectedParticipant.age)}
+                  </span>
+                )}
+                {selectedParticipant.educationLevel && (
+                  <span className="text-xs bg-muted/50 px-3 py-1.5 rounded-full">
+                    {getEducationDisplay(selectedParticipant.educationLevel)}
+                  </span>
+                )}
+                {selectedParticipant.industry && (
+                  <span className="text-xs bg-muted/50 px-3 py-1.5 rounded-full">
+                    {selectedParticipant.industry}
+                  </span>
+                )}
+                {selectedParticipant.relationshipStatus && selectedParticipant.relationshipStatus === "Single" && (
+                  <span className="text-xs bg-muted/50 px-3 py-1.5 rounded-full">
+                    {getRelationshipDisplay(selectedParticipant.relationshipStatus)}
+                  </span>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
