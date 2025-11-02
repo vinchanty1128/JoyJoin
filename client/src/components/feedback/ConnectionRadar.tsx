@@ -143,7 +143,7 @@ export default function ConnectionRadar({
 
           {/* Connection Status */}
           <div className="space-y-3 pt-4 border-t">
-            <p className="text-sm font-medium">有特别想保持联系的人吗？</p>
+            <p className="text-sm font-medium">请选择希望继续保持联系的人</p>
             <RadioGroup 
               value={connectionStatus} 
               onValueChange={setConnectionStatus}
