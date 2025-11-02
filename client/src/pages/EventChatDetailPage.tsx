@@ -125,7 +125,7 @@ export default function EventChatDetailPage() {
 
   // Get current user info
   const { data: currentUser } = useQuery<User>({
-    queryKey: ["/api/user"],
+    queryKey: ["/api/auth/user"],
   });
 
   const { data: joinedEvents } = useQuery<Array<any>>({

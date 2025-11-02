@@ -132,19 +132,27 @@ export default function DirectChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: thread, isLoading: threadLoading } = useQuery<DirectThreadWithDetails>({
-    queryKey: ["/api/direct-messages", threadId],
-    select: (data: any) => data.thread,
+  // Fetch all threads and find the current one
+  const { data: allThreads } = useQuery<Array<DirectThreadWithDetails>>({
+    queryKey: ["/api/direct-messages"],
   });
 
+  const thread = allThreads?.find(t => t.id === threadId);
+  const threadLoading = !allThreads;
+
+  // Fetch messages for this thread
   const { data: messages, isLoading: messagesLoading } = useQuery<Array<DirectMessage & { user: User }>>({
-    queryKey: ["/api/direct-messages", threadId, "messages"],
-    select: (data: any) => data.messages,
+    queryKey: ["/api/direct-messages", threadId],
+    select: (data: any) => {
+      // The API returns messages directly, map sender to user for compatibility
+      return data.map((msg: any) => ({ ...msg, user: msg.sender }));
+    },
     refetchInterval: 3000,
+    enabled: !!threadId,
   });
 
   const { data: currentUser } = useQuery<User>({
-    queryKey: ["/api/user"],
+    queryKey: ["/api/auth/user"],
   });
 
   const sendMessageMutation = useMutation({
@@ -335,11 +343,13 @@ export default function DirectChatPage() {
         )}
 
         {/* Event Context */}
-        <div className="px-4 pb-3">
-          <p className="text-xs text-muted-foreground">
-            来自活动：{thread.event.title}
-          </p>
-        </div>
+        {thread.event && (
+          <div className="px-4 pb-3">
+            <p className="text-xs text-muted-foreground">
+              来自活动：{thread.event.title}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Messages */}
