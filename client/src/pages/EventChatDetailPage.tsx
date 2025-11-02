@@ -722,18 +722,18 @@ export default function EventChatDetailPage() {
       <style>{`
         @keyframes pulse-glow {
           0%, 100% {
-            opacity: 0.85;
-            transform: scale(1);
+            opacity: 0.9;
+            filter: brightness(1) drop-shadow(0 0 0px currentColor);
           }
           50% {
             opacity: 1;
-            transform: scale(1.02);
+            filter: brightness(1.15) drop-shadow(0 0 4px currentColor);
           }
         }
         
         .animate-pulse-glow {
           animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-          will-change: opacity, transform;
+          will-change: opacity, filter;
         }
       `}</style>
     </div>
