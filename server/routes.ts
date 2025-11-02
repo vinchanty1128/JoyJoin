@@ -1362,23 +1362,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
-      // Create demo users with different archetypes
+      // Create demo users with different archetypes and complete profiles
       const [demoUser1] = await db.insert(users).values({
         displayName: '小明',
         archetype: '火花塞',
         hasCompletedProfileSetup: true,
+        hasCompletedPersonalityTest: true,
+        hasCompletedInterestsTopics: true,
+        gender: 'Man',
+        age: 28,
+        industry: '科技',
+        interestsTop: ['科技', '创业', '咖啡', '产品'],
+        interestsRankedTop3: ['科技', '创业', '咖啡'],
+        topicsHappy: ['AI发展', '产品设计', '创业故事'],
+        languagesComfort: ['粤语', '普通话', '英语'],
+        eventsAttended: 5,
+        matchesMade: 8,
       }).returning();
 
       const [demoUser2] = await db.insert(users).values({
         displayName: '小红',
         archetype: '连接者',
         hasCompletedProfileSetup: true,
+        hasCompletedPersonalityTest: true,
+        hasCompletedInterestsTopics: true,
+        gender: 'Woman',
+        age: 26,
+        industry: '设计',
+        interestsTop: ['设计', '艺术', '旅行', '摄影'],
+        interestsRankedTop3: ['设计', '艺术', '旅行'],
+        topicsHappy: ['UI/UX设计', '摄影', '文化交流'],
+        languagesComfort: ['粤语', '普通话'],
+        eventsAttended: 12,
+        matchesMade: 15,
       }).returning();
 
       const [demoUser3] = await db.insert(users).values({
         displayName: '阿杰',
         archetype: '探索者',
         hasCompletedProfileSetup: true,
+        hasCompletedPersonalityTest: true,
+        hasCompletedInterestsTopics: true,
+        gender: 'Man',
+        age: 30,
+        industry: '金融',
+        interestsTop: ['投资', '徒步', '读书', '历史'],
+        interestsRankedTop3: ['投资', '徒步', '读书'],
+        topicsHappy: ['股市分析', '户外运动', '历史'],
+        languagesComfort: ['粤语', '普通话', '英语'],
+        eventsAttended: 8,
+        matchesMade: 10,
       }).returning();
 
       // Create demo events with different unlock states
@@ -1482,6 +1515,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Also add demo users as event attendees
+      await db.insert(eventAttendance).values([
+        { eventId: event3.id, userId: demoUser1.id, status: 'confirmed' },
+        { eventId: event3.id, userId: demoUser2.id, status: 'confirmed' },
+        { eventId: event3.id, userId: demoUser3.id, status: 'confirmed' },
+      ]);
+
       // Create direct message threads (private 1-1 chats)
       // Thread 1: Current user with demoUser1 (小明-火花塞)
       const [thread1] = await db.insert(directMessageThreads).values({
@@ -1489,6 +1529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user2Id: demoUser1.id,
         eventId: event3.id, // They matched at the past event
         lastMessageAt: new Date(now.getTime() - 30 * 60 * 1000), // 30 mins ago
+        connectionPointTypes: ['same_topic', 'same_language'], // Shared interests for matching
       }).returning();
 
       // Messages in thread 1
@@ -1513,6 +1554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user2Id: demoUser2.id,
         eventId: event3.id,
         lastMessageAt: new Date(now.getTime() - 10 * 60 * 1000), // 10 mins ago
+        connectionPointTypes: ['same_industry_broad', 'same_language'], // Similar backgrounds
       }).returning();
 
       // Messages in thread 2
