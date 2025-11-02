@@ -8,17 +8,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit, LogOut, Shield, HelpCircle, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const [showQuizIntro, setShowQuizIntro] = useState(false);
+  const { toast } = useToast();
   
   const { data: user } = useQuery<any>({ queryKey: ["/api/auth/user"] });
   const { data: personalityResults } = useQuery<any>({
     queryKey: ["/api/personality-test/results"],
     enabled: !!user?.hasCompletedPersonalityTest,
   });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/auth/logout");
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      toast({
+        title: "已退出登录",
+        description: "您已成功退出登录",
+      });
+      setLocation("/auth/phone");
+    },
+    onError: () => {
+      toast({
+        title: "退出失败",
+        description: "退出登录时出现问题，请重试",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
 
   const hasCompletedQuiz = !!user?.hasCompletedPersonalityTest;
   
@@ -136,9 +164,15 @@ export default function ProfilePage() {
               <HelpCircle className="h-4 w-4 mr-3" />
               帮助与支持
             </Button>
-            <Button variant="ghost" className="w-full justify-start text-destructive" data-testid="button-logout">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-destructive" 
+              data-testid="button-logout"
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+            >
               <LogOut className="h-4 w-4 mr-3" />
-              退出登录
+              {logoutMutation.isPending ? "退出中..." : "退出登录"}
             </Button>
           </CardContent>
         </Card>
