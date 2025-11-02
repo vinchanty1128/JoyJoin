@@ -222,6 +222,11 @@ export default function EventFeedbackFlow() {
               userId: a.userId,
               displayName: a.displayName,
               archetype: a.archetype,
+              gender: a.gender,
+              age: a.age,
+              educationLevel: a.educationLevel,
+              industry: a.industry,
+              relationshipStatus: a.relationshipStatus,
             }))}
             initialConnections={feedbackData.connections}
             onNext={handleNext}
