@@ -1362,6 +1362,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
+      console.log(`[SEED-DEMO] Starting demo data creation for user: ${userId}`);
+
       // Create demo users with different archetypes and complete profiles
       const [demoUser1] = await db.insert(users).values({
         displayName: '小明',
@@ -1523,6 +1525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ]);
 
       // Create direct message threads (private 1-1 chats)
+      console.log(`[SEED-DEMO] Creating direct message thread 1: ${userId} <-> ${demoUser1.id}`);
       // Thread 1: Current user with demoUser1 (小明-火花塞)
       const [thread1] = await db.insert(directMessageThreads).values({
         user1Id: userId,
@@ -1530,6 +1533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         eventId: event3.id, // They matched at the past event
         lastMessageAt: new Date(now.getTime() - 30 * 60 * 1000), // 30 mins ago
       }).returning();
+      console.log(`[SEED-DEMO] Thread 1 created with ID: ${thread1.id}`);
 
       // Messages in thread 1
       const thread1Messages = [
@@ -1548,12 +1552,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Thread 2: Current user with demoUser2 (小红-连接者)
+      console.log(`[SEED-DEMO] Creating direct message thread 2: ${userId} <-> ${demoUser2.id}`);
       const [thread2] = await db.insert(directMessageThreads).values({
         user1Id: userId,
         user2Id: demoUser2.id,
         eventId: event3.id,
         lastMessageAt: new Date(now.getTime() - 10 * 60 * 1000), // 10 mins ago
       }).returning();
+      console.log(`[SEED-DEMO] Thread 2 created with ID: ${thread2.id}`);
 
       // Messages in thread 2
       const thread2Messages = [
@@ -1572,6 +1578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      console.log(`[SEED-DEMO] Demo data creation completed successfully for user: ${userId}`);
       res.json({ 
         success: true, 
         message: 'Demo chat data created (including 2 private chats)',
@@ -1581,13 +1588,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { title: event3.title, status: 'past', dateTime: event3.dateTime },
         ],
         privateChats: [
-          { with: '小明 (火花塞)', messages: 3 },
-          { with: '小红 (连接者)', messages: 4 },
+          { with: '小明 (火花塞)', messages: 3, threadId: thread1.id },
+          { with: '小红 (连接者)', messages: 4, threadId: thread2.id },
         ]
       });
     } catch (error) {
-      console.error("Error creating demo chat data:", error);
-      res.status(500).json({ message: "Failed to create demo chat data" });
+      console.error("[SEED-DEMO] Error creating demo chat data:", error);
+      res.status(500).json({ message: "Failed to create demo chat data", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
