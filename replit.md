@@ -8,6 +8,12 @@ This social networking platform, JoyJoin (悦聚·Joy), aims to connect individu
 
 ### November 2, 2025
 
+**ChatsPage Visual Hierarchy Optimization - Event Card States:** Implemented distinctive visual states for locked/unlocked event cards to guide user attention effectively. Changes include:
+- **Locked state cards** (>24h before event): Purple header (#8A2BE2) with lock icon and prominent countdown ("聊天 X天X小时后 开放"), light purple background (#F8F5FF) with purple border, all event info grayed out (#8E8E93), participants hidden with "开放后可见参与者" message
+- **Unlocked state cards** (≤24h before or past event): Green header (#4CAF50) with message icon and "聊天已开放" text, normal white background, normal colored event information, participant avatars visible
+- **Design rationale**: Visual hierarchy optimization - locked cards draw attention to "when chat opens", unlocked cards encourage immediate chat action
+- E2E tested and verified with Playwright
+
 **User Level System Removal:** Removed the entire user level badge system (UserEnergyBadge component) from the application. Changes include:
 - Deleted UserEnergyBadge.tsx component (displayed level badges like "达人 Lv.3", "新人 Lv.1", etc.)
 - Removed UserEnergyBadge import and usage from DiscoverPage.tsx
