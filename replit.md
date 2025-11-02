@@ -4,7 +4,20 @@
 
 This social networking platform, JoyJoin (悦聚·Joy), aims to connect individuals through small, curated micro-events (5-10 attendees) using AI-driven matchmaking. It focuses on fostering psychological safety, inclusivity, and meaningful local connections. The platform's core purpose is to help users build communities by matching them with events and people based on their interests, personality archetypes, and social compatibility, all presented through a warm and approachable design. The platform targets the Hong Kong/Shenzhen market, emphasizing Chinese-localized authentication and user experience.
 
-## Recent Changes (November 1, 2025)
+## Recent Changes
+
+### November 2, 2025
+
+**ChatsPage UI Enhancement - Tabbed Interface:** Improved the chat list organization by implementing a Telegram-style Segmented Control for switching between group chats and direct messages. Changes include:
+- Added Tabs component with two tabs: "群聊" (Group Chats) and "私聊" (Direct Messages)
+- Each tab displays a count badge showing the number of chats in that category
+- Tabs are sticky-positioned below the MobileHeader for easy access while scrolling
+- Implemented tab-specific empty states for better UX when a category is empty
+- Default tab is "群聊" (Group Chats)
+- Preserved all existing functionality: chat locking/unlocking, countdown timers, participant avatars, message previews
+- Improved visual organization and navigation between different types of conversations
+
+### November 1, 2025
 
 **Comprehensive Matching Algorithm Overhaul - COMPLETED (13 New Enhancement Types):** Massive upgrade to AI-driven matchmaking using previously collected but unused data. Zero new friction for users, maximum matching intelligence. All features now fully implemented:
 
