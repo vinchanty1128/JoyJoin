@@ -268,46 +268,48 @@ export default function ChatsPage() {
                   const isPast = isEventPast(event.dateTime);
                   const chatUnlocked = isChatUnlocked(event.dateTime);
                   const countdown = getUnlockCountdown(event.dateTime);
+                  const isLocked = !chatUnlocked && !isPast;
                   
                   return (
                     <Card 
                       key={event.id} 
-                      className={`hover-elevate active-elevate-2 transition-all cursor-pointer ${
-                        !chatUnlocked && !isPast ? 'opacity-60' : ''
+                      className={`hover-elevate active-elevate-2 transition-all cursor-pointer overflow-hidden ${
+                        isLocked ? 'bg-[#F8F5FF] border-[#8A2BE2]' : ''
                       }`}
                       onClick={() => setLocation(`/chats/${event.id}`)}
                       data-testid={`card-event-${event.id}`}
                     >
+                      {/* 状态栏：锁定状态（紫色）或解锁状态（绿色） */}
+                      {isLocked ? (
+                        <div className="bg-[#8A2BE2] text-white px-4 py-2.5 flex items-center gap-2">
+                          <Lock className="h-4 w-4 flex-shrink-0" />
+                          <span className="text-base font-bold">
+                            聊天 {countdown} 开放
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="bg-[#4CAF50] text-white px-4 py-2 flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                          <span className="font-semibold text-sm">聊天已开放</span>
+                          {isPast && (
+                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-white/20 border-0">
+                              已结束
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold">{event.title}</h3>
-                                {!chatUnlocked && !isPast && (
-                                  <Lock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                                )}
-                              </div>
-                              <div className="flex flex-wrap items-center gap-2 mt-1">
-                                {isPast && (
-                                  <Badge variant="secondary" className="text-[10px] h-5">
-                                    已结束
-                                  </Badge>
-                                )}
-                                {!chatUnlocked && !isPast && countdown && (
-                                  <Badge variant="outline" className="text-[10px] h-5 border-primary/30 text-primary">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    {countdown}
-                                  </Badge>
-                                )}
-                              </div>
+                              <h3 className={`font-semibold ${isLocked ? 'text-[#8E8E93]' : ''}`}>
+                                {event.title}
+                              </h3>
                             </div>
-                            <MessageSquare className={`h-5 w-5 flex-shrink-0 ${
-                              chatUnlocked || isPast ? 'text-primary' : 'text-muted-foreground'
-                            }`} />
                           </div>
                           
-                          <div className="space-y-2 text-xs text-muted-foreground">
+                          <div className={`space-y-2 text-xs ${isLocked ? 'text-[#8E8E93]' : 'text-muted-foreground'}`}>
                             <div className="flex items-center gap-1.5">
                               <Calendar className="h-3.5 w-3.5" />
                               <span>{formatDate(event.dateTime)}</span>
@@ -318,19 +320,28 @@ export default function ChatsPage() {
                               <span>{event.location}</span>
                             </div>
                             
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">参与者</span>
-                              <ParticipantAvatars 
-                                participants={event.participants || []} 
-                                maxDisplay={8}
-                                size="sm"
-                              />
-                              {event.attendeeCount > 8 && (
-                                <span className="text-xs text-muted-foreground ml-1">
-                                  共{event.attendeeCount}人
-                                </span>
-                              )}
-                            </div>
+                            {!isLocked && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">参与者</span>
+                                <ParticipantAvatars 
+                                  participants={event.participants || []} 
+                                  maxDisplay={8}
+                                  size="sm"
+                                />
+                                {event.attendeeCount > 8 && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    共{event.attendeeCount}人
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            
+                            {isLocked && (
+                              <div className="flex items-center gap-2 pt-1">
+                                <Users className="h-3.5 w-3.5 opacity-50" />
+                                <span className="text-xs opacity-50">开放后可见参与者</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </CardContent>
