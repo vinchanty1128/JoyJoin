@@ -2,7 +2,6 @@ import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import BlindBoxEventCard from "@/components/BlindBoxEventCard";
 import DiscountCouponCard from "@/components/DiscountCouponCard";
-import UserEnergyBadge from "@/components/UserEnergyBadge";
 import HeroWelcome from "@/components/HeroWelcome";
 import LocationPickerSheet from "@/components/LocationPickerSheet";
 import { Sparkles } from "lucide-react";
@@ -123,17 +122,12 @@ export default function DiscoverPage() {
       
       <div className="space-y-4">
         {/* Hero 欢迎区 */}
-        <div className="flex items-start justify-between pr-4">
-          <HeroWelcome 
-            userName={user?.displayName || "朋友"}
-            selectedCity={selectedCity}
-            selectedArea={selectedArea}
-            onLocationClick={() => setLocationPickerOpen(true)}
-          />
-          <div className="pt-6">
-            <UserEnergyBadge level={3} role="energizer" />
-          </div>
-        </div>
+        <HeroWelcome 
+          userName={user?.displayName || "朋友"}
+          selectedCity={selectedCity}
+          selectedArea={selectedArea}
+          onLocationClick={() => setLocationPickerOpen(true)}
+        />
 
         {/* 分割线 */}
         <div className="h-px bg-border/50 mx-4" />
