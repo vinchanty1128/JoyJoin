@@ -5,11 +5,23 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
+import { archetypeConfig } from "@/lib/archetypes";
+import { 
+  getGenderDisplay, 
+  formatAge, 
+  getEducationDisplay, 
+  getRelationshipDisplay 
+} from "@/lib/userFieldMappings";
 
 interface Attendee {
   userId: string;
   displayName: string;
   archetype?: string;
+  gender?: string;
+  age?: number;
+  educationLevel?: string;
+  industry?: string;
+  relationshipStatus?: string;
 }
 
 interface SelectConnectionsStepProps {
@@ -18,22 +30,6 @@ interface SelectConnectionsStepProps {
   onNext: (data: { connections: string[] }) => void;
 }
 
-const archetypeIcons: Record<string, string> = {
-  "社交蝴蝶": "🦋",
-  "故事大王": "📖",
-  "好奇宝宝": "🔍",
-  "氛围担当": "🎭",
-  "倾听者": "👂",
-  "行动派": "⚡",
-  "思考者": "🤔",
-  "连接者": "🔗",
-  "观察家": "👁️",
-  "创意家": "💡",
-  "组织者": "📋",
-  "破冰者": "❄️",
-  "能量球": "⚡",
-  "探险家": "🧭",
-};
 
 export default function SelectConnectionsStep({
   attendees,
@@ -93,9 +89,31 @@ export default function SelectConnectionsStep({
             ) : (
               attendees.map((attendee) => {
                 const isSelected = selectedConnections.includes(attendee.userId);
-                const archetypeIcon = attendee.archetype 
-                  ? archetypeIcons[attendee.archetype] || "✨"
-                  : "✨";
+                const archetypeData = attendee.archetype && archetypeConfig[attendee.archetype]
+                  ? archetypeConfig[attendee.archetype]
+                  : { icon: "✨", bgColor: "bg-muted" };
+
+                // Build info chips
+                const infoChips: string[] = [];
+                if (attendee.gender && attendee.age) {
+                  infoChips.push(`${getGenderDisplay(attendee.gender)} · ${formatAge(attendee.age)}`);
+                } else if (attendee.gender) {
+                  infoChips.push(getGenderDisplay(attendee.gender));
+                } else if (attendee.age) {
+                  infoChips.push(formatAge(attendee.age));
+                }
+                
+                if (attendee.educationLevel) {
+                  infoChips.push(getEducationDisplay(attendee.educationLevel));
+                }
+                
+                if (attendee.industry) {
+                  infoChips.push(attendee.industry);
+                }
+                
+                if (attendee.relationshipStatus && attendee.relationshipStatus === "Single") {
+                  infoChips.push(getRelationshipDisplay(attendee.relationshipStatus));
+                }
 
                 return (
                   <motion.button
@@ -110,13 +128,11 @@ export default function SelectConnectionsStep({
                     data-testid={`select-connection-${attendee.userId}`}
                   >
                     <div className="flex items-center gap-4">
-                      {/* Avatar */}
-                      <div className="relative">
-                        <Avatar className="h-12 w-12">
-                          <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                            {attendee.displayName?.[0] || "U"}
-                          </AvatarFallback>
-                        </Avatar>
+                      {/* Avatar with Archetype Icon */}
+                      <div className="relative flex-shrink-0">
+                        <div className={`h-14 w-14 rounded-full ${archetypeData.bgColor} flex items-center justify-center text-2xl`}>
+                          {archetypeData.icon}
+                        </div>
                         {isSelected && (
                           <motion.div
                             initial={{ scale: 0 }}
@@ -129,22 +145,35 @@ export default function SelectConnectionsStep({
                       </div>
 
                       {/* User Info */}
-                      <div className="flex-1 text-left">
-                        <div className="font-medium">
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="font-medium truncate">
                           {attendee.displayName || "参与者"}
                         </div>
+                        
                         {attendee.archetype && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-sm">{archetypeIcon}</span>
-                            <span className="text-xs text-muted-foreground">
+                          <div className="mt-0.5">
+                            <Badge variant="secondary" className="text-xs">
                               {attendee.archetype}
-                            </span>
+                            </Badge>
+                          </div>
+                        )}
+                        
+                        {infoChips.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {infoChips.map((chip, idx) => (
+                              <span 
+                                key={idx} 
+                                className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded"
+                              >
+                                {chip}
+                              </span>
+                            ))}
                           </div>
                         )}
                       </div>
 
                       {/* Selection Indicator */}
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                         isSelected 
                           ? "border-primary bg-primary" 
                           : "border-muted-foreground/30"
