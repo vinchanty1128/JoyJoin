@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users } from "@shared/schema";
+import { updateProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -1466,13 +1466,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Create direct message threads (private 1-1 chats)
+      // Thread 1: Current user with demoUser1 (小明-火花塞)
+      const [thread1] = await db.insert(directMessageThreads).values({
+        user1Id: userId,
+        user2Id: demoUser1.id,
+        eventId: event3.id, // They matched at the past event
+        lastMessageAt: new Date(now.getTime() - 30 * 60 * 1000), // 30 mins ago
+      }).returning();
+
+      // Messages in thread 1
+      const thread1Messages = [
+        { senderId: demoUser1.id, message: '今天玩得很开心！我们可以加个好友吗？', createdAt: new Date(now.getTime() - 60 * 60 * 1000) },
+        { senderId: userId, message: '当然可以！我也觉得今天很有趣', createdAt: new Date(now.getTime() - 55 * 60 * 1000) },
+        { senderId: demoUser1.id, message: '下次有类似的活动记得叫我！', createdAt: new Date(now.getTime() - 30 * 60 * 1000) },
+      ];
+
+      for (const msg of thread1Messages) {
+        await db.insert(directMessages).values({
+          threadId: thread1.id,
+          senderId: msg.senderId,
+          message: msg.message,
+          createdAt: msg.createdAt,
+        });
+      }
+
+      // Thread 2: Current user with demoUser2 (小红-连接者)
+      const [thread2] = await db.insert(directMessageThreads).values({
+        user1Id: userId,
+        user2Id: demoUser2.id,
+        eventId: event3.id,
+        lastMessageAt: new Date(now.getTime() - 10 * 60 * 1000), // 10 mins ago
+      }).returning();
+
+      // Messages in thread 2
+      const thread2Messages = [
+        { senderId: demoUser2.id, message: '嗨！刚才的狼人杀你玩得真棒', createdAt: new Date(now.getTime() - 45 * 60 * 1000) },
+        { senderId: userId, message: '谢谢！你也很厉害呀', createdAt: new Date(now.getTime() - 40 * 60 * 1000) },
+        { senderId: demoUser2.id, message: '我们下周还有个咖啡聚会，要来吗？', createdAt: new Date(now.getTime() - 35 * 60 * 1000) },
+        { senderId: userId, message: '好啊！具体什么时间？', createdAt: new Date(now.getTime() - 10 * 60 * 1000) },
+      ];
+
+      for (const msg of thread2Messages) {
+        await db.insert(directMessages).values({
+          threadId: thread2.id,
+          senderId: msg.senderId,
+          message: msg.message,
+          createdAt: msg.createdAt,
+        });
+      }
+
       res.json({ 
         success: true, 
-        message: 'Demo chat data created',
+        message: 'Demo chat data created (including 2 private chats)',
         events: [
           { title: event1.title, status: 'unlocked', dateTime: event1.dateTime },
           { title: event2.title, status: 'locked', dateTime: event2.dateTime },
           { title: event3.title, status: 'past', dateTime: event3.dateTime },
+        ],
+        privateChats: [
+          { with: '小明 (火花塞)', messages: 3 },
+          { with: '小红 (连接者)', messages: 4 },
         ]
       });
     } catch (error) {

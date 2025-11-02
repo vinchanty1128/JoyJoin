@@ -149,7 +149,7 @@ export const matchHistory = pgTable("match_history", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   user1Id: varchar("user1_id").notNull().references(() => users.id),
   user2Id: varchar("user2_id").notNull().references(() => users.id),
-  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id),
+  eventId: varchar("event_id").notNull().references(() => events.id),
   matchedAt: timestamp("matched_at").defaultNow(),
   connectionQuality: integer("connection_quality"), // Post-event feedback: 1-5 score
   wouldMeetAgain: boolean("would_meet_again"), // Whether they'd want to be matched again
@@ -170,7 +170,7 @@ export const directMessageThreads = pgTable("direct_message_threads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   user1Id: varchar("user1_id").notNull().references(() => users.id),
   user2Id: varchar("user2_id").notNull().references(() => users.id),
-  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id), // Event where they matched
+  eventId: varchar("event_id").notNull().references(() => events.id), // Event where they matched
   unlockedAt: timestamp("unlocked_at").defaultNow(), // When mutual matching unlocked the thread
   lastMessageAt: timestamp("last_message_at"), // For sorting threads by activity
   createdAt: timestamp("created_at").defaultNow(),
@@ -188,7 +188,7 @@ export const directMessages = pgTable("direct_messages", {
 // Post-event feedback table
 export const eventFeedback = pgTable("event_feedback", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id),
+  eventId: varchar("event_id").notNull().references(() => events.id),
   userId: varchar("user_id").notNull().references(() => users.id),
   
   // Legacy fields (deprecated but kept for backward compatibility)
