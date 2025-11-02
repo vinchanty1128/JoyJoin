@@ -8,6 +8,14 @@ This social networking platform, JoyJoin (悦聚·Joy), aims to connect individu
 
 ### November 2, 2025
 
+**Feedback Consolidation - Removed Duplicate Feedback from Chat Window:** Streamlined the user experience by removing all feedback functionality from the chat window (EventChatDetailPage) and consolidating it into the unified EventFeedbackFlow. Changes include:
+- Removed "反馈" (Feedback) tab from EventChatDetailPage - chat window now only shows "聊天" (Chat) and "参与者" (Participants) tabs
+- Removed all feedback-related state, mutations, and handlers from chat window
+- Simplified chat interface to focus purely on communication
+- Updated ConnectionRadar.tsx wording: "有特别想保持联系的人吗？" → "请选择希望继续保持联系的人" (clearer call-to-action)
+- Unified feedback experience: all post-event feedback (ratings, connections, deep feedback) now accessed through EventFeedbackFlow
+- Maintained privacy protection messaging in SelectConnectionsStep: "只有双方互选才会解锁1对1私聊" (mutual selection unlocks private chat)
+
 **ChatsPage UI Enhancement - Tabbed Interface:** Improved the chat list organization by implementing a Telegram-style Segmented Control for switching between group chats and direct messages. Changes include:
 - Added Tabs component with two tabs: "群聊" (Group Chats) and "私聊" (Direct Messages)
 - Each tab displays a count badge showing the number of chats in that category
