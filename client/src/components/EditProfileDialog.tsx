@@ -59,7 +59,6 @@ const personalSchema = z.object({
 
 const interestsSchema = z.object({
   interestsTop: z.array(z.string()).optional(),
-  budgetPreference: z.array(z.string()).optional(),
 });
 
 const getSchema = (section: SectionType) => {
@@ -109,7 +108,6 @@ const getDefaultValues = (section: SectionType, user: any) => {
     case "interests":
       return {
         interestsTop: user?.interestsTop || [],
-        budgetPreference: user?.budgetPreference || [],
       };
     default:
       return {};
@@ -535,23 +533,6 @@ export default function EditProfileDialog({
                         data-testid={`badge-interest-${interest}`}
                       >
                         {interest}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="mb-2 block">预算偏好</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {budgetOptions.map((budget) => (
-                      <Badge
-                        key={budget}
-                        variant={((form.watch("budgetPreference") as string[] | undefined) || []).includes(budget) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => toggleArrayItem("budgetPreference", budget)}
-                        data-testid={`badge-budget-${budget}`}
-                      >
-                        {budget}
                       </Badge>
                     ))}
                   </div>

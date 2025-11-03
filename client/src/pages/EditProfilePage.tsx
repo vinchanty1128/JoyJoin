@@ -90,7 +90,8 @@ export default function EditProfilePage() {
       path: "/profile/edit/interests",
       fields: [
         { label: "兴趣爱好", value: user.interestsTop?.join(", ") },
-        { label: "预算偏好", value: user.budgetPreference?.join(", ") },
+        { label: "喜欢聊的话题", value: user.topicsHappy?.join(", ") },
+        { label: "避免的话题", value: user.topicsAvoid?.join(", ") },
       ],
     },
   ];

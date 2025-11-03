@@ -38,7 +38,6 @@ const fullProfileSchema = z.object({
   relationshipStatus: z.string().optional(),
   children: z.string().optional(),
   interestsTop: z.array(z.string()).optional(),
-  budgetPreference: z.array(z.string()).optional(),
 });
 
 const languageOptions = [
@@ -136,7 +135,6 @@ export default function EditFullProfileDialog({
       relationshipStatus: user?.relationshipStatus || "",
       children: user?.children || "",
       interestsTop: user?.interestsTop || [],
-      budgetPreference: user?.budgetPreference || [],
     },
   });
 
@@ -488,23 +486,6 @@ export default function EditFullProfileDialog({
                       data-testid={`badge-interest-${interest}`}
                     >
                       {interest}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label className="mb-2 block">预算偏好</Label>
-                <div className="flex flex-wrap gap-2">
-                  {budgetOptions.map((budget) => (
-                    <Badge
-                      key={budget}
-                      variant={((form.watch("budgetPreference") as string[] | undefined) || []).includes(budget) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => toggleArrayItem("budgetPreference", budget)}
-                      data-testid={`badge-budget-${budget}`}
-                    >
-                      {budget}
                     </Badge>
                   ))}
                 </div>
