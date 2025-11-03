@@ -519,7 +519,6 @@ export type User = typeof users.$inferSelect;
 export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export type UpdateFullProfile = z.infer<typeof updateFullProfileSchema>;
 export type UpdatePersonality = z.infer<typeof updatePersonalitySchema>;
-export type UpdateBudgetPreference = z.infer<typeof updateBudgetPreferenceSchema>;
 export type RegisterUser = z.infer<typeof registerUserSchema>;
 export type InterestsTopics = z.infer<typeof interestsTopicsSchema>;
 

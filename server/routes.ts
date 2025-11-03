@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
+import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and } from "drizzle-orm";
 
@@ -408,24 +408,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating personality:", error);
       res.status(500).json({ message: "Failed to update personality" });
-    }
-  });
-
-  app.post('/api/profile/budget', isPhoneAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.session.userId;
-      const result = updateBudgetPreferenceSchema.safeParse(req.body);
-      
-      if (!result.success) {
-        return res.status(400).json({ error: result.error });
-      }
-
-      const user = await storage.updateBudgetPreference(userId, result.data);
-      
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating budget preference:", error);
-      res.status(500).json({ message: "Failed to update budget preference" });
     }
   });
 

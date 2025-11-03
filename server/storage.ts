@@ -1,5 +1,5 @@
 import { 
-  type User, type UpsertUser, type UpdateProfile, type UpdateFullProfile, type UpdatePersonality, type UpdateBudgetPreference,
+  type User, type UpsertUser, type UpdateProfile, type UpdateFullProfile, type UpdatePersonality,
   type Event, type EventAttendance, type ChatMessage, type EventFeedback, type BlindBoxEvent,
   type InsertEventAttendance, type InsertChatMessage, type InsertEventFeedback,
   type RegisterUser, type InsertTestResponse, type InsertRoleResult, type RoleResult, type InterestsTopics,
@@ -20,7 +20,6 @@ export interface IStorage {
   updateProfile(id: string, profile: UpdateProfile): Promise<User>;
   updateFullProfile(id: string, profile: UpdateFullProfile): Promise<User>;
   updatePersonality(id: string, personality: UpdatePersonality): Promise<User>;
-  updateBudgetPreference(id: string, budget: UpdateBudgetPreference): Promise<User>;
   markProfileSetupComplete(id: string): Promise<void>;
   markVoiceQuizComplete(id: string): Promise<void>;
   registerUser(id: string, data: RegisterUser): Promise<User>;
@@ -202,18 +201,6 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({
         ...personality,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, id))
-      .returning();
-    return user;
-  }
-
-  async updateBudgetPreference(id: string, budget: UpdateBudgetPreference): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({
-        ...budget,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))
