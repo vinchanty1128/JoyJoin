@@ -21,6 +21,7 @@ const workSchema = z.object({
   industry: z.string().optional(),
   roleTitleShort: z.string().optional(),
   seniority: z.enum(["Intern", "Junior", "Mid", "Senior", "Founder", "Executive"]).optional(),
+  workVisibility: z.enum(["hide_all", "show_industry_only"]).optional(),
 });
 
 type WorkForm = z.infer<typeof workSchema>;
@@ -42,6 +43,7 @@ export default function EditWorkPage() {
       industry: user?.industry || "",
       roleTitleShort: user?.roleTitleShort || "",
       seniority: user?.seniority || undefined,
+      workVisibility: user?.workVisibility || "show_industry_only",
     },
   });
 
@@ -148,6 +150,26 @@ export default function EditWorkPage() {
               <SelectItem value="Executive">高管</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Work Visibility */}
+        <div className="space-y-2">
+          <Label htmlFor="workVisibility">工作信息可见性</Label>
+          <Select
+            value={form.watch("workVisibility") || ""}
+            onValueChange={(value) => form.setValue("workVisibility", value as any)}
+          >
+            <SelectTrigger data-testid="select-work-visibility">
+              <SelectValue placeholder="选择可见性" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="hide_all">完全隐藏</SelectItem>
+              <SelectItem value="show_industry_only">仅显示行业</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            控制其他人能看到你的多少工作信息
+          </p>
         </div>
 
         {/* Save Button */}
