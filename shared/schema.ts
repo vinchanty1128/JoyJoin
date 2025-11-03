@@ -257,6 +257,28 @@ export const updateProfileSchema = createInsertSchema(users).pick({
   displayName: z.string().min(1, "请输入昵称"),
 });
 
+// Comprehensive profile update schema for editing profile
+export const updateFullProfileSchema = createInsertSchema(users).pick({
+  displayName: true,
+  birthdate: true,
+  gender: true,
+  pronouns: true,
+  relationshipStatus: true,
+  children: true,
+  educationLevel: true,
+  studyLocale: true,
+  overseasRegions: true,
+  fieldOfStudy: true,
+  industry: true,
+  roleTitleShort: true,
+  seniority: true,
+  hometownCountry: true,
+  hometownRegionCity: true,
+  languagesComfort: true,
+  interestsTop: true,
+  budgetPreference: true,
+}).partial();
+
 export const updatePersonalitySchema = createInsertSchema(users).pick({
   personalityTraits: true,
   personalityChallenges: true,
@@ -503,6 +525,7 @@ export const insertRoleResultSchema = createInsertSchema(roleResults).omit({
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type UpdateProfile = z.infer<typeof updateProfileSchema>;
+export type UpdateFullProfile = z.infer<typeof updateFullProfileSchema>;
 export type UpdatePersonality = z.infer<typeof updatePersonalitySchema>;
 export type UpdateBudgetPreference = z.infer<typeof updateBudgetPreferenceSchema>;
 export type RegisterUser = z.infer<typeof registerUserSchema>;
