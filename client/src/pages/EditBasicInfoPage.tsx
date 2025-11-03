@@ -49,8 +49,8 @@ export default function EditBasicInfoPage() {
     mutationFn: async (data: BasicInfoForm) => {
       return await apiRequest("PATCH", "/api/profile", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "基本信息已更新",

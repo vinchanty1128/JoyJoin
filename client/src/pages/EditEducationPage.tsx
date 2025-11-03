@@ -52,8 +52,8 @@ export default function EditEducationPage() {
     mutationFn: async (data: EducationForm) => {
       return await apiRequest("PATCH", "/api/profile", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "教育背景已更新",

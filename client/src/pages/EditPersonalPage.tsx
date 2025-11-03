@@ -36,8 +36,8 @@ export default function EditPersonalPage() {
     mutationFn: async (data: PersonalData) => {
       return await apiRequest("PATCH", "/api/profile", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "个人背景已更新",

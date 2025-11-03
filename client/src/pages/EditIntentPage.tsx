@@ -41,8 +41,8 @@ export default function EditIntentPage() {
     mutationFn: async (data: IntentForm) => {
       return await apiRequest("PATCH", "/api/user/profile", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "活动意图已更新",
