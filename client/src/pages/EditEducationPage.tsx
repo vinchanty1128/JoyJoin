@@ -27,7 +27,10 @@ const educationSchema = z.object({
 
 type EducationForm = z.infer<typeof educationSchema>;
 
-const overseasRegionOptions = ["北美", "欧洲", "英国", "澳新", "东亚", "东南亚", "其他"];
+const overseasRegionOptions = [
+  "美国", "英国", "加拿大", "澳大利亚", "新西兰",
+  "新加坡", "香港", "日本", "韩国", "德国", "法国", "其他"
+];
 
 export default function EditEducationPage() {
   const [, setLocation] = useLocation();

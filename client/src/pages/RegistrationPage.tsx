@@ -132,17 +132,20 @@ export default function RegistrationPage() {
     "西班牙语",
   ];
 
-  // Overseas regions
+  // Overseas regions - Popular study destinations
   const overseasRegionOptions = [
-    "北美",
-    "欧洲",
-    "东亚",
-    "东南亚",
-    "南亚",
-    "中东",
-    "大洋洲",
-    "拉美",
-    "非洲",
+    "美国",
+    "英国",
+    "加拿大",
+    "澳大利亚",
+    "新西兰",
+    "新加坡",
+    "香港",
+    "日本",
+    "韩国",
+    "德国",
+    "法国",
+    "其他",
   ];
 
   const industryOptions = [
