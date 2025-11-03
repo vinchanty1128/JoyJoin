@@ -22,6 +22,7 @@ import EditBasicInfoPage from "@/pages/EditBasicInfoPage";
 import EditEducationPage from "@/pages/EditEducationPage";
 import EditWorkPage from "@/pages/EditWorkPage";
 import EditPersonalPage from "@/pages/EditPersonalPage";
+import EditIntentPage from "@/pages/EditIntentPage";
 import EditInterestsPage from "@/pages/EditInterestsPage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
@@ -122,6 +123,7 @@ function AuthenticatedRouter() {
       <Route path="/profile/edit/education" component={EditEducationPage} />
       <Route path="/profile/edit/work" component={EditWorkPage} />
       <Route path="/profile/edit/personal" component={EditPersonalPage} />
+      <Route path="/profile/edit/intent" component={EditIntentPage} />
       <Route path="/profile/edit/interests" component={EditInterestsPage} />
       <Route path="/event/:id" component={EventDetailPage} />
       <Route path="/personality-test/results" component={PersonalityTestResultPage} />

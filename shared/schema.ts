@@ -78,6 +78,9 @@ export const users = pgTable("users", {
   accessibilityNeeds: text("accessibility_needs"), // Optional text
   safetyNoteHost: text("safety_note_host"), // Private note to host
   
+  // Default event intent (can be overridden per event)
+  intent: varchar("intent"), // networking, friends, discussion, fun, romance
+  
   // Onboarding progress
   hasCompletedRegistration: boolean("has_completed_registration").default(false),
   hasCompletedInterestsTopics: boolean("has_completed_interests_topics").default(false),
@@ -478,6 +481,11 @@ export const registerUserSchema = z.object({
   roleTitleShort: z.string().optional(),
   seniority: z.enum(["Intern", "Junior", "Mid", "Senior", "Founder", "Executive"]).optional(),
   workVisibility: z.enum(["hide_all", "show_industry_only"]).default("show_industry_only"),
+  
+  // Event intent (default, can be overridden per event)
+  intent: z.enum(["networking", "friends", "discussion", "fun", "romance"], {
+    errorMap: () => ({ message: "请选择活动意图" }),
+  }),
   
   // Culture & Language
   hometownCountry: z.string().optional(),

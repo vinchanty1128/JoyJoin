@@ -62,6 +62,14 @@ export const childrenMap: Record<string, string> = {
   "Prefer not to say": "不便透露",
 };
 
+export const intentMap: Record<string, string> = {
+  "networking": "拓展人脉",
+  "friends": "交朋友",
+  "discussion": "深度讨论",
+  "fun": "娱乐放松",
+  "romance": "浪漫社交",
+};
+
 /**
  * Format age with Chinese unit
  */
@@ -139,6 +147,14 @@ export function getSeniorityDisplay(seniority: string | null | undefined): strin
 export function getChildrenDisplay(children: string | null | undefined): string {
   if (!children) return "";
   return childrenMap[children] || children;
+}
+
+/**
+ * Get intent display text
+ */
+export function getIntentDisplay(intent: string | null | undefined): string {
+  if (!intent) return "";
+  return intentMap[intent] || intent;
 }
 
 /**

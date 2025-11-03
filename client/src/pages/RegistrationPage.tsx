@@ -27,7 +27,7 @@ export default function RegistrationPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const form = useForm<RegisterUser>({
     resolver: zodResolver(registerUserSchema),
@@ -48,6 +48,7 @@ export default function RegistrationPage() {
       roleTitleShort: "",
       seniority: undefined,
       workVisibility: "show_industry_only",
+      intent: undefined,
       hometownCountry: "",
       hometownRegionCity: "",
       hometownAffinityOptin: false,
@@ -109,9 +110,11 @@ export default function RegistrationPage() {
         return ["relationshipStatus", "educationLevel"];
       case 3: // Work
         return ["industry", "seniority", "workVisibility"];
-      case 4: // Culture & Language
+      case 4: // Intent
+        return ["intent"];
+      case 5: // Culture & Language
         return ["languagesComfort"];
-      case 5: // Access & Safety (all optional)
+      case 6: // Access & Safety (all optional)
         return [];
       default:
         return [];
@@ -605,8 +608,60 @@ export default function RegistrationPage() {
             </div>
           )}
 
-          {/* Step 4: Culture & Language */}
+          {/* Step 4: Intent */}
           {step === 4 && (
+            <div className="space-y-6 animate-in fade-in-50 duration-300">
+              <div>
+                <h2 className="text-xl font-bold mb-2">活动意图</h2>
+                <p className="text-sm text-muted-foreground">
+                  你参加活动的主要目的是什么？
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label>默认活动意图 *</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    这是你的默认偏好，加入活动时可以调整
+                  </p>
+                  <div className="space-y-3 mt-2">
+                    {[
+                      { value: "networking", label: "拓展人脉", desc: "结识专业人士，扩大社交圈" },
+                      { value: "friends", label: "交朋友", desc: "寻找志同道合的朋友" },
+                      { value: "discussion", label: "深度讨论", desc: "交流想法，深入探讨话题" },
+                      { value: "fun", label: "娱乐放松", desc: "轻松愉快，享受社交时光" },
+                      { value: "romance", label: "浪漫社交", desc: "认识潜在的恋爱对象" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("intent", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("intent") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-intent-${option.value}`}
+                      >
+                        <div className="font-medium">{option.label}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{option.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                  {form.formState.errors.intent && (
+                    <p className="text-sm text-destructive mt-1">
+                      {form.formState.errors.intent.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Culture & Language */}
+          {step === 5 && (
             <div className="space-y-6 animate-in fade-in-50 duration-300">
               <div>
                 <h2 className="text-xl font-bold mb-2">文化 & 语言</h2>
@@ -692,8 +747,8 @@ export default function RegistrationPage() {
             </div>
           )}
 
-          {/* Step 5: Access & Safety */}
-          {step === 5 && (
+          {/* Step 6: Access & Safety */}
+          {step === 6 && (
             <div className="space-y-6 animate-in fade-in-50 duration-300">
               <div>
                 <h2 className="text-xl font-bold mb-2">无障碍 & 安全</h2>

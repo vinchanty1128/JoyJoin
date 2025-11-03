@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, User, GraduationCap, Briefcase, Heart, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, GraduationCap, Briefcase, Heart, Star, Target } from "lucide-react";
 import {
   getGenderDisplay,
   calculateAge,
@@ -12,6 +12,7 @@ import {
   getSeniorityDisplay,
   getRelationshipDisplay,
   getChildrenDisplay,
+  getIntentDisplay,
 } from "@/lib/userFieldMappings";
 
 export default function EditProfilePage() {
@@ -48,6 +49,17 @@ export default function EditProfilePage() {
       ],
     },
     {
+      id: "personal",
+      title: "个人背景",
+      icon: <Heart className="h-4 w-4" />,
+      path: "/profile/edit/personal",
+      fields: [
+        { label: "关系状态", value: user.relationshipStatus ? getRelationshipDisplay(user.relationshipStatus) : null },
+        { label: "孩子状况", value: user.children ? getChildrenDisplay(user.children) : null },
+      ],
+      hint: "💡 提示：此信息仅自己可见",
+    },
+    {
       id: "education",
       title: "教育背景",
       icon: <GraduationCap className="h-4 w-4" />,
@@ -73,15 +85,14 @@ export default function EditProfilePage() {
       ],
     },
     {
-      id: "personal",
-      title: "个人背景",
-      icon: <Heart className="h-4 w-4" />,
-      path: "/profile/edit/personal",
+      id: "intent",
+      title: "活动意图",
+      icon: <Target className="h-4 w-4" />,
+      path: "/profile/edit/intent",
       fields: [
-        { label: "关系状态", value: user.relationshipStatus ? getRelationshipDisplay(user.relationshipStatus) : null },
-        { label: "孩子状况", value: user.children ? getChildrenDisplay(user.children) : null },
+        { label: "默认活动意图", value: user.intent ? getIntentDisplay(user.intent) : null },
       ],
-      hint: "💡 提示：此信息仅自己可见",
+      hint: "💡 提示：这是默认设置，加入活动时可以调整",
     },
     {
       id: "interests",
