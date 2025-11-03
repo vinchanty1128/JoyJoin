@@ -92,28 +92,22 @@ export default function EditPersonalPage() {
       <div className="p-4 space-y-8 max-w-2xl mx-auto pb-24">
         {/* Relationship Status */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">关系状态？</h2>
+          <h2 className="text-lg font-semibold">关系状态</h2>
           <div className="space-y-3">
             {relationshipOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => setRelationshipStatus(option.value)}
                 className={`
-                  w-full py-6 px-6 rounded-2xl border-2 text-lg font-medium
-                  transition-all
+                  w-full px-4 py-3 text-left rounded-md border transition-all
                   ${relationshipStatus === option.value
-                    ? 'bg-foreground text-background border-foreground'
-                    : 'bg-background text-foreground border-border hover:border-foreground/50'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover-elevate active-elevate-2'
                   }
                 `}
                 data-testid={`button-relationship-${option.value}`}
               >
-                <div className="flex items-center justify-center gap-2">
-                  {relationshipStatus === option.value && (
-                    <Check className="h-5 w-5" />
-                  )}
-                  {option.label}
-                </div>
+                {option.label}
               </button>
             ))}
           </div>
@@ -121,28 +115,22 @@ export default function EditPersonalPage() {
 
         {/* Children Status */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">孩子状况？</h2>
+          <h2 className="text-lg font-semibold">孩子状况</h2>
           <div className="space-y-3">
             {childrenOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => setChildren(option.value)}
                 className={`
-                  w-full py-6 px-6 rounded-2xl border-2 text-lg font-medium
-                  transition-all
+                  w-full px-4 py-3 text-left rounded-md border transition-all
                   ${children === option.value
-                    ? 'bg-foreground text-background border-foreground'
-                    : 'bg-background text-foreground border-border hover:border-foreground/50'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover-elevate active-elevate-2'
                   }
                 `}
                 data-testid={`button-children-${option.value}`}
               >
-                <div className="flex items-center justify-center gap-2">
-                  {children === option.value && (
-                    <Check className="h-5 w-5" />
-                  )}
-                  {option.label}
-                </div>
+                {option.label}
               </button>
             ))}
           </div>

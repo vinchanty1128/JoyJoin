@@ -133,14 +133,12 @@ export default function EditProfilePage() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               {section.fields.map((field, idx) => (
-                field.value && (
-                  <div key={idx} className="flex justify-between items-start gap-2">
-                    <span className="text-muted-foreground">{field.label}</span>
-                    <span className="text-right flex-1 font-medium">
-                      {field.value || "未填写"}
-                    </span>
-                  </div>
-                )
+                <div key={idx} className="flex justify-between items-start gap-2">
+                  <span className="text-muted-foreground">{field.label}</span>
+                  <span className="text-right flex-1 font-medium">
+                    {field.value || <span className="text-muted-foreground font-normal">未填写</span>}
+                  </span>
+                </div>
               ))}
               {section.hint && (
                 <div className="text-xs text-muted-foreground pt-2">
