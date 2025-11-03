@@ -10,20 +10,57 @@ import { ChevronLeft } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// Same interest options as InterestsTopicsPage with emojis
+const INTERESTS_OPTIONS = [
+  { id: "outdoor_adventure", label: "户外冒险", emoji: "🏔️" },
+  { id: "sports_fitness", label: "运动健身", emoji: "⚽" },
+  { id: "food_dining", label: "美食探店", emoji: "🍜" },
+  { id: "arts_culture", label: "艺术文化", emoji: "🎨" },
+  { id: "music_concerts", label: "音乐现场", emoji: "🎵" },
+  { id: "reading_books", label: "阅读书籍", emoji: "📚" },
+  { id: "tech_gadgets", label: "科技数码", emoji: "💻" },
+  { id: "games_board", label: "桌游卡牌", emoji: "🎲" },
+  { id: "games_video", label: "电子游戏", emoji: "🎮" },
+  { id: "photography", label: "摄影拍照", emoji: "📷" },
+  { id: "travel", label: "旅行探索", emoji: "✈️" },
+  { id: "diy_crafts", label: "手工DIY", emoji: "✂️" },
+  { id: "pets_animals", label: "宠物动物", emoji: "🐶" },
+  { id: "volunteering", label: "志愿公益", emoji: "🤝" },
+  { id: "entrepreneurship", label: "创业商业", emoji: "💡" },
+  { id: "investing", label: "投资理财", emoji: "💰" },
+  { id: "meditation", label: "冥想正念", emoji: "🧘" },
+  { id: "languages", label: "语言学习", emoji: "🗣️" },
+];
+
+// Conversation topics with categories
+const TOPICS_OPTIONS = [
+  { id: "career_growth", label: "职业发展", category: "work" },
+  { id: "startup_ideas", label: "创业想法", category: "work" },
+  { id: "tech_trends", label: "科技趋势", category: "tech" },
+  { id: "ai_future", label: "AI与未来", category: "tech" },
+  { id: "relationships", label: "人际关系", category: "personal" },
+  { id: "dating_love", label: "恋爱情感", category: "personal" },
+  { id: "mental_health", label: "心理健康", category: "personal" },
+  { id: "life_philosophy", label: "人生哲学", category: "personal" },
+  { id: "movies_shows", label: "影视剧集", category: "entertainment" },
+  { id: "music_taste", label: "音乐品味", category: "entertainment" },
+  { id: "travel_stories", label: "旅行故事", category: "lifestyle" },
+  { id: "food_culture", label: "美食文化", category: "lifestyle" },
+  { id: "fashion_style", label: "时尚穿搭", category: "lifestyle" },
+  { id: "current_events", label: "时事新闻", category: "society" },
+  { id: "politics", label: "政治话题", category: "society" },
+  { id: "social_issues", label: "社会议题", category: "society" },
+  { id: "parenting", label: "育儿经验", category: "family" },
+  { id: "hobbies_deep", label: "小众爱好", category: "other" },
+];
+
 const interestsSchema = z.object({
   interestsTop: z.array(z.string()).optional(),
-  budgetPreference: z.array(z.string()).optional(),
+  topicsHappy: z.array(z.string()).optional(),
+  topicsAvoid: z.array(z.string()).optional(),
 });
 
 type InterestsForm = z.infer<typeof interestsSchema>;
-
-const interestOptions = [
-  "美食探店", "咖啡", "运动健身", "户外徒步", "艺术展览",
-  "音乐会", "读书会", "摄影", "旅行", "电影",
-  "游戏", "科技", "创业", "投资理财", "志愿服务"
-];
-
-const budgetOptions = ["经济实惠", "适中消费", "品质优先", "不设上限"];
 
 export default function EditInterestsPage() {
   const [, setLocation] = useLocation();
@@ -35,7 +72,8 @@ export default function EditInterestsPage() {
     resolver: zodResolver(interestsSchema),
     defaultValues: {
       interestsTop: user?.interestsTop || [],
-      budgetPreference: user?.budgetPreference || [],
+      topicsHappy: user?.topicsHappy || [],
+      topicsAvoid: user?.topicsAvoid || [],
     },
   });
 
@@ -64,21 +102,30 @@ export default function EditInterestsPage() {
     updateMutation.mutate(data);
   };
 
-  const toggleInterest = (interest: string) => {
+  const toggleInterest = (interestId: string) => {
     const current = form.watch("interestsTop") || [];
-    if (current.includes(interest)) {
-      form.setValue("interestsTop", current.filter(i => i !== interest));
+    if (current.includes(interestId)) {
+      form.setValue("interestsTop", current.filter(i => i !== interestId));
     } else {
-      form.setValue("interestsTop", [...current, interest]);
+      form.setValue("interestsTop", [...current, interestId]);
     }
   };
 
-  const toggleBudget = (budget: string) => {
-    const current = form.watch("budgetPreference") || [];
-    if (current.includes(budget)) {
-      form.setValue("budgetPreference", current.filter(b => b !== budget));
+  const toggleTopicHappy = (topicId: string) => {
+    const current = form.watch("topicsHappy") || [];
+    if (current.includes(topicId)) {
+      form.setValue("topicsHappy", current.filter(t => t !== topicId));
     } else {
-      form.setValue("budgetPreference", [...current, budget]);
+      form.setValue("topicsHappy", [...current, topicId]);
+    }
+  };
+
+  const toggleTopicAvoid = (topicId: string) => {
+    const current = form.watch("topicsAvoid") || [];
+    if (current.includes(topicId)) {
+      form.setValue("topicsAvoid", current.filter(t => t !== topicId));
+    } else {
+      form.setValue("topicsAvoid", [...current, topicId]);
     }
   };
 
@@ -94,7 +141,8 @@ export default function EditInterestsPage() {
   }
 
   const selectedInterests = form.watch("interestsTop") || [];
-  const selectedBudgets = form.watch("budgetPreference") || [];
+  const selectedTopicsHappy = form.watch("topicsHappy") || [];
+  const selectedTopicsAvoid = form.watch("topicsAvoid") || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,39 +163,65 @@ export default function EditInterestsPage() {
 
       {/* Content */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 space-y-8 max-w-2xl mx-auto pb-24">
-        {/* Interests */}
+        {/* Interests Section */}
         <div className="space-y-3">
-          <Label className="text-base">兴趣爱好</Label>
-          <p className="text-sm text-muted-foreground">选择你感兴趣的活动类型</p>
+          <div>
+            <Label className="text-base font-semibold">兴趣爱好</Label>
+            <p className="text-sm text-muted-foreground mt-1">选择你感兴趣的活动类型</p>
+          </div>
           <div className="flex flex-wrap gap-2">
-            {interestOptions.map((interest) => (
+            {INTERESTS_OPTIONS.map((interest) => (
               <Badge
-                key={interest}
-                variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                className="cursor-pointer text-sm py-2 px-4"
-                onClick={() => toggleInterest(interest)}
-                data-testid={`badge-interest-${interest}`}
+                key={interest.id}
+                variant={selectedInterests.includes(interest.id) ? "default" : "outline"}
+                className="cursor-pointer text-sm py-2 px-3"
+                onClick={() => toggleInterest(interest.id)}
+                data-testid={`badge-interest-${interest.id}`}
               >
-                {interest}
+                <span className="mr-1">{interest.emoji}</span>
+                {interest.label}
               </Badge>
             ))}
           </div>
         </div>
 
-        {/* Budget Preference */}
+        {/* Topics Happy Section */}
         <div className="space-y-3">
-          <Label className="text-base">预算偏好</Label>
-          <p className="text-sm text-muted-foreground">选择你的活动预算偏好</p>
+          <div>
+            <Label className="text-base font-semibold">喜欢聊的话题</Label>
+            <p className="text-sm text-muted-foreground mt-1">选择你感兴趣的聊天话题</p>
+          </div>
           <div className="flex flex-wrap gap-2">
-            {budgetOptions.map((budget) => (
+            {TOPICS_OPTIONS.map((topic) => (
               <Badge
-                key={budget}
-                variant={selectedBudgets.includes(budget) ? "default" : "outline"}
-                className="cursor-pointer text-sm py-2 px-4"
-                onClick={() => toggleBudget(budget)}
-                data-testid={`badge-budget-${budget}`}
+                key={topic.id}
+                variant={selectedTopicsHappy.includes(topic.id) ? "default" : "outline"}
+                className="cursor-pointer text-sm py-2 px-3"
+                onClick={() => toggleTopicHappy(topic.id)}
+                data-testid={`badge-topic-happy-${topic.id}`}
               >
-                {budget}
+                {topic.label}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        {/* Topics Avoid Section */}
+        <div className="space-y-3">
+          <div>
+            <Label className="text-base font-semibold">避免的话题</Label>
+            <p className="text-sm text-muted-foreground mt-1">选择你不想聊的话题</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {TOPICS_OPTIONS.map((topic) => (
+              <Badge
+                key={topic.id}
+                variant={selectedTopicsAvoid.includes(topic.id) ? "destructive" : "outline"}
+                className="cursor-pointer text-sm py-2 px-3"
+                onClick={() => toggleTopicAvoid(topic.id)}
+                data-testid={`badge-topic-avoid-${topic.id}`}
+              >
+                {topic.label}
               </Badge>
             ))}
           </div>
