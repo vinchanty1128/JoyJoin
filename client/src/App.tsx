@@ -17,6 +17,7 @@ import ChatsPage from "@/pages/ChatsPage";
 import EventChatDetailPage from "@/pages/EventChatDetailPage";
 import DirectChatPage from "@/pages/DirectChatPage";
 import ProfilePage from "@/pages/ProfilePage";
+import EditProfilePage from "@/pages/EditProfilePage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
 import BlindBoxConfirmationPage from "@/pages/BlindBoxConfirmationPage";
@@ -111,6 +112,7 @@ function AuthenticatedRouter() {
       <Route path="/chats/:eventId" component={EventChatDetailPage} />
       <Route path="/direct-chat/:threadId" component={DirectChatPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/profile/edit" component={EditProfilePage} />
       <Route path="/event/:id" component={EventDetailPage} />
       <Route path="/personality-test/results" component={PersonalityTestResultPage} />
       <Route component={NotFound} />
