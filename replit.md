@@ -16,7 +16,15 @@ Preferred communication style: Simple, everyday language.
 - **State Management:** TanStack Query for server state, React hooks for UI state.
 - **Design Principles:** Mobile-first responsive design, dark mode, purple-centric warm color palette. Bilingual support (Chinese primary, English secondary).
 - **Key UI Patterns:** Bottom navigation, event cards, two-part match scoring, personality radar charts, social role cards, and clear information categorization on attendee cards.
-- **Technical Implementations:** Implemented progressive disclosure for profile editing with dedicated edit pages for basic info, education, work, personal details, and interests. Unified profile editing is now page-based, replacing previous dialogs. Private chat lists feature expandable user profiles for progressive information disclosure. Participant information displays are enhanced with full Chinese localization and archetype icons.
+- **Technical Implementations:** 
+  - Implemented progressive disclosure for profile editing with dedicated edit pages for basic info, education, work, personal details, and interests.
+  - Unified profile editing is now page-based, replacing previous dialogs.
+  - All choice-based questions (radio/select) unified to [Title → Vertical Options List → Bottom Button] pattern across RegistrationPage (5 steps) and all edit pages (EditBasicInfoPage, EditEducationPage, EditWorkPage, EditPersonalPage).
+  - ProfilePage (/profile) now displays education and work information cards based on visibility settings (educationVisibility, workVisibility).
+  - workVisibility field added to EditWorkPage for complete data flow closure.
+  - budgetPreference removed from User schema (moved to per-event BlindBoxRequest).
+  - Private chat lists feature expandable user profiles for progressive information disclosure.
+  - Participant information displays are enhanced with full Chinese localization and archetype icons.
 
 ### Backend Architecture
 - **Runtime:** Node.js with Express.js, TypeScript.
