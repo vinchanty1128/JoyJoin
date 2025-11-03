@@ -262,7 +262,6 @@ export const updateFullProfileSchema = createInsertSchema(users).pick({
   displayName: true,
   birthdate: true,
   gender: true,
-  pronouns: true,
   relationshipStatus: true,
   children: true,
   educationLevel: true,
