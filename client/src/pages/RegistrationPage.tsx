@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { intentOptions } from "@/lib/userFieldMappings";
 import { Separator } from "@/components/ui/separator";
 
 export default function RegistrationPage() {
@@ -48,7 +49,7 @@ export default function RegistrationPage() {
       roleTitleShort: "",
       seniority: undefined,
       workVisibility: "show_industry_only",
-      intent: undefined,
+      intent: [],
       hometownCountry: "",
       hometownRegionCity: "",
       hometownAffinityOptin: false,
@@ -203,11 +204,35 @@ export default function RegistrationPage() {
     form.setValue("industry", "科技初创");
     form.setValue("seniority", "Mid");
     form.setValue("workVisibility", "show_industry_only");
-    form.setValue("intent", "friends");
+    form.setValue("intent", ["friends"]);
     form.setValue("languagesComfort", ["普通话", "英语"]);
     
     // 提交表单
     registerMutation.mutate(form.getValues());
+  };
+
+  // Toggle intent selection with flexible exclusivity logic
+  const toggleIntent = (intentValue: "networking" | "friends" | "discussion" | "fun" | "romance" | "flexible") => {
+    const current = form.watch("intent") || [];
+    
+    if (intentValue === "flexible") {
+      // If selecting "flexible", clear all other intents
+      if (current.includes("flexible")) {
+        form.setValue("intent", []);
+      } else {
+        form.setValue("intent", ["flexible"]);
+      }
+    } else {
+      // If selecting a specific intent
+      if (current.includes(intentValue)) {
+        // Deselect this intent
+        form.setValue("intent", current.filter(i => i !== intentValue) as typeof current);
+      } else {
+        // Select this intent and remove "flexible" if present
+        const newIntents = current.filter(i => i !== "flexible");
+        form.setValue("intent", [...newIntents, intentValue] as typeof current);
+      }
+    }
   };
 
   const isDevelopment = import.meta.env.DEV;
@@ -641,7 +666,7 @@ export default function RegistrationPage() {
               <div>
                 <h2 className="text-xl font-bold mb-2">活动意图</h2>
                 <p className="text-sm text-muted-foreground">
-                  你参加活动的主要目的是什么？
+                  你参加活动的主要目的是什么？可以多选
                 </p>
               </div>
 
@@ -652,30 +677,52 @@ export default function RegistrationPage() {
                     这是你的默认偏好，加入活动时可以调整
                   </p>
                   <div className="space-y-3 mt-2">
-                    {[
-                      { value: "networking", label: "拓展人脉", desc: "结识专业人士，扩大社交圈" },
-                      { value: "friends", label: "交朋友", desc: "寻找志同道合的朋友" },
-                      { value: "discussion", label: "深度讨论", desc: "交流想法，深入探讨话题" },
-                      { value: "fun", label: "娱乐放松", desc: "轻松愉快，享受社交时光" },
-                      { value: "romance", label: "浪漫社交", desc: "认识潜在的恋爱对象" },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => form.setValue("intent", option.value as any)}
-                        className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
-                          ${form.watch("intent") === option.value
-                            ? 'border-primary bg-primary/5 text-primary' 
-                            : 'border-border hover-elevate active-elevate-2'
-                          }
-                        `}
-                        data-testid={`button-intent-${option.value}`}
-                      >
-                        <div className="font-medium">{option.label}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{option.desc}</div>
-                      </button>
-                    ))}
+                    {intentOptions.map((option) => {
+                      const currentIntents = form.watch("intent") || [];
+                      const isSelected = currentIntents.includes(option.value);
+                      const isFlexible = option.value === "flexible";
+                      const hasFlexible = currentIntents.includes("flexible");
+                      const isDisabled = !isFlexible && hasFlexible;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => toggleIntent(option.value)}
+                          disabled={isDisabled}
+                          className={`
+                            w-full px-4 py-3 text-left rounded-md border transition-all
+                            ${isSelected
+                              ? 'border-primary bg-primary/5 text-primary' 
+                              : isDisabled
+                              ? 'border-border bg-muted/30 text-muted-foreground cursor-not-allowed'
+                              : 'border-border hover-elevate active-elevate-2'
+                            }
+                          `}
+                          data-testid={`button-intent-${option.value}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`
+                              mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center
+                              ${isSelected 
+                                ? 'bg-primary border-primary' 
+                                : 'border-border'
+                              }
+                            `}>
+                              {isSelected && (
+                                <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium">{option.label}</div>
+                              <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                   {form.formState.errors.intent && (
                     <p className="text-sm text-destructive mt-1">

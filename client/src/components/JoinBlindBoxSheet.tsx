@@ -76,8 +76,8 @@ export default function JoinBlindBoxSheet({
   const [selectedTasteIntensity, setSelectedTasteIntensity] = useState<string[]>([]);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   
-  // 参与意图 - Event-specific intent
-  const [selectedIntent, setSelectedIntent] = useState<string>("");
+  // 参与意图 - Event-specific intent (multi-select)
+  const [selectedIntent, setSelectedIntent] = useState<string[]>([]);
 
   const budgetOptions = [
     { value: "100以下", label: "≤100" },
@@ -130,6 +130,28 @@ export default function JoinBlindBoxSheet({
         ? prev.filter(v => v !== value)
         : [...prev, value]
     );
+  };
+
+  // Toggle intent with flexible exclusivity logic
+  const toggleIntent = (intentValue: string) => {
+    if (intentValue === "flexible") {
+      // If selecting "flexible", clear all other intents
+      if (selectedIntent.includes("flexible")) {
+        setSelectedIntent([]);
+      } else {
+        setSelectedIntent(["flexible"]);
+      }
+    } else {
+      // If selecting a specific intent
+      if (selectedIntent.includes(intentValue)) {
+        // Deselect this intent
+        setSelectedIntent(selectedIntent.filter(i => i !== intentValue));
+      } else {
+        // Select this intent and remove "flexible" if present
+        const newIntents = selectedIntent.filter(i => i !== "flexible");
+        setSelectedIntent([...newIntents, intentValue]);
+      }
+    }
   };
 
   const toggleCuisine = (value: string) => {
@@ -327,37 +349,47 @@ export default function JoinBlindBoxSheet({
               <div>
                 <div className="mb-3">
                   <h3 className="text-base font-semibold mb-1">参与这场活动的主要目的？</h3>
-                  <p className="text-xs text-muted-foreground">选填 · 帮助AI匹配，也可以保持开放心态不选</p>
+                  <p className="text-xs text-muted-foreground">选填 · 帮助AI匹配，也可以保持开放心态不选 · 可多选</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { value: "flexible", label: "都可以", icon: "✨" },
-                    { value: "networking", label: "职业社交", icon: "💼" },
-                    { value: "friends", label: "交友", icon: "👋" },
-                    { value: "discussion", label: "深度对话", icon: "💬" },
-                    { value: "fun", label: "轻松玩乐", icon: "🎉" },
-                    { value: "romance", label: "寻找另一半", icon: "💕" },
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => setSelectedIntent(selectedIntent === option.value ? "" : option.value)}
-                      className={`px-3 py-3 rounded-lg border-2 text-sm transition-all hover-elevate ${
-                        selectedIntent === option.value
-                          ? 'border-primary bg-primary/5 font-medium'
-                          : 'border-muted bg-muted/30'
-                      }`}
-                      data-testid={`button-intent-${option.value}`}
-                    >
-                      <span className="mr-1">{option.icon}</span>
-                      {option.label}
-                    </button>
-                  ))}
+                    { value: "flexible", label: "灵活开放·都可以", icon: "✨" },
+                    { value: "networking", label: "拓展人脉", icon: "💼" },
+                    { value: "friends", label: "交朋友", icon: "👋" },
+                    { value: "discussion", label: "深度讨论", icon: "💬" },
+                    { value: "fun", label: "娱乐放松", icon: "🎉" },
+                    { value: "romance", label: "浪漫社交", icon: "💕" },
+                  ].map((option) => {
+                    const isSelected = selectedIntent.includes(option.value);
+                    const isFlexible = option.value === "flexible";
+                    const hasFlexible = selectedIntent.includes("flexible");
+                    const isDisabled = !isFlexible && hasFlexible;
+
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => toggleIntent(option.value)}
+                        disabled={isDisabled}
+                        className={`px-3 py-3 rounded-lg border-2 text-sm transition-all hover-elevate ${
+                          isSelected
+                            ? 'border-primary bg-primary/5 font-medium'
+                            : isDisabled
+                            ? 'border-muted bg-muted/50 text-muted-foreground cursor-not-allowed'
+                            : 'border-muted bg-muted/30'
+                        }`}
+                        data-testid={`button-intent-${option.value}`}
+                      >
+                        <span className="mr-1">{option.icon}</span>
+                        {option.label}
+                      </button>
+                    );
+                  })}
                 </div>
-                {selectedIntent && (
+                {selectedIntent.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setSelectedIntent("")}
+                    onClick={() => setSelectedIntent([])}
                     className="mt-2 w-full text-xs text-muted-foreground"
                     data-testid="button-clear-intent"
                   >

@@ -42,7 +42,10 @@ Preferred communication style: Simple, everyday language.
 - **Development Testing Features:**
   - **Demo Login Code:** In development environment, verification code `666666` is universally accepted. When using this code, a basic user account is created without completing onboarding steps, allowing testers to go through the full registration flow.
   - **Skip Registration Button:** A "跳过注册（测试）" button appears at the bottom of the registration page (only in development). When clicked, it auto-fills all required registration fields with test data and submits the form, redirecting to the interests-topics page.
-  - **Intent Field:** Added `intent` field to users schema (varchar) to store default activity intent (networking/friends/discussion/fun/romance).
+  - **Intent Field:** Users can select multiple activity intents (text array). Options include: networking (拓展人脉), friends (交朋友), discussion (深度讨论), fun (娱乐放松), romance (浪漫社交), and flexible (灵活开放·都可以).
+    - "Flexible" option is mutually exclusive with specific intents - selecting it clears all other selections.
+    - Intent is multi-select in registration, profile editing, and event participation.
+    - Intent is stored as a text array in both users table (default intent) and eventAttendance table (per-event intent override).
 
 ### System Features & Design Decisions
 - **AI-Driven Matchmaking:** Uses AI for event and people matching with explainability through connection points and a deep feedback system. Algorithms consider topics, debate comfort, life stage, language, communication style, group role composition, diversity balance (60% similarity / 40% difference), user intent, anti-repetition, and demographic data.

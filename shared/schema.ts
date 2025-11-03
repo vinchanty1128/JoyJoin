@@ -78,8 +78,8 @@ export const users = pgTable("users", {
   accessibilityNeeds: text("accessibility_needs"), // Optional text
   safetyNoteHost: text("safety_note_host"), // Private note to host
   
-  // Default event intent (can be overridden per event)
-  intent: varchar("intent"), // networking, friends, discussion, fun, romance
+  // Default event intent (can be overridden per event) - multiple selections allowed
+  intent: text("intent").array(), // Can include: networking, friends, discussion, fun, romance, flexible
   
   // Onboarding progress
   hasCompletedRegistration: boolean("has_completed_registration").default(false),
@@ -141,7 +141,7 @@ export const eventAttendance = pgTable("event_attendance", {
   userId: varchar("user_id").notNull().references(() => users.id),
   joinedAt: timestamp("joined_at").defaultNow(),
   status: varchar("status").default("confirmed"), // confirmed, cancelled, attended
-  intent: varchar("intent"), // Event-specific intent: networking, friends, discussion, fun, romance
+  intent: text("intent").array(), // Event-specific intent: networking, friends, discussion, fun, romance, flexible
 });
 
 // Match history table - tracks who has been matched together before (anti-repetition)
@@ -482,10 +482,8 @@ export const registerUserSchema = z.object({
   seniority: z.enum(["Intern", "Junior", "Mid", "Senior", "Founder", "Executive"]).optional(),
   workVisibility: z.enum(["hide_all", "show_industry_only"]).default("show_industry_only"),
   
-  // Event intent (default, can be overridden per event)
-  intent: z.enum(["networking", "friends", "discussion", "fun", "romance"], {
-    errorMap: () => ({ message: "请选择活动意图" }),
-  }),
+  // Event intent (default, can be overridden per event) - multiple selections allowed
+  intent: z.array(z.enum(["networking", "friends", "discussion", "fun", "romance", "flexible"])).min(1, "请至少选择一个活动意图"),
   
   // Culture & Language
   hometownCountry: z.string().optional(),

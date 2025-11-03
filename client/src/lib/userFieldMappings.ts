@@ -68,7 +68,18 @@ export const intentMap: Record<string, string> = {
   "discussion": "深度讨论",
   "fun": "娱乐放松",
   "romance": "浪漫社交",
+  "flexible": "灵活开放·都可以",
 };
+
+// Intent options with descriptions for selection UI
+export const intentOptions = [
+  { value: "networking", label: "拓展人脉", description: "结识专业人士，扩大社交圈" },
+  { value: "friends", label: "交朋友", description: "寻找志同道合的朋友" },
+  { value: "discussion", label: "深度讨论", description: "交流想法，深入探讨话题" },
+  { value: "fun", label: "娱乐放松", description: "轻松愉快，享受社交时光" },
+  { value: "romance", label: "浪漫社交", description: "认识潜在的恋爱对象" },
+  { value: "flexible", label: "灵活开放·都可以", description: "对所有活动类型保持开放" },
+] as const;
 
 /**
  * Format age with Chinese unit
@@ -150,10 +161,14 @@ export function getChildrenDisplay(children: string | null | undefined): string 
 }
 
 /**
- * Get intent display text
+ * Get intent display text (supports both single string and array)
  */
-export function getIntentDisplay(intent: string | null | undefined): string {
+export function getIntentDisplay(intent: string | string[] | null | undefined): string {
   if (!intent) return "";
+  if (Array.isArray(intent)) {
+    if (intent.length === 0) return "";
+    return intent.map(i => intentMap[i] || i).join("、");
+  }
   return intentMap[intent] || intent;
 }
 
