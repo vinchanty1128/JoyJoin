@@ -91,7 +91,12 @@ export function setupPhoneAuth(app: Express) {
         userId = newUser.id;
         
         // 🎯 DEMO MODE: 为新用户创建演示数据
-        await createDemoDataForUser(userId);
+        // 如果使用的是演示验证码666666，只创建基础账号让用户测试注册流程
+        // 否则创建完整演示数据
+        const isUsingDemoCode = code === DEMO_CODE;
+        if (!isUsingDemoCode) {
+          await createDemoDataForUser(userId);
+        }
       }
 
       // 设置session

@@ -185,6 +185,33 @@ export default function RegistrationPage() {
     }
   };
 
+  // 跳过注册功能（仅开发环境）
+  const handleSkipRegistration = () => {
+    // 计算一个合理的出生日期（28岁）
+    const birthdate = new Date();
+    birthdate.setFullYear(birthdate.getFullYear() - 28);
+    const birthdateStr = birthdate.toISOString().split('T')[0];
+
+    // 填充所有必填字段
+    form.setValue("displayName", "测试用户");
+    form.setValue("birthdate", birthdateStr);
+    form.setValue("gender", "Woman");
+    form.setValue("relationshipStatus", "Single");
+    form.setValue("educationLevel", "Master's");
+    form.setValue("studyLocale", "Overseas");
+    form.setValue("overseasRegions", ["美国"]);
+    form.setValue("industry", "科技初创");
+    form.setValue("seniority", "Mid");
+    form.setValue("workVisibility", "show_industry_only");
+    form.setValue("intent", "friends");
+    form.setValue("languagesComfort", ["普通话", "英语"]);
+    
+    // 提交表单
+    registerMutation.mutate(form.getValues());
+  };
+
+  const isDevelopment = import.meta.env.DEV;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header with progress */}
@@ -815,33 +842,48 @@ export default function RegistrationPage() {
 
       {/* Navigation buttons */}
       <div className="border-t p-4 bg-background sticky bottom-0">
-        <div className="max-w-md mx-auto flex gap-3">
-          {step > 1 && (
+        <div className="max-w-md mx-auto space-y-3">
+          <div className="flex gap-3">
+            {step > 1 && (
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                className="flex-1"
+                data-testid="button-back"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                上一步
+              </Button>
+            )}
             <Button
-              variant="outline"
-              onClick={handleBack}
+              onClick={handleNext}
               className="flex-1"
-              data-testid="button-back"
+              disabled={registerMutation.isPending}
+              data-testid="button-next"
             >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              上一步
+              {step === totalSteps ? (
+                registerMutation.isPending ? "提交中..." : "完成注册"
+              ) : (
+                <>
+                  下一步
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {/* 开发环境跳过注册按钮 */}
+          {isDevelopment && (
+            <Button
+              variant="ghost"
+              onClick={handleSkipRegistration}
+              className="w-full text-xs"
+              disabled={registerMutation.isPending}
+              data-testid="button-skip-registration"
+            >
+              跳过注册（测试）
             </Button>
           )}
-          <Button
-            onClick={handleNext}
-            className="flex-1"
-            disabled={registerMutation.isPending}
-            data-testid="button-next"
-          >
-            {step === totalSteps ? (
-              registerMutation.isPending ? "提交中..." : "完成注册"
-            ) : (
-              <>
-                下一步
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </>
-            )}
-          </Button>
         </div>
       </div>
     </div>

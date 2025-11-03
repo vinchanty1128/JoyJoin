@@ -19,7 +19,7 @@ Preferred communication style: Simple, everyday language.
 - **Technical Implementations:** 
   - Implemented progressive disclosure for profile editing with dedicated edit pages for basic info, education, work, personal details, and interests.
   - Unified profile editing is now page-based, replacing previous dialogs.
-  - All choice-based questions (radio/select) unified to [Title → Vertical Options List → Bottom Button] pattern across RegistrationPage (5 steps) and all edit pages (EditBasicInfoPage, EditEducationPage, EditWorkPage, EditPersonalPage).
+  - All choice-based questions (radio/select) unified to [Title → Vertical Options List → Bottom Button] pattern across RegistrationPage (6 steps) and all edit pages (EditBasicInfoPage, EditEducationPage, EditWorkPage, EditPersonalPage, EditIntentPage).
   - ProfilePage (/profile) now displays education and work information cards based on visibility settings (educationVisibility, workVisibility).
   - workVisibility field added to EditWorkPage for complete data flow closure.
   - budgetPreference removed from User schema (moved to per-event BlindBoxRequest).
@@ -39,13 +39,17 @@ Preferred communication style: Simple, everyday language.
 
 ### Authentication & Authorization
 - **Current (Chinese Localized):** Phone number + SMS verification with auto-account creation. WeChat OAuth integration is a placeholder. Session management uses `express-session` with PostgreSQL storage (`connect-pg-simple`).
+- **Development Testing Features:**
+  - **Demo Login Code:** In development environment, verification code `666666` is universally accepted. When using this code, a basic user account is created without completing onboarding steps, allowing testers to go through the full registration flow.
+  - **Skip Registration Button:** A "跳过注册（测试）" button appears at the bottom of the registration page (only in development). When clicked, it auto-fills all required registration fields with test data and submits the form, redirecting to the interests-topics page.
+  - **Intent Field:** Added `intent` field to users schema (varchar) to store default activity intent (networking/friends/discussion/fun/romance).
 
 ### System Features & Design Decisions
 - **AI-Driven Matchmaking:** Uses AI for event and people matching with explainability through connection points and a deep feedback system. Algorithms consider topics, debate comfort, life stage, language, communication style, group role composition, diversity balance (60% similarity / 40% difference), user intent, anti-repetition, and demographic data.
 - **Two-Tier Feedback Architecture:** Basic 4-step feedback flow followed by an optional, anonymous deep feedback system (3 modules) to calibrate the matching algorithm and capture evolving user preferences.
 - **Event Management:** Detailed event pages with reordered sections, clear navigation for event states ("匹配中", "已匹配", "已完成"), and enhanced attendee cards. Event cards visually distinguish between locked and unlocked states.
 - **Personality Assessment System:** 10-question test, scoring engine with 14 social role archetypes, and a PersonalityRadarChart for visualization.
-- **Streamlined Onboarding:** Registration → Interests/Topics → Personality Test → Profile Setup → Discover.
+- **Streamlined Onboarding:** Registration (6 steps: Identity → Personal Background & Education → Work → Intent → Culture & Language → Access & Safety) → Interests/Topics → Personality Test → Profile Setup → Discover.
 - **Shared Schema Pattern:** Ensures type safety and code reuse across client and server.
 - **Component-First Architecture:** Promotes modular and testable UI components.
 - **Mobile-First, Bilingual Design:** Caters to the target market and user experience.
