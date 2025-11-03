@@ -263,13 +263,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/user/register', isPhoneAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;
+      console.log("[Backend] Received registration data:", req.body);
       const result = registerUserSchema.safeParse(req.body);
       
       if (!result.success) {
+        console.error("[Backend] Validation failed:", result.error);
         return res.status(400).json({ error: result.error });
       }
 
+      console.log("[Backend] Validated data:", result.data);
       const user = await storage.registerUser(userId, result.data);
+      console.log("[Backend] User updated successfully:", { id: user.id, displayName: user.displayName, gender: user.gender, birthdate: user.birthdate });
       
       res.json(user);
     } catch (error: any) {

@@ -117,12 +117,12 @@ export class DatabaseStorage implements IStorage {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
-        // 🎯 DEMO MODE: 自动跳过所有引导步骤，直接进入活动页面
-        hasCompletedRegistration: true,
-        hasCompletedInterestsTopics: true,
-        hasCompletedPersonalityTest: true,
-        hasCompletedProfileSetup: true,
-        hasCompletedVoiceQuiz: true,
+        // Removed DEMO MODE - Users must complete full registration flow
+        hasCompletedRegistration: false,
+        hasCompletedInterestsTopics: false,
+        hasCompletedPersonalityTest: false,
+        hasCompletedProfileSetup: false,
+        hasCompletedVoiceQuiz: false,
       })
       .returning();
     return user;
@@ -242,6 +242,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async registerUser(id: string, data: RegisterUser): Promise<User> {
+    console.log("[Storage] Updating user registration:", { id, data });
+    
     const [user] = await db
       .update(users)
       .set({
@@ -273,6 +275,8 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, id))
       .returning();
+    
+    console.log("[Storage] User updated result:", { id: user.id, displayName: user.displayName, gender: user.gender, birthdate: user.birthdate });
     return user;
   }
 

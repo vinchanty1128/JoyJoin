@@ -60,6 +60,7 @@ export default function RegistrationPage() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterUser) => {
+      console.log("[Frontend] Sending registration data:", data);
       return await apiRequest("POST", "/api/user/register", data);
     },
     onSuccess: async () => {
