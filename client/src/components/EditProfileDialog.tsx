@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +85,7 @@ const getDefaultValues = (section: SectionType, user: any) => {
       return {
         displayName: user?.displayName || "",
         gender: user?.gender || "",
-        birthdate: user?.birthdate || "",
+        birthdate: user?.birthdate ? new Date(user.birthdate).toISOString().split('T')[0] : "",
         languagesComfort: user?.languagesComfort || [],
       };
     case "education":
@@ -186,7 +186,15 @@ export default function EditProfileDialog({
   });
 
   const handleSubmit = (data: any) => {
-    onSave(data);
+    // Remove empty string values to prevent validation errors
+    const cleanedData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => {
+        if (typeof value === 'string') return value !== '';
+        if (Array.isArray(value)) return value.length > 0;
+        return value !== null && value !== undefined;
+      })
+    );
+    onSave(cleanedData);
   };
 
   const toggleArrayItem = (field: string, value: string) => {
@@ -203,6 +211,7 @@ export default function EditProfileDialog({
       <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" data-testid={`dialog-edit-${section}`}>
         <DialogHeader>
           <DialogTitle>{sectionTitles[section]}</DialogTitle>
+          <DialogDescription className="sr-only">编辑个人资料信息</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

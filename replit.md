@@ -10,6 +10,22 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### November 3, 2025
+
+**Profile Page Comprehensive Editing:** Implemented complete user profile viewing and editing functionality in "我的" (Profile) tab. Features:
+- **5 Information Cards**: Added display cards for 基本信息 (Basic Info), 教育背景 (Education), 工作信息 (Work), 个人背景 (Personal Background), 兴趣偏好 (Interests & Preferences)
+- **EditProfileDialog Component**: Created unified dialog component supporting all 5 sections with section-specific forms
+- **API Endpoint**: Added PATCH /api/profile using updateFullProfileSchema for partial profile updates
+- **Field Formatting**: Extended userFieldMappings.ts with getStudyLocaleDisplay, getSeniorityDisplay, getChildrenDisplay, getBudgetDisplay
+- **Privacy Note**: Personal background card (relationshipStatus, children) displays "仅自己可见" indicator
+- **Data Handling**: Cleaned empty string/array values before API submission to prevent validation errors
+- **Date Format Fix**: Properly converts birthdate Date to YYYY-MM-DD format for date input
+- **Accessibility**: Added DialogDescription to fix accessibility warnings
+- **Schema**: Created updateFullProfileSchema supporting 18 profile fields (displayName, birthdate, gender, pronouns, relationshipStatus, children, educationLevel, studyLocale, overseasRegions, fieldOfStudy, industry, roleTitleShort, seniority, hometownCountry, hometownRegionCity, languagesComfort, interestsTop, budgetPreference)
+- **Multi-select UI**: Badge-based selection for array fields (languages, regions, interests, budget)
+- **Visual Hierarchy**: Clean card layout with field labels and Edit icon buttons in card headers
+- **Preserved Features**: Kept existing profile header, activity stats, personality test, social role card, and account actions
+
 ### November 2, 2025
 
 **Private Chat List Enhancement - Expandable User Profiles:** Implemented progressive information disclosure for private chat list with click-to-expand user details. Features:
