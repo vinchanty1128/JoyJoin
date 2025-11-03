@@ -3,7 +3,7 @@ import BottomNav from "@/components/BottomNav";
 import PersonalityProfile from "@/components/PersonalityProfile";
 import SocialRoleCard from "@/components/SocialRoleCard";
 import QuizIntro from "@/components/QuizIntro";
-import EditProfileDialog from "@/components/EditProfileDialog";
+import EditFullProfileDialog from "@/components/EditFullProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,7 +32,6 @@ export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const [showQuizIntro, setShowQuizIntro] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editSection, setEditSection] = useState<SectionType>("basic");
   const { toast } = useToast();
   
   const { data: user, isLoading: userLoading } = useQuery<any>({ queryKey: ["/api/auth/user"] });
@@ -66,8 +65,7 @@ export default function ProfilePage() {
     },
   });
 
-  const handleEditClick = (section: SectionType) => {
-    setEditSection(section);
+  const handleEditClick = () => {
     setEditDialogOpen(true);
   };
 
@@ -138,10 +136,7 @@ export default function ProfilePage() {
   };
 
   const handleEditProfile = () => {
-    toast({
-      title: "功能开发中",
-      description: "完整的个人资料编辑功能即将上线",
-    });
+    setEditDialogOpen(true);
   };
 
   const avatarConfig = getArchetypeAvatar();
@@ -422,10 +417,9 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <EditProfileDialog
+      <EditFullProfileDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        section={editSection}
         user={user}
         onSave={handleSaveProfile}
       />
