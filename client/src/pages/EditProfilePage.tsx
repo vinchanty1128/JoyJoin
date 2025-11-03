@@ -1,13 +1,8 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import UserInfoCard from "@/components/UserInfoCard";
-import EditFullProfileDialog from "@/components/EditFullProfileDialog";
-import { ChevronLeft, User, GraduationCap, Briefcase, Heart, Star } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, User, GraduationCap, Briefcase, Heart, Star } from "lucide-react";
 import {
   getGenderDisplay,
   calculateAge,
@@ -21,35 +16,8 @@ import {
 
 export default function EditProfilePage() {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   const { data: user, isLoading } = useQuery<any>({ queryKey: ["/api/auth/user"] });
-
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return await apiRequest("PATCH", "/api/profile", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: "保存成功",
-        description: "个人信息已更新",
-      });
-      setEditDialogOpen(false);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "保存失败",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSaveProfile = (data: any) => {
-    updateProfileMutation.mutate(data);
-  };
 
   if (isLoading || !user) {
     return (
@@ -65,37 +33,66 @@ export default function EditProfilePage() {
   const age = user.birthdate ? calculateAge(user.birthdate) : null;
   const ageDisplay = age ? formatAge(age) : null;
 
-  // Prepare data for cards
-  const basicInfoFields = [
-    { label: "昵称", value: user.displayName },
-    { label: "性别", value: user.gender ? getGenderDisplay(user.gender) : null },
-    { label: "年龄", value: ageDisplay },
-    { label: "常用语言", value: user.languagesComfort, type: "badge-list" as const },
-  ];
-
-  const educationFields = [
-    { label: "教育水平", value: user.educationLevel ? getEducationDisplay(user.educationLevel) : null },
-    { label: "专业领域", value: user.fieldOfStudy },
-    { label: "学习地点", value: user.studyLocale ? getStudyLocaleDisplay(user.studyLocale) : null },
-    ...(user.studyLocale === "Overseas" || user.studyLocale === "Both"
-      ? [{ label: "海外地区", value: user.overseasRegions, type: "badge-list" as const }]
-      : []),
-  ];
-
-  const workFields = [
-    { label: "行业", value: user.industry },
-    { label: "职位", value: user.roleTitleShort },
-    { label: "资历", value: user.seniority ? getSeniorityDisplay(user.seniority) : null },
-  ];
-
-  const personalFields = [
-    { label: "关系状态", value: user.relationshipStatus ? getRelationshipDisplay(user.relationshipStatus) : null },
-    { label: "孩子状况", value: user.children ? getChildrenDisplay(user.children) : null },
-  ];
-
-  const interestsFields = [
-    { label: "兴趣爱好", value: user.interestsTop, type: "badge-list" as const },
-    { label: "预算偏好", value: user.budgetPreference, type: "badge-list" as const },
+  // Section cards configuration
+  const sections = [
+    {
+      id: "basic",
+      title: "基本信息",
+      icon: <User className="h-4 w-4" />,
+      path: "/profile/edit/basic",
+      fields: [
+        { label: "昵称", value: user.displayName },
+        { label: "性别", value: user.gender ? getGenderDisplay(user.gender) : null },
+        { label: "年龄", value: ageDisplay },
+        { label: "常用语言", value: user.languagesComfort?.join(", ") },
+      ],
+    },
+    {
+      id: "education",
+      title: "教育背景",
+      icon: <GraduationCap className="h-4 w-4" />,
+      path: "/profile/edit/education",
+      fields: [
+        { label: "教育水平", value: user.educationLevel ? getEducationDisplay(user.educationLevel) : null },
+        { label: "专业领域", value: user.fieldOfStudy },
+        { label: "学习地点", value: user.studyLocale ? getStudyLocaleDisplay(user.studyLocale) : null },
+        ...(user.studyLocale === "Overseas" || user.studyLocale === "Both"
+          ? [{ label: "海外地区", value: user.overseasRegions?.join(", ") }]
+          : []),
+      ],
+    },
+    {
+      id: "work",
+      title: "工作信息",
+      icon: <Briefcase className="h-4 w-4" />,
+      path: "/profile/edit/work",
+      fields: [
+        { label: "行业", value: user.industry },
+        { label: "职位", value: user.roleTitleShort },
+        { label: "资历", value: user.seniority ? getSeniorityDisplay(user.seniority) : null },
+      ],
+    },
+    {
+      id: "personal",
+      title: "个人背景",
+      icon: <Heart className="h-4 w-4" />,
+      path: "/profile/edit/personal",
+      fields: [
+        { label: "关系状态", value: user.relationshipStatus ? getRelationshipDisplay(user.relationshipStatus) : null },
+        { label: "孩子状况", value: user.children ? getChildrenDisplay(user.children) : null },
+      ],
+      hint: "💡 提示：此信息仅自己可见",
+    },
+    {
+      id: "interests",
+      title: "兴趣偏好",
+      icon: <Star className="h-4 w-4" />,
+      path: "/profile/edit/interests",
+      fields: [
+        { label: "兴趣爱好", value: user.interestsTop?.join(", ") },
+        { label: "预算偏好", value: user.budgetPreference?.join(", ") },
+      ],
+    },
   ];
 
   return (
@@ -117,58 +114,42 @@ export default function EditProfilePage() {
 
       {/* Content */}
       <div className="p-4 space-y-3 max-w-2xl mx-auto">
-        <UserInfoCard
-          title="基本信息"
-          icon={<User className="h-4 w-4" />}
-          fields={basicInfoFields}
-          editable
-          onEdit={() => setEditDialogOpen(true)}
-        />
-
-        <UserInfoCard
-          title="教育背景"
-          icon={<GraduationCap className="h-4 w-4" />}
-          fields={educationFields}
-          editable
-          onEdit={() => setEditDialogOpen(true)}
-        />
-
-        <UserInfoCard
-          title="工作信息"
-          icon={<Briefcase className="h-4 w-4" />}
-          fields={workFields}
-          editable
-          onEdit={() => setEditDialogOpen(true)}
-        />
-
-        <UserInfoCard
-          title="个人背景"
-          icon={<Heart className="h-4 w-4" />}
-          fields={personalFields}
-          editable
-          onEdit={() => setEditDialogOpen(true)}
-        />
-
-        <div className="text-xs text-muted-foreground px-4 py-2">
-          💡 提示：此信息仅自己可见
-        </div>
-
-        <UserInfoCard
-          title="兴趣偏好"
-          icon={<Star className="h-4 w-4" />}
-          fields={interestsFields}
-          editable
-          onEdit={() => setEditDialogOpen(true)}
-        />
+        {sections.map((section) => (
+          <Card 
+            key={section.id} 
+            className="border shadow-sm cursor-pointer hover-elevate active-elevate-2 transition-all"
+            onClick={() => setLocation(section.path)}
+            data-testid={`card-${section.id}`}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {section.icon}
+                  <CardTitle className="text-base">{section.title}</CardTitle>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {section.fields.map((field, idx) => (
+                field.value && (
+                  <div key={idx} className="flex justify-between items-start gap-2">
+                    <span className="text-muted-foreground">{field.label}</span>
+                    <span className="text-right flex-1 font-medium">
+                      {field.value || "未填写"}
+                    </span>
+                  </div>
+                )
+              ))}
+              {section.hint && (
+                <div className="text-xs text-muted-foreground pt-2">
+                  {section.hint}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
-
-      {/* Edit Dialog */}
-      <EditFullProfileDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        user={user}
-        onSave={handleSaveProfile}
-      />
     </div>
   );
 }

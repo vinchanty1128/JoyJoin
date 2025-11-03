@@ -18,6 +18,11 @@ import EventChatDetailPage from "@/pages/EventChatDetailPage";
 import DirectChatPage from "@/pages/DirectChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import EditProfilePage from "@/pages/EditProfilePage";
+import EditBasicInfoPage from "@/pages/EditBasicInfoPage";
+import EditEducationPage from "@/pages/EditEducationPage";
+import EditWorkPage from "@/pages/EditWorkPage";
+import EditPersonalPage from "@/pages/EditPersonalPage";
+import EditInterestsPage from "@/pages/EditInterestsPage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
 import BlindBoxConfirmationPage from "@/pages/BlindBoxConfirmationPage";
@@ -113,6 +118,11 @@ function AuthenticatedRouter() {
       <Route path="/direct-chat/:threadId" component={DirectChatPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/profile/edit" component={EditProfilePage} />
+      <Route path="/profile/edit/basic" component={EditBasicInfoPage} />
+      <Route path="/profile/edit/education" component={EditEducationPage} />
+      <Route path="/profile/edit/work" component={EditWorkPage} />
+      <Route path="/profile/edit/personal" component={EditPersonalPage} />
+      <Route path="/profile/edit/interests" component={EditInterestsPage} />
       <Route path="/event/:id" component={EventDetailPage} />
       <Route path="/personality-test/results" component={PersonalityTestResultPage} />
       <Route component={NotFound} />
