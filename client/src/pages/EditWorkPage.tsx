@@ -69,7 +69,13 @@ export default function EditWorkPage() {
   });
 
   const onSubmit = (data: WorkForm) => {
-    updateMutation.mutate(data);
+    // Clean up empty strings - send undefined instead of empty string for optional fields
+    const cleanedData = {
+      ...data,
+      industry: data.industry && data.industry.trim() !== '' ? data.industry : undefined,
+      roleTitleShort: data.roleTitleShort && data.roleTitleShort.trim() !== '' ? data.roleTitleShort : undefined,
+    };
+    updateMutation.mutate(cleanedData);
   };
 
   if (isLoading || !user) {

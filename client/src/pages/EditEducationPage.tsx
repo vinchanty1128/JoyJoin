@@ -70,7 +70,12 @@ export default function EditEducationPage() {
   });
 
   const onSubmit = (data: EducationForm) => {
-    updateMutation.mutate(data);
+    // Clean up empty strings - send undefined instead of empty string for optional fields
+    const cleanedData = {
+      ...data,
+      fieldOfStudy: data.fieldOfStudy && data.fieldOfStudy.trim() !== '' ? data.fieldOfStudy : undefined,
+    };
+    updateMutation.mutate(cleanedData);
   };
 
   const toggleRegion = (region: string) => {

@@ -67,7 +67,12 @@ export default function EditBasicInfoPage() {
   });
 
   const onSubmit = (data: BasicInfoForm) => {
-    updateMutation.mutate(data);
+    // Clean up empty strings - send undefined instead of empty string for optional fields
+    const cleanedData = {
+      ...data,
+      birthdate: data.birthdate && data.birthdate.trim() !== '' ? data.birthdate : undefined,
+    };
+    updateMutation.mutate(cleanedData);
   };
 
   const toggleLanguage = (lang: string) => {
