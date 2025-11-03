@@ -271,39 +271,12 @@ export default function RegistrationPage() {
                       <RadioGroupItem value="Man" id="man" data-testid="radio-man" />
                       <Label htmlFor="man" className="cursor-pointer">男性</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Nonbinary" id="nonbinary" data-testid="radio-nonbinary" />
-                      <Label htmlFor="nonbinary" className="cursor-pointer">非二元性别</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Prefer not to say" id="prefer-not-gender" data-testid="radio-prefer-not-gender" />
-                      <Label htmlFor="prefer-not-gender" className="cursor-pointer">不愿透露</Label>
-                    </div>
                   </RadioGroup>
                   {form.formState.errors.gender && (
                     <p className="text-sm text-destructive mt-1">
                       {form.formState.errors.gender.message}
                     </p>
                   )}
-                </div>
-
-                <div>
-                  <Label>代词（可选）</Label>
-                  <Select
-                    value={form.watch("pronouns")}
-                    onValueChange={(value: any) => form.setValue("pronouns", value)}
-                  >
-                    <SelectTrigger data-testid="select-pronouns">
-                      <SelectValue placeholder="选择你的代词" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="She/Her">她 (She/Her)</SelectItem>
-                      <SelectItem value="He/Him">他 (He/Him)</SelectItem>
-                      <SelectItem value="They/Them">TA (They/Them)</SelectItem>
-                      <SelectItem value="Self-describe">自定义</SelectItem>
-                      <SelectItem value="Prefer not to say">不愿透露</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
             </div>
@@ -343,10 +316,6 @@ export default function RegistrationPage() {
                       <RadioGroupItem value="It's complicated" id="complicated" data-testid="radio-complicated" />
                       <Label htmlFor="complicated" className="cursor-pointer">复杂</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Prefer not to say" id="prefer-not-rel" data-testid="radio-prefer-not-rel" />
-                      <Label htmlFor="prefer-not-rel" className="cursor-pointer">不愿透露</Label>
-                    </div>
                   </RadioGroup>
                   {form.formState.errors.relationshipStatus && (
                     <p className="text-sm text-destructive mt-1">
@@ -371,7 +340,6 @@ export default function RegistrationPage() {
                       <SelectItem value="6-12">6-12岁</SelectItem>
                       <SelectItem value="13-18">13-18岁</SelectItem>
                       <SelectItem value="Adult">成年</SelectItem>
-                      <SelectItem value="Prefer not to say">不愿透露</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -394,7 +362,6 @@ export default function RegistrationPage() {
                       <SelectItem value="Master's">硕士</SelectItem>
                       <SelectItem value="Doctorate">博士</SelectItem>
                       <SelectItem value="Trade/Vocational">职业培训</SelectItem>
-                      <SelectItem value="Prefer not to say">不愿透露</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -412,7 +379,6 @@ export default function RegistrationPage() {
                       <SelectItem value="Local">本地</SelectItem>
                       <SelectItem value="Overseas">海外</SelectItem>
                       <SelectItem value="Both">都有</SelectItem>
-                      <SelectItem value="Prefer not to say">不愿透露</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

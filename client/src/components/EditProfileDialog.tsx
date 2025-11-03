@@ -147,6 +147,22 @@ const overseasRegionOptions = [
   "非洲",
 ];
 
+const industryOptions = [
+  "大厂",
+  "金融",
+  "科技初创",
+  "AI/ML",
+  "跨境电商",
+  "投资",
+  "咨询",
+  "消费品",
+  "艺术/设计",
+  "教育",
+  "医疗",
+  "政府/公共",
+  "其他",
+];
+
 const interestOptions = [
   "美食探店",
   "咖啡",
@@ -247,8 +263,6 @@ export default function EditProfileDialog({
                         <SelectContent>
                           <SelectItem value="Woman">女性</SelectItem>
                           <SelectItem value="Man">男性</SelectItem>
-                          <SelectItem value="Nonbinary">非二元</SelectItem>
-                          <SelectItem value="Prefer not to say">不便透露</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -310,12 +324,11 @@ export default function EditProfileDialog({
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="High school/below">高中及以下</SelectItem>
-                          <SelectItem value="Some college/Associate">大专</SelectItem>
+                          <SelectItem value="Some college/Associate">大专/副学士</SelectItem>
                           <SelectItem value="Bachelor's">本科</SelectItem>
                           <SelectItem value="Master's">硕士</SelectItem>
                           <SelectItem value="Doctorate">博士</SelectItem>
-                          <SelectItem value="Trade/Vocational">职业技术</SelectItem>
-                          <SelectItem value="Prefer not to say">不便透露</SelectItem>
+                          <SelectItem value="Trade/Vocational">职业培训</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -353,7 +366,6 @@ export default function EditProfileDialog({
                           <SelectItem value="Local">本地</SelectItem>
                           <SelectItem value="Overseas">海外</SelectItem>
                           <SelectItem value="Both">都有</SelectItem>
-                          <SelectItem value="Prefer not to say">不便透露</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -390,9 +402,20 @@ export default function EditProfileDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>行业</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="例如：科技" data-testid="input-industry" />
-                      </FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-industry">
+                            <SelectValue placeholder="选择行业" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {industryOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -457,9 +480,8 @@ export default function EditProfileDialog({
                         <SelectContent>
                           <SelectItem value="Single">单身</SelectItem>
                           <SelectItem value="In a relationship">恋爱中</SelectItem>
-                          <SelectItem value="Married/Partnered">已婚</SelectItem>
+                          <SelectItem value="Married/Partnered">已婚/已结伴</SelectItem>
                           <SelectItem value="It's complicated">复杂</SelectItem>
-                          <SelectItem value="Prefer not to say">不便透露</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -486,7 +508,6 @@ export default function EditProfileDialog({
                           <SelectItem value="6-12">6-12岁</SelectItem>
                           <SelectItem value="13-18">13-18岁</SelectItem>
                           <SelectItem value="Adult">成年</SelectItem>
-                          <SelectItem value="Prefer not to say">不便透露</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
