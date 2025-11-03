@@ -105,9 +105,6 @@ export const users = pgTable("users", {
   secondaryRole: varchar("secondary_role"),
   roleSubtype: varchar("role_subtype"),
   
-  // Budget preference
-  budgetPreference: text("budget_preference").array(),
-  
   // Gamification
   eventsAttended: integer("events_attended").default(0),
   matchesMade: integer("matches_made").default(0),
@@ -275,7 +272,9 @@ export const updateFullProfileSchema = createInsertSchema(users).pick({
   hometownRegionCity: true,
   languagesComfort: true,
   interestsTop: true,
-  budgetPreference: true,
+  topicsHappy: true,
+  topicsAvoid: true,
+  workVisibility: true,
 }).partial();
 
 export const updatePersonalitySchema = createInsertSchema(users).pick({
@@ -283,12 +282,6 @@ export const updatePersonalitySchema = createInsertSchema(users).pick({
   personalityChallenges: true,
   idealMatch: true,
   energyLevel: true,
-});
-
-export const updateBudgetPreferenceSchema = createInsertSchema(users).pick({
-  budgetPreference: true,
-}).extend({
-  budgetPreference: z.array(z.string()).min(1, "请至少选择一个预算档位"),
 });
 
 export const insertEventAttendanceSchema = createInsertSchema(eventAttendance).pick({
