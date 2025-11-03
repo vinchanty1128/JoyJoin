@@ -36,12 +36,53 @@ export const relationshipStatusMap: Record<string, string> = {
   "Prefer not to say": "不便透露",
 };
 
+export const studyLocaleMap: Record<string, string> = {
+  "Local": "本地",
+  "Overseas": "海外",
+  "Both": "都有",
+  "Prefer not to say": "不便透露",
+};
+
+export const seniorityMap: Record<string, string> = {
+  "Intern": "实习生",
+  "Junior": "初级",
+  "Mid": "中级",
+  "Senior": "高级",
+  "Founder": "创始人",
+  "Executive": "高管",
+};
+
+export const childrenMap: Record<string, string> = {
+  "No kids": "无孩子",
+  "Expecting": "期待中",
+  "0-5": "0-5岁",
+  "6-12": "6-12岁",
+  "13-18": "13-18岁",
+  "Adult": "成年",
+  "Prefer not to say": "不便透露",
+};
+
 /**
  * Format age with Chinese unit
  */
 export function formatAge(age: number | null | undefined): string {
   if (!age || age <= 0) return "";
   return `${age}岁`;
+}
+
+/**
+ * Calculate age from birthdate
+ */
+export function calculateAge(birthdate: string | null | undefined): number {
+  if (!birthdate) return 0;
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
 }
 
 /**
@@ -74,4 +115,36 @@ export function getEducationDisplay(educationLevel: string | null | undefined): 
 export function getRelationshipDisplay(relationshipStatus: string | null | undefined): string {
   if (!relationshipStatus) return "";
   return relationshipStatusMap[relationshipStatus] || relationshipStatus;
+}
+
+/**
+ * Get study locale display text
+ */
+export function getStudyLocaleDisplay(studyLocale: string | null | undefined): string {
+  if (!studyLocale) return "";
+  return studyLocaleMap[studyLocale] || studyLocale;
+}
+
+/**
+ * Get seniority display text
+ */
+export function getSeniorityDisplay(seniority: string | null | undefined): string {
+  if (!seniority) return "";
+  return seniorityMap[seniority] || seniority;
+}
+
+/**
+ * Get children status display text
+ */
+export function getChildrenDisplay(children: string | null | undefined): string {
+  if (!children) return "";
+  return childrenMap[children] || children;
+}
+
+/**
+ * Format array with bullet separator
+ */
+export function formatArray(arr: string[] | null | undefined): string {
+  if (!arr || arr.length === 0) return "";
+  return arr.join(" · ");
 }
