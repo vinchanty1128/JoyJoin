@@ -118,22 +118,33 @@ export default function EditEducationPage() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 space-y-6 max-w-2xl mx-auto pb-24">
         {/* Education Level */}
         <div className="space-y-2">
-          <Label htmlFor="educationLevel">教育水平</Label>
-          <Select
-            value={form.watch("educationLevel") || ""}
-            onValueChange={(value) => form.setValue("educationLevel", value as any)}
-          >
-            <SelectTrigger data-testid="select-educationLevel">
-              <SelectValue placeholder="选择教育水平" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Bachelor's">本科</SelectItem>
-              <SelectItem value="Master's">硕士</SelectItem>
-              <SelectItem value="PhD">博士</SelectItem>
-              <SelectItem value="Some college/Associate">大专/副学士</SelectItem>
-              <SelectItem value="Trade/Vocational">职业培训</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>教育水平</Label>
+          <div className="space-y-3 mt-2">
+            {[
+              { value: "High school/below", label: "高中及以下" },
+              { value: "Some college/Associate", label: "大专/副学士" },
+              { value: "Bachelor's", label: "本科" },
+              { value: "Master's", label: "硕士" },
+              { value: "PhD", label: "博士" },
+              { value: "Trade/Vocational", label: "职业培训" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => form.setValue("educationLevel", option.value as any)}
+                className={`
+                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  ${form.watch("educationLevel") === option.value
+                    ? 'border-primary bg-primary/5 text-primary' 
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-education-${option.value}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Field of Study */}
@@ -149,37 +160,56 @@ export default function EditEducationPage() {
 
         {/* Study Locale */}
         <div className="space-y-2">
-          <Label htmlFor="studyLocale">学习地点</Label>
-          <Select
-            value={form.watch("studyLocale") || ""}
-            onValueChange={(value) => form.setValue("studyLocale", value as any)}
-          >
-            <SelectTrigger data-testid="select-studyLocale">
-              <SelectValue placeholder="选择学习地点" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Local">本地</SelectItem>
-              <SelectItem value="Overseas">海外</SelectItem>
-              <SelectItem value="Both">都有</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>学习地点</Label>
+          <div className="space-y-3 mt-2">
+            {[
+              { value: "Local", label: "本地" },
+              { value: "Overseas", label: "海外" },
+              { value: "Both", label: "都有" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => form.setValue("studyLocale", option.value as any)}
+                className={`
+                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  ${form.watch("studyLocale") === option.value
+                    ? 'border-primary bg-primary/5 text-primary' 
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-study-locale-${option.value}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Overseas Regions */}
         {showOverseasRegions && (
           <div className="space-y-3">
             <Label>海外地区</Label>
-            <div className="flex flex-wrap gap-2">
+            <p className="text-xs text-muted-foreground">
+              选择你在海外学习的地区
+            </p>
+            <div className="grid grid-cols-2 gap-2">
               {overseasRegionOptions.map((region) => (
-                <Badge
+                <button
                   key={region}
-                  variant={selectedRegions.includes(region) ? "default" : "outline"}
-                  className="cursor-pointer"
+                  type="button"
                   onClick={() => toggleRegion(region)}
-                  data-testid={`badge-region-${region}`}
+                  className={`
+                    px-3 py-2 text-sm rounded-md border transition-all text-left
+                    ${selectedRegions.includes(region)
+                      ? 'border-primary bg-primary/5 text-primary' 
+                      : 'border-border hover-elevate active-elevate-2'
+                    }
+                  `}
+                  data-testid={`button-region-${region}`}
                 >
                   {region}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>

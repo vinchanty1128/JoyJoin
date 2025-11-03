@@ -127,19 +127,29 @@ export default function EditBasicInfoPage() {
 
         {/* Gender */}
         <div className="space-y-2">
-          <Label htmlFor="gender">性别</Label>
-          <Select
-            value={form.watch("gender") || ""}
-            onValueChange={(value) => form.setValue("gender", value as "Woman" | "Man")}
-          >
-            <SelectTrigger data-testid="select-gender">
-              <SelectValue placeholder="选择性别" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Woman">女性</SelectItem>
-              <SelectItem value="Man">男性</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>性别</Label>
+          <div className="space-y-3 mt-2">
+            {[
+              { value: "Woman", label: "女性" },
+              { value: "Man", label: "男性" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => form.setValue("gender", option.value as "Woman" | "Man")}
+                className={`
+                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  ${form.watch("gender") === option.value
+                    ? 'border-primary bg-primary/5 text-primary' 
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-gender-${option.value}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Birthdate */}

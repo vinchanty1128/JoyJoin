@@ -262,20 +262,28 @@ export default function RegistrationPage() {
 
                 <div>
                   <Label>性别 *</Label>
-                  <RadioGroup
-                    value={form.watch("gender")}
-                    onValueChange={(value) => form.setValue("gender", value as any)}
-                    className="grid grid-cols-2 gap-3 mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Woman" id="woman" data-testid="radio-woman" />
-                      <Label htmlFor="woman" className="cursor-pointer">女性</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Man" id="man" data-testid="radio-man" />
-                      <Label htmlFor="man" className="cursor-pointer">男性</Label>
-                    </div>
-                  </RadioGroup>
+                  <div className="space-y-3 mt-2">
+                    {[
+                      { value: "Woman", label: "女性" },
+                      { value: "Man", label: "男性" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("gender", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("gender") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-gender-${option.value}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                   {form.formState.errors.gender && (
                     <p className="text-sm text-destructive mt-1">
                       {form.formState.errors.gender.message}
@@ -299,28 +307,30 @@ export default function RegistrationPage() {
               <div className="space-y-4">
                 <div>
                   <Label>关系状态 *</Label>
-                  <RadioGroup
-                    value={form.watch("relationshipStatus")}
-                    onValueChange={(value) => form.setValue("relationshipStatus", value as any)}
-                    className="grid grid-cols-2 gap-3 mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Single" id="single" data-testid="radio-single" />
-                      <Label htmlFor="single" className="cursor-pointer">单身</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="In a relationship" id="in-relationship" data-testid="radio-in-relationship" />
-                      <Label htmlFor="in-relationship" className="cursor-pointer">恋爱中</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Married/Partnered" id="married" data-testid="radio-married" />
-                      <Label htmlFor="married" className="cursor-pointer">已婚/已结伴</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="It's complicated" id="complicated" data-testid="radio-complicated" />
-                      <Label htmlFor="complicated" className="cursor-pointer">复杂</Label>
-                    </div>
-                  </RadioGroup>
+                  <div className="space-y-3 mt-2">
+                    {[
+                      { value: "Single", label: "单身" },
+                      { value: "In a relationship", label: "恋爱中" },
+                      { value: "Married/Partnered", label: "已婚/已结伴" },
+                      { value: "It's complicated", label: "复杂" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("relationshipStatus", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("relationshipStatus") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-relationship-${option.value}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                   {form.formState.errors.relationshipStatus && (
                     <p className="text-sm text-destructive mt-1">
                       {form.formState.errors.relationshipStatus.message}
@@ -330,61 +340,91 @@ export default function RegistrationPage() {
 
                 <div>
                   <Label>孩子状况（可选）</Label>
-                  <Select
-                    value={form.watch("children")}
-                    onValueChange={(value: any) => form.setValue("children", value)}
-                  >
-                    <SelectTrigger data-testid="select-children">
-                      <SelectValue placeholder="选择你的孩子状况" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="No kids">无孩子</SelectItem>
-                      <SelectItem value="Expecting">期待中</SelectItem>
-                      <SelectItem value="0-5">0-5岁</SelectItem>
-                      <SelectItem value="6-12">6-12岁</SelectItem>
-                      <SelectItem value="13-18">13-18岁</SelectItem>
-                      <SelectItem value="Adult">成年</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-3 mt-2">
+                    {[
+                      { value: "No kids", label: "无孩子" },
+                      { value: "Expecting", label: "期待中" },
+                      { value: "0-5", label: "0-5岁" },
+                      { value: "6-12", label: "6-12岁" },
+                      { value: "13-18", label: "13-18岁" },
+                      { value: "Adult", label: "成年" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("children", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("children") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-children-${option.value}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <Separator className="my-6" />
 
                 <div>
                   <Label>教育水平（可选）</Label>
-                  <Select
-                    value={form.watch("educationLevel")}
-                    onValueChange={(value: any) => form.setValue("educationLevel", value)}
-                  >
-                    <SelectTrigger data-testid="select-education-level">
-                      <SelectValue placeholder="选择你的教育水平" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="High school/below">高中及以下</SelectItem>
-                      <SelectItem value="Some college/Associate">大专/副学士</SelectItem>
-                      <SelectItem value="Bachelor's">本科</SelectItem>
-                      <SelectItem value="Master's">硕士</SelectItem>
-                      <SelectItem value="Doctorate">博士</SelectItem>
-                      <SelectItem value="Trade/Vocational">职业培训</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-3 mt-2">
+                    {[
+                      { value: "High school/below", label: "高中及以下" },
+                      { value: "Some college/Associate", label: "大专/副学士" },
+                      { value: "Bachelor's", label: "本科" },
+                      { value: "Master's", label: "硕士" },
+                      { value: "Doctorate", label: "博士" },
+                      { value: "Trade/Vocational", label: "职业培训" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("educationLevel", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("educationLevel") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-education-${option.value}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
                   <Label>学习地点（可选）</Label>
-                  <Select
-                    value={form.watch("studyLocale")}
-                    onValueChange={(value: any) => form.setValue("studyLocale", value)}
-                  >
-                    <SelectTrigger data-testid="select-study-locale">
-                      <SelectValue placeholder="选择你的学习地点" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Local">本地</SelectItem>
-                      <SelectItem value="Overseas">海外</SelectItem>
-                      <SelectItem value="Both">都有</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-3 mt-2">
+                    {[
+                      { value: "Local", label: "本地" },
+                      { value: "Overseas", label: "海外" },
+                      { value: "Both", label: "都有" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("studyLocale", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("studyLocale") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-study-locale-${option.value}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {(form.watch("studyLocale") === "Overseas" || form.watch("studyLocale") === "Both") && (
@@ -463,22 +503,26 @@ export default function RegistrationPage() {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="industry">行业 *</Label>
-                  <Select
-                    value={form.watch("industry")}
-                    onValueChange={(value) => form.setValue("industry", value)}
-                  >
-                    <SelectTrigger id="industry" data-testid="select-industry">
-                      <SelectValue placeholder="选择你的行业" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {industryOptions.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>行业 *</Label>
+                  <div className="space-y-3 mt-2">
+                    {industryOptions.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => form.setValue("industry", option)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("industry") === option
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-industry-${option}`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
                   {form.formState.errors.industry && (
                     <p className="text-sm text-destructive mt-1">
                       {form.formState.errors.industry.message}
@@ -501,41 +545,61 @@ export default function RegistrationPage() {
 
                 <div>
                   <Label>职级（可选）</Label>
-                  <Select
-                    value={form.watch("seniority")}
-                    onValueChange={(value: any) => form.setValue("seniority", value)}
-                  >
-                    <SelectTrigger data-testid="select-seniority">
-                      <SelectValue placeholder="选择你的职级" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Intern">实习生</SelectItem>
-                      <SelectItem value="Junior">初级</SelectItem>
-                      <SelectItem value="Mid">中级</SelectItem>
-                      <SelectItem value="Senior">高级</SelectItem>
-                      <SelectItem value="Founder">创始人</SelectItem>
-                      <SelectItem value="Executive">高管</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-3 mt-2">
+                    {[
+                      { value: "Intern", label: "实习生" },
+                      { value: "Junior", label: "初级" },
+                      { value: "Mid", label: "中级" },
+                      { value: "Senior", label: "高级" },
+                      { value: "Founder", label: "创始人" },
+                      { value: "Executive", label: "高管" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("seniority", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("seniority") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-seniority-${option.value}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
                   <Label>工作信息可见性</Label>
-                  <Select
-                    value={form.watch("workVisibility")}
-                    onValueChange={(value: any) => form.setValue("workVisibility", value)}
-                  >
-                    <SelectTrigger data-testid="select-work-visibility">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hide_all">完全隐藏</SelectItem>
-                      <SelectItem value="show_industry_only">仅显示行业</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mb-2">
                     控制其他人能看到你的多少工作信息
                   </p>
+                  <div className="space-y-3">
+                    {[
+                      { value: "hide_all", label: "完全隐藏" },
+                      { value: "show_industry_only", label: "仅显示行业" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => form.setValue("workVisibility", option.value as any)}
+                        className={`
+                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          ${form.watch("workVisibility") === option.value
+                            ? 'border-primary bg-primary/5 text-primary' 
+                            : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-work-visibility-${option.value}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

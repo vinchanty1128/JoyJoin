@@ -104,20 +104,26 @@ export default function EditWorkPage() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 space-y-6 max-w-2xl mx-auto pb-24">
         {/* Industry */}
         <div className="space-y-2">
-          <Label htmlFor="industry">行业</Label>
-          <Select
-            value={form.watch("industry") || ""}
-            onValueChange={(value) => form.setValue("industry", value)}
-          >
-            <SelectTrigger data-testid="select-industry">
-              <SelectValue placeholder="选择行业" />
-            </SelectTrigger>
-            <SelectContent>
-              {industryOptions.map((ind) => (
-                <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label>行业</Label>
+          <div className="space-y-3 mt-2">
+            {industryOptions.map((ind) => (
+              <button
+                key={ind}
+                type="button"
+                onClick={() => form.setValue("industry", ind)}
+                className={`
+                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  ${form.watch("industry") === ind
+                    ? 'border-primary bg-primary/5 text-primary' 
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-industry-${ind}`}
+              >
+                {ind}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Role Title */}
@@ -133,43 +139,63 @@ export default function EditWorkPage() {
 
         {/* Seniority */}
         <div className="space-y-2">
-          <Label htmlFor="seniority">资历</Label>
-          <Select
-            value={form.watch("seniority") || ""}
-            onValueChange={(value) => form.setValue("seniority", value as any)}
-          >
-            <SelectTrigger data-testid="select-seniority">
-              <SelectValue placeholder="选择资历" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Intern">实习生</SelectItem>
-              <SelectItem value="Junior">初级</SelectItem>
-              <SelectItem value="Mid">中级</SelectItem>
-              <SelectItem value="Senior">高级</SelectItem>
-              <SelectItem value="Founder">创始人</SelectItem>
-              <SelectItem value="Executive">高管</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>资历</Label>
+          <div className="space-y-3 mt-2">
+            {[
+              { value: "Intern", label: "实习生" },
+              { value: "Junior", label: "初级" },
+              { value: "Mid", label: "中级" },
+              { value: "Senior", label: "高级" },
+              { value: "Founder", label: "创始人" },
+              { value: "Executive", label: "高管" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => form.setValue("seniority", option.value as any)}
+                className={`
+                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  ${form.watch("seniority") === option.value
+                    ? 'border-primary bg-primary/5 text-primary' 
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-seniority-${option.value}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Work Visibility */}
         <div className="space-y-2">
-          <Label htmlFor="workVisibility">工作信息可见性</Label>
-          <Select
-            value={form.watch("workVisibility") || ""}
-            onValueChange={(value) => form.setValue("workVisibility", value as any)}
-          >
-            <SelectTrigger data-testid="select-work-visibility">
-              <SelectValue placeholder="选择可见性" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hide_all">完全隐藏</SelectItem>
-              <SelectItem value="show_industry_only">仅显示行业</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-1">
+          <Label>工作信息可见性</Label>
+          <p className="text-xs text-muted-foreground mb-2">
             控制其他人能看到你的多少工作信息
           </p>
+          <div className="space-y-3">
+            {[
+              { value: "hide_all", label: "完全隐藏" },
+              { value: "show_industry_only", label: "仅显示行业" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => form.setValue("workVisibility", option.value as any)}
+                className={`
+                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  ${form.watch("workVisibility") === option.value
+                    ? 'border-primary bg-primary/5 text-primary' 
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-work-visibility-${option.value}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Save Button */}
