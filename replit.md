@@ -12,7 +12,23 @@ Preferred communication style: Simple, everyday language.
 
 ### November 3, 2025
 
-**Profile Page Unified Editing - Final Implementation:** Completed comprehensive refactor of ProfilePage with streamlined editing experience. All DEI options removed and Chinese-focused UI implemented. Features:
+**Profile Page Redesign - Minimalist Approach:** Completed major UX overhaul with card-based editing flow and simplified profile display.
+
+*Critical Bug Fix:*
+- **DEMO MODE Disabled**: Fixed registration bug in server/storage.ts where DEMO MODE was auto-setting hasCompletedRegistration=true, causing displayName, gender, birthdate to not save during registration
+
+*New Page Structure:*
+- **EditProfilePage (/profile/edit)**: New full-page editing interface with 5 information cards (基本信息/教育背景/工作信息/个人背景/兴趣偏好)
+- **UserInfoCard Component**: Created reusable component for consistent user information display across app
+- **ProfilePage Simplification**: Removed 5 redundant information display cards, keeping only user header, stats, personality test/social role card, and account actions
+
+*UI/UX Changes:*
+- **Edit Button Repositioned**: Moved "编辑资料" from top header to user info card (right-aligned, larger size)
+- **Navigation Pattern**: Edit button now navigates to /profile/edit page instead of opening dialog
+- **Minimalist Display**: Profile page now focuses on key stats and personality insights without detailed field display
+- **Card-Based Editing**: EditProfilePage uses clear card sections with proper field grouping and validation
+
+**Profile Page Unified Editing - Previous Implementation (Deprecated):** Completed comprehensive refactor of ProfilePage with streamlined editing experience. All DEI options removed and Chinese-focused UI implemented. Features:
 
 *Top-Level Changes:*
 - **Archetype Icon Avatar**: Replaced user-uploaded photos with archetype icon avatars (colored circular backgrounds)
