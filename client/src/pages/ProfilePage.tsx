@@ -6,12 +6,14 @@ import QuizIntro from "@/components/QuizIntro";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Edit, LogOut, Shield, HelpCircle, Sparkles, User, GraduationCap, Briefcase, Heart, Star } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { archetypeConfig } from "@/lib/archetypes";
 import {
   getGenderDisplay,
   calculateAge,
@@ -33,10 +35,14 @@ export default function ProfilePage() {
   const [editSection, setEditSection] = useState<SectionType>("basic");
   const { toast } = useToast();
   
-  const { data: user } = useQuery<any>({ queryKey: ["/api/auth/user"] });
+  const { data: user, isLoading: userLoading } = useQuery<any>({ queryKey: ["/api/auth/user"] });
   const { data: personalityResults } = useQuery<any>({
     queryKey: ["/api/personality-test/results"],
     enabled: !!user?.hasCompletedPersonalityTest,
+  });
+  const { data: stats, isLoading: statsLoading } = useQuery<{ eventsCompleted: number; connectionsMade: number }>({
+    queryKey: ["/api/profile/stats"],
+    enabled: !!user,
   });
 
   const updateProfileMutation = useMutation({
@@ -121,36 +127,69 @@ export default function ProfilePage() {
     return "用户";
   };
 
-  const getInitials = () => {
-    const name = getUserName();
-    if (name === "用户") return "U";
-    const nameParts = name.split(" ");
-    if (nameParts.length >= 2) {
-      return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
+  const getArchetypeAvatar = () => {
+    const archetype = user?.primaryRole || "连接者";
+    const config = archetypeConfig[archetype] || archetypeConfig["连接者"];
+    return {
+      icon: config.icon,
+      bgColor: config.bgColor,
+      color: config.color,
+    };
   };
+
+  const handleEditProfile = () => {
+    toast({
+      title: "功能开发中",
+      description: "完整的个人资料编辑功能即将上线",
+    });
+  };
+
+  const avatarConfig = getArchetypeAvatar();
 
   return (
     <div className="min-h-screen bg-background pb-16">
-      <MobileHeader title="我的" showSettings={true} />
+      <MobileHeader 
+        title="我的" 
+        showSettings={true}
+        action={
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleEditProfile}
+            data-testid="button-edit-profile-header"
+          >
+            <Edit className="h-4 w-4 mr-1" />
+            编辑资料
+          </Button>
+        }
+      />
       
       <div className="px-4 py-4 space-y-4">
         {/* Profile Header Card */}
         <Card className="border shadow-sm">
           <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-400 flex items-center justify-center text-white text-2xl font-bold">
-                {getInitials()}
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold">{getUserName()}</h2>
-                <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
-                  <span>{user?.eventsAttended || 0} 次活动</span>
-                  <span>{user?.matchesMade || 0} 个匹配</span>
+            {userLoading || statsLoading ? (
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-16 w-16 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-48" />
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <div className={`h-16 w-16 rounded-full ${avatarConfig.bgColor} flex items-center justify-center text-3xl`}>
+                  {avatarConfig.icon}
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold">{getUserName()}</h2>
+                  <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+                    <span data-testid="text-events-completed">{stats?.eventsCompleted || 0} 次活动</span>
+                    <span data-testid="text-connections-made">{stats?.connectionsMade || 0} 个连接</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -195,20 +234,11 @@ export default function ProfilePage() {
 
         {/* Basic Information Card */}
         <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-3">
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
               <CardTitle className="text-base">基本信息</CardTitle>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => handleEditClick("basic")}
-              data-testid="button-edit-basic"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -236,20 +266,11 @@ export default function ProfilePage() {
 
         {/* Education Background Card */}
         <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-3">
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-muted-foreground" />
               <CardTitle className="text-base">教育背景</CardTitle>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => handleEditClick("education")}
-              data-testid="button-edit-education"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -275,20 +296,11 @@ export default function ProfilePage() {
 
         {/* Work Information Card */}
         <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-3">
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-muted-foreground" />
               <CardTitle className="text-base">工作信息</CardTitle>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => handleEditClick("work")}
-              data-testid="button-edit-work"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -308,20 +320,11 @@ export default function ProfilePage() {
 
         {/* Personal Background Card */}
         <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-3">
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Heart className="h-4 w-4 text-muted-foreground" />
               <CardTitle className="text-base">个人背景</CardTitle>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => handleEditClick("personal")}
-              data-testid="button-edit-personal"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -340,20 +343,11 @@ export default function ProfilePage() {
 
         {/* Interests and Preferences Card */}
         <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-3">
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-muted-foreground" />
               <CardTitle className="text-base">兴趣偏好</CardTitle>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => handleEditClick("interests")}
-              data-testid="button-edit-interests"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex flex-col gap-1">

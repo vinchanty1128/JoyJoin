@@ -6,7 +6,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, updateBudgetPreferenceSchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, or, and } from "drizzle-orm";
 
 // Role mapping based on question responses
 const roleMapping: Record<string, Record<string, string>> = {
@@ -214,6 +214,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error during logout:", error);
       res.status(500).json({ message: "Failed to logout" });
+    }
+  });
+
+  // Profile stats endpoint
+  app.get('/api/profile/stats', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      // Calculate events completed: count completed events the user attended
+      const completedEventsResult = await db
+        .select({ count: eventAttendance.id })
+        .from(eventAttendance)
+        .innerJoin(events, eq(eventAttendance.eventId, events.id))
+        .where(
+          and(
+            eq(eventAttendance.userId, userId),
+            eq(events.status, 'completed')
+          )
+        );
+      
+      const eventsCompleted = completedEventsResult.length || 0;
+      
+      // Calculate connections made: count direct message threads where user is participant
+      const connectionsResult = await db
+        .select({ count: directMessageThreads.id })
+        .from(directMessageThreads)
+        .where(
+          or(
+            eq(directMessageThreads.user1Id, userId),
+            eq(directMessageThreads.user2Id, userId)
+          )
+        );
+      
+      const connectionsMade = connectionsResult.length || 0;
+      
+      res.json({
+        eventsCompleted,
+        connectionsMade,
+      });
+    } catch (error) {
+      console.error("Error fetching profile stats:", error);
+      res.status(500).json({ message: "Failed to fetch profile stats" });
     }
   });
 
