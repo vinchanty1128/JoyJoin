@@ -355,6 +355,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get personality type distribution stats
+  app.get('/api/personality-test/stats', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const stats = await storage.getPersonalityDistribution();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching personality stats:", error);
+      res.status(500).json({ message: "Failed to fetch personality stats" });
+    }
+  });
+
   // Profile routes
   app.post('/api/profile/setup', isPhoneAuthenticated, async (req: any, res) => {
     try {

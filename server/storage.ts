@@ -31,6 +31,7 @@ export interface IStorage {
   saveTestResponses(userId: string, responses: Record<number, any>): Promise<void>;
   saveRoleResult(userId: string, result: InsertRoleResult): Promise<RoleResult>;
   getRoleResult(userId: string): Promise<RoleResult | undefined>;
+  getPersonalityDistribution(): Promise<Record<string, number>>;
   
   // Event operations
   getUserJoinedEvents(userId: string): Promise<Array<Event & { attendanceStatus: string; attendeeCount: number; participants: Array<{ id: string; displayName: string | null; archetype: string | null }> }>>;
@@ -341,6 +342,35 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(roleResults.createdAt))
       .limit(1);
     return result;
+  }
+
+  async getPersonalityDistribution(): Promise<Record<string, number>> {
+    const results = await db
+      .select({
+        primaryRole: users.primaryRole,
+        count: sql<number>`count(*)`,
+      })
+      .from(users)
+      .where(sql`${users.primaryRole} IS NOT NULL`)
+      .groupBy(users.primaryRole);
+
+    const distribution: Record<string, number> = {};
+    let total = 0;
+    
+    for (const row of results) {
+      if (row.primaryRole) {
+        distribution[row.primaryRole] = Number(row.count);
+        total += Number(row.count);
+      }
+    }
+
+    // Convert to percentages
+    const percentages: Record<string, number> = {};
+    for (const [role, count] of Object.entries(distribution)) {
+      percentages[role] = total > 0 ? Math.round((count / total) * 100) : 0;
+    }
+
+    return percentages;
   }
 
   // Event operations
