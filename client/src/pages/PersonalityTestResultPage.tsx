@@ -9,6 +9,7 @@ import type { RoleResult } from '@shared/schema';
 import { queryClient } from '@/lib/queryClient';
 import { motion } from 'framer-motion';
 import { archetypeGradients, archetypeEmojis } from '@/lib/archetypeAvatars';
+import { archetypeConfig } from '@/lib/archetypes';
 
 export default function PersonalityTestResultPage() {
   const [, setLocation] = useLocation();
@@ -96,6 +97,8 @@ export default function PersonalityTestResultPage() {
   const myPercentage = stats?.[result.primaryRole] || 0;
   const gradient = archetypeGradients[result.primaryRole] || 'from-purple-500 to-pink-500';
   const emoji = archetypeEmojis[result.primaryRole] || '🌟';
+  const primaryRoleDesc = archetypeConfig[result.primaryRole]?.description || '';
+  const secondaryRoleDesc = result.secondaryRole ? archetypeConfig[result.secondaryRole]?.description || '' : '';
 
   const handleShare = async () => {
     const shareData = {
@@ -142,37 +145,45 @@ export default function PersonalityTestResultPage() {
             </div>
           </motion.div>
 
-          {/* Role Name */}
+          {/* Role Name and Description */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="space-y-3"
+            className="space-y-4"
           >
-            <h1 className="text-5xl font-bold" data-testid="text-primary-role">
-              {result.primaryRole}
-            </h1>
-            {result.roleSubtype && (
-              <p className="text-xl text-muted-foreground" data-testid="text-role-subtype">
-                {result.roleSubtype}
+            <div className="space-y-2">
+              <h1 className="text-5xl font-bold" data-testid="text-primary-role">
+                {result.primaryRole}
+              </h1>
+              {result.roleSubtype && (
+                <p className="text-lg text-muted-foreground" data-testid="text-role-subtype">
+                  {result.roleSubtype}
+                </p>
+              )}
+            </div>
+            
+            {/* Primary Role Description */}
+            {primaryRoleDesc && (
+              <p className="text-base text-foreground/80 max-w-md mx-auto px-4">
+                {primaryRoleDesc}
               </p>
             )}
+
+            {/* Secondary Role Badge with Description */}
             {result.secondaryRole && (
-              <Badge variant="secondary" className="text-base px-4 py-1" data-testid="badge-secondary-role">
-                辅助角色: {result.secondaryRole}
-              </Badge>
+              <div className="pt-2 space-y-2">
+                <Badge variant="secondary" className="text-sm px-4 py-1" data-testid="badge-secondary-role">
+                  辅助角色: {result.secondaryRole}
+                </Badge>
+                {secondaryRoleDesc && (
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto px-4">
+                    {secondaryRoleDesc}
+                  </p>
+                )}
+              </div>
             )}
           </motion.div>
-
-          {/* Tagline or Description */}
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-lg text-muted-foreground max-w-md mx-auto"
-          >
-            你的独特社交特质已揭晓
-          </motion.p>
 
           {/* Scroll Indicator */}
           <motion.div
