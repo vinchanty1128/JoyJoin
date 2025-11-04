@@ -96,6 +96,7 @@ export default function PersonalityTestResultPage() {
   const myChemistry = chemistryMap[result.primaryRole] || [];
   const myPercentage = stats?.[result.primaryRole] || 0;
   const gradient = archetypeGradients[result.primaryRole] || 'from-purple-500 to-pink-500';
+  const secondaryGradient = result.secondaryRole ? archetypeGradients[result.secondaryRole] || 'from-blue-500 to-purple-500' : '';
   const emoji = archetypeEmojis[result.primaryRole] || '🌟';
   const secondaryEmoji = result.secondaryRole ? archetypeEmojis[result.secondaryRole] || '✨' : '';
   const primaryRoleDesc = archetypeConfig[result.primaryRole]?.description || '';
@@ -171,17 +172,26 @@ export default function PersonalityTestResultPage() {
               </p>
             )}
 
-            {/* Secondary Role Badge with Description */}
+            {/* Secondary Role with Avatar */}
             {result.secondaryRole && (
-              <div className="pt-1 md:pt-2 space-y-1 md:space-y-2 flex flex-col items-center">
-                <Badge variant="secondary" className="text-sm md:text-base px-3 md:px-4 py-1" data-testid="badge-secondary-role">
-                  {secondaryEmoji} 辅助角色: {result.secondaryRole}
-                </Badge>
-                {secondaryRoleDesc && (
-                  <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto px-2 md:px-4 text-center">
-                    {secondaryRoleDesc}
-                  </p>
-                )}
+              <div className="pt-4 md:pt-6 space-y-2 md:space-y-3 flex flex-col items-center">
+                {/* Secondary Avatar - Smaller */}
+                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${secondaryGradient} flex items-center justify-center shadow-lg`}>
+                  <span className="text-4xl md:text-5xl" data-testid="text-secondary-role-avatar">{secondaryEmoji}</span>
+                </div>
+                
+                {/* Secondary Role Title */}
+                <div className="space-y-1 text-center">
+                  <p className="text-xs md:text-sm text-muted-foreground">辅助角色</p>
+                  <h2 className="text-xl md:text-2xl font-semibold" data-testid="badge-secondary-role">
+                    {result.secondaryRole}
+                  </h2>
+                  {secondaryRoleDesc && (
+                    <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto px-2 md:px-4 text-center pt-1">
+                      {secondaryRoleDesc}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </motion.div>
