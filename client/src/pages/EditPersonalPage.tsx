@@ -37,7 +37,7 @@ export default function EditPersonalPage() {
       return await apiRequest("PATCH", "/api/profile", data);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "个人背景已更新",
@@ -99,7 +99,7 @@ export default function EditPersonalPage() {
                 key={option.value}
                 onClick={() => setRelationshipStatus(option.value)}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all
                   ${relationshipStatus === option.value
                     ? 'border-primary bg-primary/5 text-primary'
                     : 'border-border hover-elevate active-elevate-2'
@@ -107,7 +107,7 @@ export default function EditPersonalPage() {
                 `}
                 data-testid={`button-relationship-${option.value}`}
               >
-                {option.label}
+                <span className="text-base">{option.label}</span>
               </button>
             ))}
           </div>
@@ -122,7 +122,7 @@ export default function EditPersonalPage() {
                 key={option.value}
                 onClick={() => setChildren(option.value)}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all
                   ${children === option.value
                     ? 'border-primary bg-primary/5 text-primary'
                     : 'border-border hover-elevate active-elevate-2'
@@ -130,7 +130,7 @@ export default function EditPersonalPage() {
                 `}
                 data-testid={`button-children-${option.value}`}
               >
-                {option.label}
+                <span className="text-base">{option.label}</span>
               </button>
             ))}
           </div>

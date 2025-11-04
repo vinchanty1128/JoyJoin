@@ -274,6 +274,7 @@ export const updateFullProfileSchema = createInsertSchema(users).pick({
   hometownCountry: true,
   hometownRegionCity: true,
   languagesComfort: true,
+  intent: true,
   interestsTop: true,
   topicsHappy: true,
   topicsAvoid: true,

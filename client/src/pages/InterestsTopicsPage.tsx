@@ -267,7 +267,7 @@ export default function InterestsTopicsPage() {
                 <p className="text-xs text-muted-foreground mb-3">
                   已选择 {selectedInterests.length} 个
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   {INTERESTS_OPTIONS.map((interest) => {
                     const isSelected = selectedInterests.includes(interest.id);
                     return (
@@ -277,7 +277,7 @@ export default function InterestsTopicsPage() {
                         onClick={() => toggleInterest(interest.id)}
                         data-testid={`button-interest-${interest.id}`}
                         className={`
-                          p-3 rounded-lg border-2 transition-all text-left
+                          px-4 py-2.5 rounded-lg border-2 transition-all text-left
                           ${isSelected 
                             ? 'border-primary bg-primary/5' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -287,7 +287,7 @@ export default function InterestsTopicsPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-xl">{interest.emoji}</span>
-                            <span className="text-sm font-medium">{interest.label}</span>
+                            <span className="text-base font-medium">{interest.label}</span>
                           </div>
                           {isSelected && (
                             <Check className="h-4 w-4 text-primary flex-shrink-0" />
@@ -367,7 +367,7 @@ export default function InterestsTopicsPage() {
 
                     {/* Available to rank */}
                     {rankedTop3.length < 3 && (
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         {selectedInterests
                           .filter(id => !rankedTop3.includes(id))
                           .map((interestId) => (
@@ -376,7 +376,7 @@ export default function InterestsTopicsPage() {
                               type="button"
                               onClick={() => addToRanking(interestId)}
                               data-testid={`button-add-to-rank-${interestId}`}
-                              className="p-2 text-sm rounded-md border border-border hover-elevate active-elevate-2 text-left"
+                              className="px-4 py-2.5 text-base rounded-md border border-border hover-elevate active-elevate-2 text-left"
                             >
                               {getInterestLabel(interestId)}
                             </button>
@@ -412,7 +412,7 @@ export default function InterestsTopicsPage() {
                 <p className="text-xs text-muted-foreground mb-3">
                   已选择 {selectedTopicsHappy.length} 个（至少选1个）
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   {TOPICS_OPTIONS.map((topic) => {
                     const isHappy = selectedTopicsHappy.includes(topic.id);
                     const isAvoid = selectedTopicsAvoid.includes(topic.id);
@@ -423,7 +423,7 @@ export default function InterestsTopicsPage() {
                         onClick={() => toggleTopicHappy(topic.id)}
                         data-testid={`button-topic-happy-${topic.id}`}
                         className={`
-                          p-2 text-sm rounded-md border-2 transition-all text-left
+                          px-4 py-2.5 text-base rounded-md border-2 transition-all text-left
                           ${isHappy 
                             ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400' 
                             : isAvoid
@@ -447,7 +447,7 @@ export default function InterestsTopicsPage() {
                 <p className="text-xs text-muted-foreground mb-3">
                   已选择 {selectedTopicsAvoid.length} 个
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   {TOPICS_OPTIONS.map((topic) => {
                     const isHappy = selectedTopicsHappy.includes(topic.id);
                     const isAvoid = selectedTopicsAvoid.includes(topic.id);
@@ -458,7 +458,7 @@ export default function InterestsTopicsPage() {
                         onClick={() => toggleTopicAvoid(topic.id)}
                         data-testid={`button-topic-avoid-${topic.id}`}
                         className={`
-                          p-2 text-sm rounded-md border-2 transition-all text-left
+                          px-4 py-2.5 text-base rounded-md border-2 transition-all text-left
                           ${isAvoid 
                             ? 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-400' 
                             : isHappy

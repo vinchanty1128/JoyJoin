@@ -52,7 +52,7 @@ export default function EditWorkPage() {
       return await apiRequest("PATCH", "/api/profile", data);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "工作信息已更新",
@@ -118,7 +118,7 @@ export default function EditWorkPage() {
                 type="button"
                 onClick={() => form.setValue("industry", ind)}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                   ${form.watch("industry") === ind
                     ? 'border-primary bg-primary/5 text-primary' 
                     : 'border-border hover-elevate active-elevate-2'
@@ -160,7 +160,7 @@ export default function EditWorkPage() {
                 type="button"
                 onClick={() => form.setValue("seniority", option.value as any)}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                   ${form.watch("seniority") === option.value
                     ? 'border-primary bg-primary/5 text-primary' 
                     : 'border-border hover-elevate active-elevate-2'
@@ -190,7 +190,7 @@ export default function EditWorkPage() {
                 type="button"
                 onClick={() => form.setValue("workVisibility", option.value as any)}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                   ${form.watch("workVisibility") === option.value
                     ? 'border-primary bg-primary/5 text-primary' 
                     : 'border-border hover-elevate active-elevate-2'

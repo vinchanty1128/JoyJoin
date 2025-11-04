@@ -327,7 +327,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("gender", option.value as any)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("gender") === option.value
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -374,7 +374,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("relationshipStatus", option.value as any)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("relationshipStatus") === option.value
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -409,7 +409,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("children", option.value as any)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("children") === option.value
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -441,7 +441,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("educationLevel", option.value as any)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("educationLevel") === option.value
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -468,7 +468,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("studyLocale", option.value as any)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("studyLocale") === option.value
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -498,7 +498,7 @@ export default function RegistrationPage() {
                             onClick={() => toggleOverseasRegion(region)}
                             data-testid={`button-region-${region}`}
                             className={`
-                              px-3 py-2 text-sm rounded-md border transition-all text-left
+                              px-5 py-4 rounded-lg border transition-all text-left text-base
                               ${isSelected 
                                 ? 'border-primary bg-primary/5 text-primary' 
                                 : 'border-border hover-elevate active-elevate-2'
@@ -566,7 +566,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("industry", option)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("industry") === option
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -614,7 +614,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("seniority", option.value as any)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("seniority") === option.value
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -643,7 +643,7 @@ export default function RegistrationPage() {
                         type="button"
                         onClick={() => form.setValue("workVisibility", option.value as any)}
                         className={`
-                          w-full px-4 py-3 text-left rounded-md border transition-all
+                          w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                           ${form.watch("workVisibility") === option.value
                             ? 'border-primary bg-primary/5 text-primary' 
                             : 'border-border hover-elevate active-elevate-2'
@@ -691,7 +691,7 @@ export default function RegistrationPage() {
                           onClick={() => toggleIntent(option.value)}
                           disabled={isDisabled}
                           className={`
-                            w-full px-4 py-3 text-left rounded-md border transition-all
+                            w-full px-5 py-4 text-left rounded-lg border transition-all
                             ${isSelected
                               ? 'border-primary bg-primary/5 text-primary' 
                               : isDisabled
@@ -716,7 +716,7 @@ export default function RegistrationPage() {
                               )}
                             </div>
                             <div className="flex-1">
-                              <div className="font-medium">{option.label}</div>
+                              <div className="font-medium text-base">{option.label}</div>
                               <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
                             </div>
                           </div>
@@ -799,7 +799,7 @@ export default function RegistrationPage() {
                           onClick={() => toggleLanguage(lang)}
                           data-testid={`button-lang-${lang}`}
                           className={`
-                            px-3 py-2 text-sm rounded-md border transition-all text-left
+                            px-5 py-4 rounded-lg border transition-all text-left text-base
                             ${isSelected 
                               ? 'border-primary bg-primary/5 text-primary' 
                               : 'border-border hover-elevate active-elevate-2'

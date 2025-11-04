@@ -50,7 +50,7 @@ export default function EditBasicInfoPage() {
       return await apiRequest("PATCH", "/api/profile", data);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "基本信息已更新",
@@ -143,7 +143,7 @@ export default function EditBasicInfoPage() {
                 type="button"
                 onClick={() => form.setValue("gender", option.value as "Woman" | "Man")}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all
                   ${form.watch("gender") === option.value
                     ? 'border-primary bg-primary/5 text-primary' 
                     : 'border-border hover-elevate active-elevate-2'
@@ -151,7 +151,7 @@ export default function EditBasicInfoPage() {
                 `}
                 data-testid={`button-gender-${option.value}`}
               >
-                {option.label}
+                <span className="text-base">{option.label}</span>
               </button>
             ))}
           </div>
@@ -171,12 +171,12 @@ export default function EditBasicInfoPage() {
         {/* Languages */}
         <div className="space-y-3">
           <Label>常用语言</Label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {languageOptions.map((lang) => (
               <Badge
                 key={lang}
                 variant={selectedLanguages.includes(lang) ? "default" : "outline"}
-                className="cursor-pointer"
+                className="cursor-pointer px-4 py-2 text-base"
                 onClick={() => toggleLanguage(lang)}
                 data-testid={`badge-language-${lang}`}
               >

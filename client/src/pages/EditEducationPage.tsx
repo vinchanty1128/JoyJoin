@@ -53,7 +53,7 @@ export default function EditEducationPage() {
       return await apiRequest("PATCH", "/api/profile", data);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "教育背景已更新",
@@ -138,7 +138,7 @@ export default function EditEducationPage() {
                 type="button"
                 onClick={() => form.setValue("educationLevel", option.value as any)}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                   ${form.watch("educationLevel") === option.value
                     ? 'border-primary bg-primary/5 text-primary' 
                     : 'border-border hover-elevate active-elevate-2'
@@ -177,7 +177,7 @@ export default function EditEducationPage() {
                 type="button"
                 onClick={() => form.setValue("studyLocale", option.value as any)}
                 className={`
-                  w-full px-4 py-3 text-left rounded-md border transition-all
+                  w-full px-5 py-4 text-left rounded-lg border transition-all text-base
                   ${form.watch("studyLocale") === option.value
                     ? 'border-primary bg-primary/5 text-primary' 
                     : 'border-border hover-elevate active-elevate-2'
@@ -205,7 +205,7 @@ export default function EditEducationPage() {
                   type="button"
                   onClick={() => toggleRegion(region)}
                   className={`
-                    px-3 py-2 text-sm rounded-md border transition-all text-left
+                    px-5 py-4 rounded-lg border transition-all text-left text-base
                     ${selectedRegions.includes(region)
                       ? 'border-primary bg-primary/5 text-primary' 
                       : 'border-border hover-elevate active-elevate-2'

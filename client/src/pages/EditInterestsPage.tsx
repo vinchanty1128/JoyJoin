@@ -169,12 +169,12 @@ export default function EditInterestsPage() {
             <Label className="text-base font-semibold">兴趣爱好</Label>
             <p className="text-sm text-muted-foreground mt-1">选择你感兴趣的活动类型</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {INTERESTS_OPTIONS.map((interest) => (
               <Badge
                 key={interest.id}
                 variant={selectedInterests.includes(interest.id) ? "default" : "outline"}
-                className="cursor-pointer text-sm py-2 px-3"
+                className="cursor-pointer text-base px-4 py-2.5"
                 onClick={() => toggleInterest(interest.id)}
                 data-testid={`badge-interest-${interest.id}`}
               >
@@ -191,12 +191,12 @@ export default function EditInterestsPage() {
             <Label className="text-base font-semibold">喜欢聊的话题</Label>
             <p className="text-sm text-muted-foreground mt-1">选择你感兴趣的聊天话题</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {TOPICS_OPTIONS.map((topic) => (
               <Badge
                 key={topic.id}
                 variant={selectedTopicsHappy.includes(topic.id) ? "default" : "outline"}
-                className="cursor-pointer text-sm py-2 px-3"
+                className="cursor-pointer text-base px-4 py-2.5"
                 onClick={() => toggleTopicHappy(topic.id)}
                 data-testid={`badge-topic-happy-${topic.id}`}
               >
@@ -212,12 +212,12 @@ export default function EditInterestsPage() {
             <Label className="text-base font-semibold">避免的话题</Label>
             <p className="text-sm text-muted-foreground mt-1">选择你不想聊的话题</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {TOPICS_OPTIONS.map((topic) => (
               <Badge
                 key={topic.id}
                 variant={selectedTopicsAvoid.includes(topic.id) ? "destructive" : "outline"}
-                className="cursor-pointer text-sm py-2 px-3"
+                className="cursor-pointer text-base px-4 py-2.5"
                 onClick={() => toggleTopicAvoid(topic.id)}
                 data-testid={`badge-topic-avoid-${topic.id}`}
               >

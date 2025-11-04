@@ -39,10 +39,10 @@ export default function EditIntentPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: IntentForm) => {
-      return await apiRequest("PATCH", "/api/user/profile", data);
+      return await apiRequest("PATCH", "/api/profile", data);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "保存成功",
         description: "活动意图已更新",
@@ -136,7 +136,7 @@ export default function EditIntentPage() {
                   onClick={() => toggleIntent(option.value)}
                   disabled={isDisabled}
                   className={`
-                    w-full px-4 py-3 text-left rounded-md border transition-all
+                    w-full px-5 py-4 text-left rounded-lg border transition-all
                     ${isSelected
                       ? 'border-primary bg-primary/5 text-primary' 
                       : isDisabled
@@ -146,23 +146,23 @@ export default function EditIntentPage() {
                   `}
                   data-testid={`button-intent-${option.value}`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-4">
                     <div className={`
-                      mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center
+                      mt-1 flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center
                       ${isSelected 
                         ? 'bg-primary border-primary' 
                         : 'border-border'
                       }
                     `}>
                       {isSelected && (
-                        <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium">{option.label}</div>
-                      <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
+                      <div className="font-medium text-base">{option.label}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{option.description}</div>
                     </div>
                   </div>
                 </button>
