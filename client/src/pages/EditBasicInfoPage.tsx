@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const languageOptions = ["普通话", "英语", "粤语", "法语", "日语", "韩语", "西班牙语", "德语"];
 
@@ -160,10 +161,17 @@ export default function EditBasicInfoPage() {
         {/* Birthdate */}
         <div className="space-y-2">
           <Label htmlFor="birthdate">生日</Label>
-          <Input
-            id="birthdate"
-            type="date"
-            {...form.register("birthdate")}
+          <DatePicker
+            value={form.watch("birthdate") ? new Date(form.watch("birthdate")) : undefined}
+            onChange={(date) => {
+              if (date) {
+                form.setValue("birthdate", date.toISOString().split('T')[0]);
+              } else {
+                form.setValue("birthdate", "");
+              }
+            }}
+            maxDate={new Date()}
+            placeholder="选择出生日期"
             data-testid="input-birthdate"
           />
         </div>

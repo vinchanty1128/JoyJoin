@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { intentOptions } from "@/lib/userFieldMappings";
 import { Separator } from "@/components/ui/separator";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export default function RegistrationPage() {
   const [, setLocation] = useLocation();
@@ -281,13 +282,18 @@ export default function RegistrationPage() {
 
                 <div>
                   <Label>出生日期 *</Label>
-                  <Input
-                    type="date"
-                    value={form.watch("birthdate")}
-                    onChange={(e) => form.setValue("birthdate", e.target.value)}
-                    max={new Date().toISOString().split('T')[0]}
+                  <DatePicker
+                    value={form.watch("birthdate") ? new Date(form.watch("birthdate")) : undefined}
+                    onChange={(date) => {
+                      if (date) {
+                        form.setValue("birthdate", date.toISOString().split('T')[0]);
+                      } else {
+                        form.setValue("birthdate", "");
+                      }
+                    }}
+                    maxDate={new Date()}
+                    placeholder="选择出生日期"
                     data-testid="input-birthdate"
-                    className="w-full"
                   />
                   {form.formState.errors.birthdate && (
                     <p className="text-sm text-destructive mt-1">
