@@ -126,7 +126,7 @@ export default function PersonalityTestResultPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="relative min-h-[85vh] md:min-h-screen flex flex-col items-center justify-center px-4 py-8 md:p-6 overflow-hidden"
+        className="relative min-h-[70vh] md:min-h-screen flex flex-col items-center justify-center px-4 py-6 md:p-6 overflow-hidden"
       >
         {/* Gradient Background */}
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-10`} />
@@ -153,11 +153,11 @@ export default function PersonalityTestResultPage() {
             className="space-y-3 md:space-y-4 text-center"
           >
             <div className="space-y-1 md:space-y-2">
-              <h1 className="text-3xl md:text-5xl font-bold text-center" data-testid="text-primary-role">
+              <h1 className="text-4xl md:text-5xl font-bold text-center" data-testid="text-primary-role">
                 {result.primaryRole}
               </h1>
               {result.roleSubtype && (
-                <p className="text-base md:text-lg text-muted-foreground text-center" data-testid="text-role-subtype">
+                <p className="text-lg md:text-xl text-muted-foreground text-center" data-testid="text-role-subtype">
                   {result.roleSubtype}
                 </p>
               )}
@@ -165,7 +165,7 @@ export default function PersonalityTestResultPage() {
             
             {/* Primary Role Description */}
             {primaryRoleDesc && (
-              <p className="text-sm md:text-base text-foreground/80 max-w-md mx-auto px-2 md:px-4 text-center">
+              <p className="text-base md:text-lg text-foreground/80 max-w-md mx-auto px-2 md:px-4 text-center">
                 {primaryRoleDesc}
               </p>
             )}
@@ -173,11 +173,11 @@ export default function PersonalityTestResultPage() {
             {/* Secondary Role Badge with Description */}
             {result.secondaryRole && (
               <div className="pt-1 md:pt-2 space-y-1 md:space-y-2 flex flex-col items-center">
-                <Badge variant="secondary" className="text-xs md:text-sm px-3 md:px-4 py-1" data-testid="badge-secondary-role">
+                <Badge variant="secondary" className="text-sm md:text-base px-3 md:px-4 py-1" data-testid="badge-secondary-role">
                   辅助角色: {result.secondaryRole}
                 </Badge>
                 {secondaryRoleDesc && (
-                  <p className="text-xs md:text-sm text-muted-foreground max-w-md mx-auto px-2 md:px-4 text-center">
+                  <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto px-2 md:px-4 text-center">
                     {secondaryRoleDesc}
                   </p>
                 )}
