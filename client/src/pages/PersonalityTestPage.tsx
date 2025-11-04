@@ -399,46 +399,30 @@ export default function PersonalityTestPage() {
               {currentQ.options.map((option, index) => {
                 const isSelected = answers[currentQ.id]?.value === option.value;
                 return (
-                  <motion.div
+                  <div
                     key={option.value}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate active-elevate-2 transition-all ${
+                      isSelected ? "border-primary bg-primary/5" : ""
+                    }`}
                   >
-                    <motion.div
-                      whileTap={{ scale: 0.98 }}
-                      animate={isSelected ? {
-                        scale: [1, 1.02, 1],
-                        borderColor: ["hsl(var(--primary))", "hsl(var(--primary))"]
-                      } : {}}
-                      transition={{ duration: 0.3 }}
-                      className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
-                        isSelected ? "border-primary bg-primary/5" : ""
-                      }`}
+                    <RadioGroupItem
+                      value={option.value}
+                      id={`q${currentQ.id}-${option.value}`}
+                      data-testid={`radio-q${currentQ.id}-${option.value}`}
+                    />
+                    <Label
+                      htmlFor={`q${currentQ.id}-${option.value}`}
+                      className="flex-1 cursor-pointer font-normal"
                     >
-                      <RadioGroupItem
-                        value={option.value}
-                        id={`q${currentQ.id}-${option.value}`}
-                        data-testid={`radio-q${currentQ.id}-${option.value}`}
-                      />
-                      <Label
-                        htmlFor={`q${currentQ.id}-${option.value}`}
-                        className="flex-1 cursor-pointer font-normal"
-                      >
-                        <span className="font-semibold mr-2">{option.value}.</span>
-                        {option.text}
-                      </Label>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="text-primary"
-                        >
-                          ✓
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  </motion.div>
+                      <span className="font-semibold mr-2">{option.value}.</span>
+                      {option.text}
+                    </Label>
+                    {isSelected && (
+                      <span className="text-primary font-bold">
+                        ✓
+                      </span>
+                    )}
+                  </div>
                 );
               })}
             </RadioGroup>
@@ -456,47 +440,31 @@ export default function PersonalityTestPage() {
                     const isSelected = answers[currentQ.id]?.mostLike === option.value;
                     const isDisabled = answers[currentQ.id]?.secondLike === option.value;
                     return (
-                      <motion.div
+                      <div
                         key={option.value}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate active-elevate-2 transition-all ${
+                          isDisabled ? "opacity-50 pointer-events-none" : ""
+                        } ${isSelected ? "border-primary bg-primary/5" : ""}`}
                       >
-                        <motion.div
-                          whileTap={!isDisabled ? { scale: 0.98 } : {}}
-                          animate={isSelected ? {
-                            scale: [1, 1.02, 1],
-                            borderColor: ["hsl(var(--primary))", "hsl(var(--primary))"]
-                          } : {}}
-                          transition={{ duration: 0.3 }}
-                          className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
-                            isDisabled ? "opacity-50" : ""
-                          } ${isSelected ? "border-primary bg-primary/5" : ""}`}
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`q${currentQ.id}-most-${option.value}`}
+                          disabled={isDisabled}
+                          data-testid={`radio-q${currentQ.id}-most-${option.value}`}
+                        />
+                        <Label
+                          htmlFor={`q${currentQ.id}-most-${option.value}`}
+                          className="flex-1 cursor-pointer font-normal"
                         >
-                          <RadioGroupItem
-                            value={option.value}
-                            id={`q${currentQ.id}-most-${option.value}`}
-                            disabled={isDisabled}
-                            data-testid={`radio-q${currentQ.id}-most-${option.value}`}
-                          />
-                          <Label
-                            htmlFor={`q${currentQ.id}-most-${option.value}`}
-                            className="flex-1 cursor-pointer font-normal"
-                          >
-                            <span className="font-semibold mr-2">{option.value}.</span>
-                            {option.text}
-                          </Label>
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="text-primary"
-                            >
-                              ✓
-                            </motion.div>
-                          )}
-                        </motion.div>
-                      </motion.div>
+                          <span className="font-semibold mr-2">{option.value}.</span>
+                          {option.text}
+                        </Label>
+                        {isSelected && (
+                          <span className="text-primary font-bold">
+                            ✓
+                          </span>
+                        )}
+                      </div>
                     );
                   })}
                 </RadioGroup>
@@ -514,47 +482,31 @@ export default function PersonalityTestPage() {
                     const isSelected = answers[currentQ.id]?.secondLike === option.value;
                     const isDisabled = answers[currentQ.id]?.mostLike === option.value;
                     return (
-                      <motion.div
+                      <div
                         key={option.value}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate active-elevate-2 transition-all ${
+                          isDisabled ? "opacity-50 pointer-events-none" : ""
+                        } ${isSelected ? "border-primary bg-primary/5" : ""}`}
                       >
-                        <motion.div
-                          whileTap={!isDisabled ? { scale: 0.98 } : {}}
-                          animate={isSelected ? {
-                            scale: [1, 1.02, 1],
-                            borderColor: ["hsl(var(--primary))", "hsl(var(--primary))"]
-                          } : {}}
-                          transition={{ duration: 0.3 }}
-                          className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
-                            isDisabled ? "opacity-50" : ""
-                          } ${isSelected ? "border-primary bg-primary/5" : ""}`}
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`q${currentQ.id}-second-${option.value}`}
+                          disabled={isDisabled}
+                          data-testid={`radio-q${currentQ.id}-second-${option.value}`}
+                        />
+                        <Label
+                          htmlFor={`q${currentQ.id}-second-${option.value}`}
+                          className="flex-1 cursor-pointer font-normal"
                         >
-                          <RadioGroupItem
-                            value={option.value}
-                            id={`q${currentQ.id}-second-${option.value}`}
-                            disabled={isDisabled}
-                            data-testid={`radio-q${currentQ.id}-second-${option.value}`}
-                          />
-                          <Label
-                            htmlFor={`q${currentQ.id}-second-${option.value}`}
-                            className="flex-1 cursor-pointer font-normal"
-                          >
-                            <span className="font-semibold mr-2">{option.value}.</span>
-                            {option.text}
+                          <span className="font-semibold mr-2">{option.value}.</span>
+                          {option.text}
                           </Label>
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="text-primary"
-                            >
-                              ✓
-                            </motion.div>
-                          )}
-                        </motion.div>
-                      </motion.div>
+                        {isSelected && (
+                          <span className="text-primary font-bold">
+                            ✓
+                          </span>
+                        )}
+                      </div>
                     );
                   })}
                 </RadioGroup>
