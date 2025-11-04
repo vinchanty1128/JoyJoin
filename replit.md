@@ -53,12 +53,15 @@ Preferred communication style: Simple, everyday language.
 - **Event Management:** Detailed event pages with reordered sections, clear navigation for event states ("匹配中", "已匹配", "已完成"), and enhanced attendee cards. Event cards visually distinguish between locked and unlocked states.
 - **Personality Assessment System (Gamified):** 
   - **10-Question Test:** Includes single-choice and dual-choice question types with contextual scenario descriptions and emoji.
+  - **Performance Optimization:** Removed 3-layer motion.div nesting from option selections, replacing with CSS-based hover/active states (hover-elevate, active-elevate-2) for immediate click response without lag.
   - **Real-time Micro-feedback:** Selected options show border highlights, background color changes, and checkmark indicators with smooth animations.
   - **Mini Radar Chart Preview:** MiniRadarChart component appears in header after first question, grows progressively as user answers more questions.
   - **Mid-Test Suspense Teaser:** After question 5, a suspense card appears with "有意思！我们已经发现了你的一个隐藏特质..." message, auto-dismisses after 2.5 seconds.
   - **Blind Box Reveal Animation:** Upon test completion, full-screen overlay with animated 🎁 gift box rotating 360°, "正在揭晓你的社交角色..." text, and three jumping loading dots for 3 seconds before revealing results.
-  - **Enhanced Results Page:** 
-    - Displays primary role, secondary role, six-dimension radar chart, strengths, challenges, and ideal friend types
+  - **Enhanced Results Page with Full-Screen Hero:** 
+    - **Hero Section:** Full-viewport hero with large (192px) archetype avatar, role name in 5xl font, archetype-specific gradient background, and animated scroll indicator
+    - **Avatar System:** Archetype image mapping in `archetypeAvatars.ts` supporting high-res image imports from @assets directory (currently using emoji placeholders)
+    - **Scroll-Reveal Content:** Cards animate into view as user scrolls, displaying primary role, secondary role, six-dimension radar chart, strengths, challenges, and ideal friend types
     - **Social Comparison Card:** Shows user's role percentage in community (e.g., "51% of users are also 探索者"), displays top 4 role distribution in grid layout
     - **Chemistry Prediction Card:** Shows matching compatibility with 3 best-matched roles using animated progress bars (e.g., 火花塞 92%, 挑战者 90%, 连接者 86%)
     - **Web Share Integration:** Share results via Web Share API with fallback to clipboard
