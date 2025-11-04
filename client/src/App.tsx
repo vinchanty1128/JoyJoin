@@ -126,6 +126,7 @@ function AuthenticatedRouter() {
       <Route path="/profile/edit/intent" component={EditIntentPage} />
       <Route path="/profile/edit/interests" component={EditInterestsPage} />
       <Route path="/event/:id" component={EventDetailPage} />
+      <Route path="/personality-test" component={PersonalityTestPage} />
       <Route path="/personality-test/results" component={PersonalityTestResultPage} />
       <Route component={NotFound} />
     </Switch>
