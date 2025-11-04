@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import PersonalityRadarChart from '@/components/PersonalityRadarChart';
-import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2, ChevronDown } from 'lucide-react';
+import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2 } from 'lucide-react';
 import type { RoleResult } from '@shared/schema';
 import { queryClient } from '@/lib/queryClient';
 import { motion } from 'framer-motion';
@@ -138,7 +138,7 @@ export default function PersonalityTestResultPage() {
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="mx-auto"
+            className="flex justify-center"
           >
             <div className={`w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-2xl`}>
               <span className="text-6xl md:text-9xl" data-testid="text-role-avatar">{emoji}</span>
@@ -183,23 +183,6 @@ export default function PersonalityTestResultPage() {
                 )}
               </div>
             )}
-          </motion.div>
-
-          {/* Scroll Indicator */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2"
-          >
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-              className="flex flex-col items-center gap-1 md:gap-2 text-muted-foreground"
-            >
-              <span className="text-xs md:text-sm">向下滚动查看详情</span>
-              <ChevronDown className="w-5 h-5 md:w-6 md:h-6" />
-            </motion.div>
           </motion.div>
         </div>
       </motion.div>
