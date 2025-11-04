@@ -312,6 +312,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async saveRoleResult(userId: string, result: InsertRoleResult): Promise<RoleResult> {
+    console.log("[TEST-DEBUG] saveRoleResult called with userId:", userId);
+    console.log("[TEST-DEBUG] saveRoleResult input data:", {
+      primaryRole: result.primaryRole,
+      secondaryRole: result.secondaryRole,
+      primaryRoleScore: result.primaryRoleScore,
+      secondaryRoleScore: result.secondaryRoleScore,
+    });
+    
     // First update user table with role information
     await db
       .update(users)
@@ -331,16 +339,26 @@ export class DatabaseStorage implements IStorage {
         userId,
       })
       .returning();
+    
+    console.log("[TEST-DEBUG] saveRoleResult saved to DB - Primary:", roleResult.primaryRole, "Secondary:", roleResult.secondaryRole);
+    console.log("[TEST-DEBUG] saveRoleResult returning roleResult.id:", roleResult.id);
     return roleResult;
   }
 
   async getRoleResult(userId: string): Promise<RoleResult | undefined> {
+    console.log("[TEST-DEBUG] getRoleResult called for userId:", userId);
     const [result] = await db
       .select()
       .from(roleResults)
       .where(eq(roleResults.userId, userId))
       .orderBy(desc(roleResults.createdAt))
       .limit(1);
+    
+    if (result) {
+      console.log("[TEST-DEBUG] getRoleResult found - Primary:", result.primaryRole, "Secondary:", result.secondaryRole, "ID:", result.id);
+    } else {
+      console.log("[TEST-DEBUG] getRoleResult found NO results for user");
+    }
     return result;
   }
 

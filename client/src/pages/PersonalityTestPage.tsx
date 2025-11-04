@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
@@ -167,6 +167,19 @@ export default function PersonalityTestPage() {
   const [answers, setAnswers] = useState<Record<number, any>>({});
   const [showMilestone, setShowMilestone] = useState(false);
   const [showBlindBox, setShowBlindBox] = useState(false);
+
+  // Check if user has already completed the personality test
+  const { data: user } = useQuery<any>({
+    queryKey: ["/api/auth/user"],
+  });
+
+  // Redirect to results if test already completed
+  useEffect(() => {
+    if (user?.hasCompletedPersonalityTest) {
+      console.log("[PersonalityTest] User has already completed test, redirecting to results");
+      setLocation("/personality-test/results");
+    }
+  }, [user, setLocation]);
 
   const submitTestMutation = useMutation({
     mutationFn: async (responses: Record<number, any>) => {
