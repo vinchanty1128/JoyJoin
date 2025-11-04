@@ -393,25 +393,36 @@ export default function PersonalityTestResultPage() {
         </motion.div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 pt-2">
+        <div className="space-y-3 pt-2">
+          <div className="flex gap-3">
+            <Button
+              data-testid="button-share"
+              variant="outline"
+              className="flex-1"
+              onClick={handleShare}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              分享结果
+            </Button>
+            <Button
+              data-testid="button-continue"
+              className="flex-1"
+              onClick={async () => {
+                await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+                setLocation('/');
+              }}
+            >
+              开始探索活动
+            </Button>
+          </div>
           <Button
-            data-testid="button-share"
+            data-testid="button-retake-test"
             variant="outline"
-            className="flex-1"
-            onClick={handleShare}
+            className="w-full"
+            onClick={() => setLocation('/personality-test')}
           >
-            <Share2 className="w-4 h-4 mr-2" />
-            分享结果
-          </Button>
-          <Button
-            data-testid="button-continue"
-            className="flex-1"
-            onClick={async () => {
-              await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-              setLocation('/');
-            }}
-          >
-            开始探索活动
+            <Sparkles className="w-4 h-4 mr-2" />
+            重新测试
           </Button>
         </div>
       </div>
