@@ -150,14 +150,14 @@ export default function PersonalityTestResultPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="space-y-4"
+            className="space-y-4 text-center"
           >
             <div className="space-y-2">
-              <h1 className="text-5xl font-bold" data-testid="text-primary-role">
+              <h1 className="text-5xl font-bold text-center" data-testid="text-primary-role">
                 {result.primaryRole}
               </h1>
               {result.roleSubtype && (
-                <p className="text-lg text-muted-foreground" data-testid="text-role-subtype">
+                <p className="text-lg text-muted-foreground text-center" data-testid="text-role-subtype">
                   {result.roleSubtype}
                 </p>
               )}
@@ -165,19 +165,19 @@ export default function PersonalityTestResultPage() {
             
             {/* Primary Role Description */}
             {primaryRoleDesc && (
-              <p className="text-base text-foreground/80 max-w-md mx-auto px-4">
+              <p className="text-base text-foreground/80 max-w-md mx-auto px-4 text-center">
                 {primaryRoleDesc}
               </p>
             )}
 
             {/* Secondary Role Badge with Description */}
             {result.secondaryRole && (
-              <div className="pt-2 space-y-2">
+              <div className="pt-2 space-y-2 flex flex-col items-center">
                 <Badge variant="secondary" className="text-sm px-4 py-1" data-testid="badge-secondary-role">
                   辅助角色: {result.secondaryRole}
                 </Badge>
                 {secondaryRoleDesc && (
-                  <p className="text-sm text-muted-foreground max-w-md mx-auto px-4">
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto px-4 text-center">
                     {secondaryRoleDesc}
                   </p>
                 )}
