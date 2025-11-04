@@ -165,7 +165,7 @@ export default function PersonalityTestResultPage() {
             
             {/* Primary Role Description */}
             {primaryRoleDesc && (
-              <p className="text-sm md:text-base text-foreground/80 max-w-md mx-auto px-2 md:px-4" style={{ textAlign: 'center' }}>
+              <p className="text-sm md:text-base text-foreground/80 max-w-md mx-auto px-2 md:px-4 text-center">
                 {primaryRoleDesc}
               </p>
             )}
@@ -177,7 +177,7 @@ export default function PersonalityTestResultPage() {
                   辅助角色: {result.secondaryRole}
                 </Badge>
                 {secondaryRoleDesc && (
-                  <p className="text-xs md:text-sm text-muted-foreground max-w-md mx-auto px-2 md:px-4" style={{ textAlign: 'center' }}>
+                  <p className="text-xs md:text-sm text-muted-foreground max-w-md mx-auto px-2 md:px-4 text-center">
                     {secondaryRoleDesc}
                   </p>
                 )}
