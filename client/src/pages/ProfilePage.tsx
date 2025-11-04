@@ -115,7 +115,7 @@ export default function ProfilePage() {
   } : null;
 
   const handleStartQuiz = () => {
-    setLocation("/onboarding/quiz");
+    setLocation("/personality-test");
   };
 
   const getUserName = () => {
