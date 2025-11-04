@@ -97,6 +97,7 @@ export default function PersonalityTestResultPage() {
   const myPercentage = stats?.[result.primaryRole] || 0;
   const gradient = archetypeGradients[result.primaryRole] || 'from-purple-500 to-pink-500';
   const emoji = archetypeEmojis[result.primaryRole] || '🌟';
+  const secondaryEmoji = result.secondaryRole ? archetypeEmojis[result.secondaryRole] || '✨' : '';
   const primaryRoleDesc = archetypeConfig[result.primaryRole]?.description || '';
   const secondaryRoleDesc = result.secondaryRole ? archetypeConfig[result.secondaryRole]?.description || '' : '';
 
@@ -174,7 +175,7 @@ export default function PersonalityTestResultPage() {
             {result.secondaryRole && (
               <div className="pt-1 md:pt-2 space-y-1 md:space-y-2 flex flex-col items-center">
                 <Badge variant="secondary" className="text-sm md:text-base px-3 md:px-4 py-1" data-testid="badge-secondary-role">
-                  辅助角色: {result.secondaryRole}
+                  {secondaryEmoji} 辅助角色: {result.secondaryRole}
                 </Badge>
                 {secondaryRoleDesc && (
                   <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto px-2 md:px-4 text-center">
