@@ -10,6 +10,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import MiniRadarChart from "@/components/MiniRadarChart";
 
 interface QuestionOption {
   value: string;
@@ -353,7 +354,16 @@ export default function PersonalityTestPage() {
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-lg font-bold">性格测评</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-bold">性格测评</h1>
+            {Object.keys(answers).length > 0 && (
+              <MiniRadarChart 
+                progress={progress}
+                answeredQuestions={Object.keys(answers).length}
+                totalQuestions={questions.length}
+              />
+            )}
+          </div>
           <span className="text-sm text-muted-foreground">
             {currentQuestion + 1}/{questions.length}
           </span>
