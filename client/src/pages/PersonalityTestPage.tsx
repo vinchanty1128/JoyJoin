@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface QuestionOption {
   value: string;
@@ -19,6 +21,7 @@ interface Question {
   id: number;
   category: string;
   questionText: string;
+  scenarioText?: string;
   questionType: "single" | "dual";
   options: QuestionOption[];
 }
@@ -27,6 +30,7 @@ const questions: Question[] = [
   {
     id: 1,
     category: "基础行为模式",
+    scenarioText: "🎉 想象一下：周五晚上，你走进了一个温馨的私房菜餐厅，参加一场小型聚会...",
     questionText: "聚会伊始…你通常会？",
     questionType: "single",
     options: [
@@ -39,6 +43,7 @@ const questions: Question[] = [
   {
     id: 2,
     category: "基础行为模式",
+    scenarioText: "💬 话题转向你并不熟悉的领域，例如区块链技术或古典音乐...",
     questionText: "当讨论到你知之甚少的话题时更倾向于？",
     questionType: "single",
     options: [
@@ -51,6 +56,7 @@ const questions: Question[] = [
   {
     id: 3,
     category: "基础行为模式",
+    scenarioText: "😢 气氛突然变得安静，有人刚分享了一段动人的个人经历...",
     questionText: "当有人分享私人感人故事后沉默，你会？",
     questionType: "single",
     options: [
@@ -63,6 +69,7 @@ const questions: Question[] = [
   {
     id: 4,
     category: "基础行为模式",
+    scenarioText: "🤔 两位朋友开始就某个话题展开辩论，观点针锋相对...",
     questionText: "你如何看待社交中的\"争论\"？",
     questionType: "single",
     options: [
@@ -75,6 +82,7 @@ const questions: Question[] = [
   {
     id: 5,
     category: "反应偏好",
+    scenarioText: "💭 有人说出一个你并不认同的观点...",
     questionText: "听到不同意的观点时更可能：",
     questionType: "dual",
     options: [
@@ -87,6 +95,7 @@ const questions: Question[] = [
   {
     id: 6,
     category: "反应偏好",
+    scenarioText: "🎯 在团队讨论中，你发现你可以贡献价值...",
     questionText: "更擅长/享受的贡献方式：",
     questionType: "dual",
     options: [
@@ -99,6 +108,7 @@ const questions: Question[] = [
   {
     id: 7,
     category: "反应偏好",
+    scenarioText: "🌟 有人提出了一个既有趣又复杂的话题...",
     questionText: "有趣但复杂的话题被提起时你更推动：",
     questionType: "dual",
     options: [
@@ -111,6 +121,7 @@ const questions: Question[] = [
   {
     id: 8,
     category: "自我认知",
+    scenarioText: "😰 回想你在社交场合中最不舒服的时刻...",
     questionText: "社交中你最大的焦虑来自于？",
     questionType: "single",
     options: [
@@ -123,6 +134,7 @@ const questions: Question[] = [
   {
     id: 9,
     category: "自我认知",
+    scenarioText: "🙅 思考一下，在聚会中有些角色你就是做不来...",
     questionText: "你最不可能扮演的角色是？",
     questionType: "single",
     options: [
@@ -135,6 +147,7 @@ const questions: Question[] = [
   {
     id: 10,
     category: "自我认知",
+    scenarioText: "👥 如果你的朋友要向别人介绍你...",
     questionText: "朋友形容你：",
     questionType: "single",
     options: [
@@ -151,6 +164,8 @@ export default function PersonalityTestPage() {
   const { toast } = useToast();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, any>>({});
+  const [showMilestone, setShowMilestone] = useState(false);
+  const [showBlindBox, setShowBlindBox] = useState(false);
 
   const submitTestMutation = useMutation({
     mutationFn: async (responses: Record<number, any>) => {
@@ -159,11 +174,13 @@ export default function PersonalityTestPage() {
       });
     },
     onSuccess: (data) => {
-      // Don't invalidate auth query yet - let user see results first
-      // Redirect to results page with the role result
-      setLocation(`/personality-test/results`);
+      // Show blind box animation for 3 seconds
+      setTimeout(() => {
+        setLocation(`/personality-test/results`);
+      }, 3000);
     },
     onError: (error: Error) => {
+      setShowBlindBox(false);
       toast({
         title: "提交失败",
         description: error.message,
@@ -205,9 +222,19 @@ export default function PersonalityTestPage() {
     if (!canProceed()) return;
 
     if (isLastQuestion) {
+      setShowBlindBox(true);
       submitTestMutation.mutate(answers);
     } else {
-      setCurrentQuestion(currentQuestion + 1);
+      // Show milestone after question 5 (index 4)
+      if (currentQuestion === 4 && !showMilestone) {
+        setShowMilestone(true);
+        setTimeout(() => {
+          setShowMilestone(false);
+          setCurrentQuestion(currentQuestion + 1);
+        }, 2500);
+      } else {
+        setCurrentQuestion(currentQuestion + 1);
+      }
     }
   };
 
@@ -217,8 +244,112 @@ export default function PersonalityTestPage() {
     }
   };
 
+  // Blind Box Animation Component
+  const BlindBoxReveal = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center"
+    >
+      <div className="text-center space-y-6">
+        <motion.div
+          initial={{ scale: 0.5, rotateY: 0 }}
+          animate={{ 
+            scale: [0.5, 1.1, 1],
+            rotateY: [0, 180, 360],
+          }}
+          transition={{ 
+            duration: 2,
+            times: [0, 0.5, 1],
+            ease: "easeInOut"
+          }}
+          className="text-8xl"
+        >
+          🎁
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5 }}
+          className="space-y-2"
+        >
+          <h2 className="text-2xl font-bold">正在揭晓你的社交角色...</h2>
+          <p className="text-muted-foreground">✨ 即将发现真实的你</p>
+        </motion.div>
+        
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: [0, 1.2, 1] }}
+          transition={{ delay: 2, duration: 0.5 }}
+          className="flex justify-center gap-2"
+        >
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              animate={{ 
+                y: [0, -10, 0],
+                opacity: [0.5, 1, 0.5]
+              }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                delay: i * 0.2
+              }}
+              className="w-2 h-2 rounded-full bg-primary"
+            />
+          ))}
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  // Milestone Card Component
+  const MilestoneCard = () => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 flex items-center justify-center p-4"
+    >
+      <Card className="max-w-md w-full">
+        <CardContent className="pt-6 pb-6 text-center space-y-4">
+          <motion.div
+            animate={{ 
+              rotate: [0, 10, -10, 10, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ duration: 0.6 }}
+            className="text-6xl"
+          >
+            ✨
+          </motion.div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold">有意思！</h3>
+            <p className="text-muted-foreground">
+              我们已经发现了你的一个隐藏特质...
+            </p>
+            <p className="text-sm text-primary font-medium">
+              继续答题揭晓完整的社交画像 🎁
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Blind Box Reveal Overlay */}
+      <AnimatePresence>
+        {showBlindBox && <BlindBoxReveal />}
+      </AnimatePresence>
+
+      {/* Milestone Overlay */}
+      <AnimatePresence>
+        {showMilestone && <MilestoneCard />}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-2">
@@ -233,10 +364,20 @@ export default function PersonalityTestPage() {
       {/* Question content */}
       <div className="flex-1 p-6 overflow-y-auto">
         <div className="max-w-2xl mx-auto space-y-6">
-          <div>
+          <motion.div
+            key={currentQuestion}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="text-sm text-muted-foreground mb-2">{currentQ.category}</div>
+            {currentQ.scenarioText && (
+              <p className="text-sm text-muted-foreground mb-3 italic leading-relaxed">
+                {currentQ.scenarioText}
+              </p>
+            )}
             <h2 className="text-xl font-bold mb-6">{currentQ.questionText}</h2>
-          </div>
+          </motion.div>
 
           {currentQ.questionType === "single" ? (
             <RadioGroup
@@ -245,25 +386,51 @@ export default function PersonalityTestPage() {
               onValueChange={handleSingleChoice}
               className="space-y-3"
             >
-              {currentQ.options.map((option) => (
-                <div
-                  key={option.value}
-                  className="flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all"
-                >
-                  <RadioGroupItem
-                    value={option.value}
-                    id={`q${currentQ.id}-${option.value}`}
-                    data-testid={`radio-q${currentQ.id}-${option.value}`}
-                  />
-                  <Label
-                    htmlFor={`q${currentQ.id}-${option.value}`}
-                    className="flex-1 cursor-pointer font-normal"
+              {currentQ.options.map((option, index) => {
+                const isSelected = answers[currentQ.id]?.value === option.value;
+                return (
+                  <motion.div
+                    key={option.value}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
                   >
-                    <span className="font-semibold mr-2">{option.value}.</span>
-                    {option.text}
-                  </Label>
-                </div>
-              ))}
+                    <motion.div
+                      whileTap={{ scale: 0.98 }}
+                      animate={isSelected ? {
+                        scale: [1, 1.02, 1],
+                        borderColor: ["hsl(var(--primary))", "hsl(var(--primary))"]
+                      } : {}}
+                      transition={{ duration: 0.3 }}
+                      className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
+                        isSelected ? "border-primary bg-primary/5" : ""
+                      }`}
+                    >
+                      <RadioGroupItem
+                        value={option.value}
+                        id={`q${currentQ.id}-${option.value}`}
+                        data-testid={`radio-q${currentQ.id}-${option.value}`}
+                      />
+                      <Label
+                        htmlFor={`q${currentQ.id}-${option.value}`}
+                        className="flex-1 cursor-pointer font-normal"
+                      >
+                        <span className="font-semibold mr-2">{option.value}.</span>
+                        {option.text}
+                      </Label>
+                      {isSelected && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="text-primary"
+                        >
+                          ✓
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
             </RadioGroup>
           ) : (
             <div className="space-y-6">
@@ -275,28 +442,53 @@ export default function PersonalityTestPage() {
                   onValueChange={(value) => handleDualChoice("most", value)}
                   className="space-y-3"
                 >
-                  {currentQ.options.map((option) => (
-                    <div
-                      key={option.value}
-                      className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
-                        answers[currentQ.id]?.secondLike === option.value ? "opacity-50" : ""
-                      }`}
-                    >
-                      <RadioGroupItem
-                        value={option.value}
-                        id={`q${currentQ.id}-most-${option.value}`}
-                        disabled={answers[currentQ.id]?.secondLike === option.value}
-                        data-testid={`radio-q${currentQ.id}-most-${option.value}`}
-                      />
-                      <Label
-                        htmlFor={`q${currentQ.id}-most-${option.value}`}
-                        className="flex-1 cursor-pointer font-normal"
+                  {currentQ.options.map((option, index) => {
+                    const isSelected = answers[currentQ.id]?.mostLike === option.value;
+                    const isDisabled = answers[currentQ.id]?.secondLike === option.value;
+                    return (
+                      <motion.div
+                        key={option.value}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
                       >
-                        <span className="font-semibold mr-2">{option.value}.</span>
-                        {option.text}
-                      </Label>
-                    </div>
-                  ))}
+                        <motion.div
+                          whileTap={!isDisabled ? { scale: 0.98 } : {}}
+                          animate={isSelected ? {
+                            scale: [1, 1.02, 1],
+                            borderColor: ["hsl(var(--primary))", "hsl(var(--primary))"]
+                          } : {}}
+                          transition={{ duration: 0.3 }}
+                          className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
+                            isDisabled ? "opacity-50" : ""
+                          } ${isSelected ? "border-primary bg-primary/5" : ""}`}
+                        >
+                          <RadioGroupItem
+                            value={option.value}
+                            id={`q${currentQ.id}-most-${option.value}`}
+                            disabled={isDisabled}
+                            data-testid={`radio-q${currentQ.id}-most-${option.value}`}
+                          />
+                          <Label
+                            htmlFor={`q${currentQ.id}-most-${option.value}`}
+                            className="flex-1 cursor-pointer font-normal"
+                          >
+                            <span className="font-semibold mr-2">{option.value}.</span>
+                            {option.text}
+                          </Label>
+                          {isSelected && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="text-primary"
+                            >
+                              ✓
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      </motion.div>
+                    );
+                  })}
                 </RadioGroup>
               </div>
 
@@ -308,28 +500,53 @@ export default function PersonalityTestPage() {
                   onValueChange={(value) => handleDualChoice("second", value)}
                   className="space-y-3"
                 >
-                  {currentQ.options.map((option) => (
-                    <div
-                      key={option.value}
-                      className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
-                        answers[currentQ.id]?.mostLike === option.value ? "opacity-50" : ""
-                      }`}
-                    >
-                      <RadioGroupItem
-                        value={option.value}
-                        id={`q${currentQ.id}-second-${option.value}`}
-                        disabled={answers[currentQ.id]?.mostLike === option.value}
-                        data-testid={`radio-q${currentQ.id}-second-${option.value}`}
-                      />
-                      <Label
-                        htmlFor={`q${currentQ.id}-second-${option.value}`}
-                        className="flex-1 cursor-pointer font-normal"
+                  {currentQ.options.map((option, index) => {
+                    const isSelected = answers[currentQ.id]?.secondLike === option.value;
+                    const isDisabled = answers[currentQ.id]?.mostLike === option.value;
+                    return (
+                      <motion.div
+                        key={option.value}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
                       >
-                        <span className="font-semibold mr-2">{option.value}.</span>
-                        {option.text}
-                      </Label>
-                    </div>
-                  ))}
+                        <motion.div
+                          whileTap={!isDisabled ? { scale: 0.98 } : {}}
+                          animate={isSelected ? {
+                            scale: [1, 1.02, 1],
+                            borderColor: ["hsl(var(--primary))", "hsl(var(--primary))"]
+                          } : {}}
+                          transition={{ duration: 0.3 }}
+                          className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate transition-all ${
+                            isDisabled ? "opacity-50" : ""
+                          } ${isSelected ? "border-primary bg-primary/5" : ""}`}
+                        >
+                          <RadioGroupItem
+                            value={option.value}
+                            id={`q${currentQ.id}-second-${option.value}`}
+                            disabled={isDisabled}
+                            data-testid={`radio-q${currentQ.id}-second-${option.value}`}
+                          />
+                          <Label
+                            htmlFor={`q${currentQ.id}-second-${option.value}`}
+                            className="flex-1 cursor-pointer font-normal"
+                          >
+                            <span className="font-semibold mr-2">{option.value}.</span>
+                            {option.text}
+                          </Label>
+                          {isSelected && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="text-primary"
+                            >
+                              ✓
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      </motion.div>
+                    );
+                  })}
                 </RadioGroup>
               </div>
             </div>
