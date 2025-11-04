@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import PersonalityRadarChart from '@/components/PersonalityRadarChart';
-import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2 } from 'lucide-react';
+import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2, ChevronDown } from 'lucide-react';
 import type { RoleResult } from '@shared/schema';
 import { queryClient } from '@/lib/queryClient';
 import { motion } from 'framer-motion';
+import { archetypeGradients, archetypeEmojis } from '@/lib/archetypeAvatars';
 
 export default function PersonalityTestResultPage() {
   const [, setLocation] = useLocation();
@@ -46,17 +47,6 @@ export default function PersonalityTestResultPage() {
       </div>
     );
   }
-
-  const roleIcons: Record<string, string> = {
-    '火花塞': '🙌',
-    '探索者': '🧭',
-    '故事家': '🗣️',
-    '挑战者': '💪',
-    '连接者': '🤗',
-    '协调者': '🧘',
-    '氛围组': '🕺',
-    '肯定者': '🙏',
-  };
 
   // Chemistry/matching compatibility data
   const chemistryMap: Record<string, Array<{ role: string; percentage: number }>> = {
@@ -104,6 +94,8 @@ export default function PersonalityTestResultPage() {
 
   const myChemistry = chemistryMap[result.primaryRole] || [];
   const myPercentage = stats?.[result.primaryRole] || 0;
+  const gradient = archetypeGradients[result.primaryRole] || 'from-purple-500 to-pink-500';
+  const emoji = archetypeEmojis[result.primaryRole] || '🌟';
 
   const handleShare = async () => {
     const shareData = {
@@ -119,7 +111,6 @@ export default function PersonalityTestResultPage() {
         console.log('Share cancelled or failed');
       }
     } else {
-      // Fallback: copy to clipboard
       navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
       alert('已复制到剪贴板！');
     }
@@ -127,56 +118,99 @@ export default function PersonalityTestResultPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto p-4 pb-8 space-y-4">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center pt-6 pb-2"
-        >
-          <h1 className="text-3xl font-bold mb-2" data-testid="text-result-title">
-            你的社交引擎角色
-          </h1>
-          <p className="text-muted-foreground">
-            基于你的选择，我们识别出了你的社交特质
-          </p>
-        </motion.div>
+      {/* Full-Screen Hero Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden"
+      >
+        {/* Gradient Background */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-10`} />
+        
+        {/* Content */}
+        <div className="relative z-10 text-center space-y-8 max-w-2xl mx-auto">
+          {/* Avatar/Emoji - Large and Prominent */}
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="mx-auto"
+          >
+            <div className={`w-48 h-48 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-2xl`}>
+              <span className="text-9xl" data-testid="text-role-avatar">{emoji}</span>
+            </div>
+          </motion.div>
 
-        {/* Primary Role Card */}
+          {/* Role Name */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="space-y-3"
+          >
+            <h1 className="text-5xl font-bold" data-testid="text-primary-role">
+              {result.primaryRole}
+            </h1>
+            {result.roleSubtype && (
+              <p className="text-xl text-muted-foreground" data-testid="text-role-subtype">
+                {result.roleSubtype}
+              </p>
+            )}
+            {result.secondaryRole && (
+              <Badge variant="secondary" className="text-base px-4 py-1" data-testid="badge-secondary-role">
+                辅助角色: {result.secondaryRole}
+              </Badge>
+            )}
+          </motion.div>
+
+          {/* Tagline or Description */}
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-lg text-muted-foreground max-w-md mx-auto"
+          >
+            你的独特社交特质已揭晓
+          </motion.p>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          >
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="flex flex-col items-center gap-2 text-muted-foreground"
+            >
+              <span className="text-sm">向下滚动查看详情</span>
+              <ChevronDown className="w-6 h-6" />
+            </motion.div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Scrollable Content Section */}
+      <div className="max-w-2xl mx-auto p-4 pb-8 space-y-4">
+        {/* Radar Chart Card */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
         >
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-4xl" data-testid="text-role-icon">
-                    {roleIcons[result.primaryRole] || '🌟'}
-                  </span>
-                  <div>
-                    <div className="text-2xl" data-testid="text-primary-role">
-                      {result.primaryRole}
-                    </div>
-                    {result.roleSubtype && (
-                      <div className="text-sm text-muted-foreground font-normal" data-testid="text-role-subtype">
-                        {result.roleSubtype}
-                      </div>
-                    )}
-                  </div>
-                </CardTitle>
-                {result.secondaryRole && (
-                  <Badge variant="secondary" data-testid="badge-secondary-role">
-                    辅助角色: {result.secondaryRole}
-                  </Badge>
-                )}
-              </div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                六维社交特质
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Radar Chart */}
               <div className="bg-muted/30 rounded-lg p-4">
-                <h3 className="text-sm font-semibold mb-2 text-center">六维社交特质</h3>
                 <PersonalityRadarChart
                   affinityScore={result.affinityScore}
                   opennessScore={result.opennessScore}
@@ -218,7 +252,7 @@ export default function PersonalityTestResultPage() {
                 <div className="flex flex-wrap gap-2">
                   {result.idealFriendTypes?.map((type: string) => (
                     <Badge key={type} variant="outline" data-testid={`badge-ideal-friend-${type}`}>
-                      {roleIcons[type] || '👥'} {type}
+                      {archetypeEmojis[type] || '👥'} {type}
                     </Badge>
                   ))}
                 </div>
@@ -231,8 +265,9 @@ export default function PersonalityTestResultPage() {
         {stats && myPercentage > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
             <Card>
               <CardHeader>
@@ -260,7 +295,7 @@ export default function PersonalityTestResultPage() {
                       .slice(0, 4)
                       .map(([role, percentage]) => (
                         <div key={role} className="text-center p-2 rounded-lg bg-muted/30">
-                          <div className="text-lg mb-1">{roleIcons[role]}</div>
+                          <div className="text-lg mb-1">{archetypeEmojis[role]}</div>
                           <div className="text-xs font-semibold">{percentage}%</div>
                           <div className="text-[10px] text-muted-foreground truncate">{role}</div>
                         </div>
@@ -276,8 +311,9 @@ export default function PersonalityTestResultPage() {
         {myChemistry.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Card>
               <CardHeader>
@@ -295,18 +331,20 @@ export default function PersonalityTestResultPage() {
                     <motion.div
                       key={match.role}
                       initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 + index * 0.1 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
                       className="flex items-center gap-3 p-3 rounded-lg bg-muted/30"
                     >
-                      <div className="text-2xl">{roleIcons[match.role]}</div>
+                      <div className="text-2xl">{archetypeEmojis[match.role]}</div>
                       <div className="flex-1">
                         <div className="font-semibold text-sm">{match.role}</div>
                         <div className="w-full bg-muted rounded-full h-2 mt-1">
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${match.percentage}%` }}
-                            transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
+                            whileInView={{ width: `${match.percentage}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, delay: index * 0.1 }}
                             className="bg-primary h-2 rounded-full"
                           />
                         </div>
@@ -330,8 +368,9 @@ export default function PersonalityTestResultPage() {
         {/* Info Card */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Card>
             <CardContent className="pt-6">
@@ -363,7 +402,6 @@ export default function PersonalityTestResultPage() {
             data-testid="button-continue"
             className="flex-1"
             onClick={async () => {
-              // Invalidate auth query to trigger next onboarding step
               await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
               setLocation('/');
             }}
