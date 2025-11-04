@@ -18,13 +18,14 @@ export default function ProfileSetupPage() {
     mutationFn: async (data: { displayName: string }) => {
       return await apiRequest("POST", "/api/profile/setup", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async () => {
+      // Refetch auth user to update onboarding state
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "资料已保存",
         description: "欢迎来到悦聚！",
       });
-      setLocation("/discover");
+      setLocation("/");
     },
     onError: (error) => {
       toast({
