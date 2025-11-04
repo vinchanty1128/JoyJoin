@@ -121,27 +121,27 @@ export default function PersonalityTestResultPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Full-Screen Hero Section */}
+      {/* Compact Hero Section - Mobile Optimized */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="relative min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden"
+        className="relative min-h-[85vh] md:min-h-screen flex flex-col items-center justify-center px-4 py-8 md:p-6 overflow-hidden"
       >
         {/* Gradient Background */}
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-10`} />
         
         {/* Content */}
-        <div className="relative z-10 text-center space-y-8 max-w-2xl mx-auto">
-          {/* Avatar/Emoji - Large and Prominent */}
+        <div className="relative z-10 text-center space-y-4 md:space-y-8 max-w-2xl mx-auto">
+          {/* Avatar/Emoji - Responsive Size */}
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             className="mx-auto"
           >
-            <div className={`w-48 h-48 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-2xl`}>
-              <span className="text-9xl" data-testid="text-role-avatar">{emoji}</span>
+            <div className={`w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-2xl`}>
+              <span className="text-6xl md:text-9xl" data-testid="text-role-avatar">{emoji}</span>
             </div>
           </motion.div>
 
@@ -150,14 +150,14 @@ export default function PersonalityTestResultPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="space-y-4 text-center"
+            className="space-y-3 md:space-y-4 text-center"
           >
-            <div className="space-y-2">
-              <h1 className="text-5xl font-bold text-center" data-testid="text-primary-role">
+            <div className="space-y-1 md:space-y-2">
+              <h1 className="text-3xl md:text-5xl font-bold text-center" data-testid="text-primary-role">
                 {result.primaryRole}
               </h1>
               {result.roleSubtype && (
-                <p className="text-lg text-muted-foreground text-center" data-testid="text-role-subtype">
+                <p className="text-base md:text-lg text-muted-foreground text-center" data-testid="text-role-subtype">
                   {result.roleSubtype}
                 </p>
               )}
@@ -165,19 +165,19 @@ export default function PersonalityTestResultPage() {
             
             {/* Primary Role Description */}
             {primaryRoleDesc && (
-              <p className="text-base text-foreground/80 max-w-md mx-auto px-4" style={{ textAlign: 'center' }}>
+              <p className="text-sm md:text-base text-foreground/80 max-w-md mx-auto px-2 md:px-4" style={{ textAlign: 'center' }}>
                 {primaryRoleDesc}
               </p>
             )}
 
             {/* Secondary Role Badge with Description */}
             {result.secondaryRole && (
-              <div className="pt-2 space-y-2 flex flex-col items-center">
-                <Badge variant="secondary" className="text-sm px-4 py-1" data-testid="badge-secondary-role">
+              <div className="pt-1 md:pt-2 space-y-1 md:space-y-2 flex flex-col items-center">
+                <Badge variant="secondary" className="text-xs md:text-sm px-3 md:px-4 py-1" data-testid="badge-secondary-role">
                   辅助角色: {result.secondaryRole}
                 </Badge>
                 {secondaryRoleDesc && (
-                  <p className="text-sm text-muted-foreground max-w-md mx-auto px-4" style={{ textAlign: 'center' }}>
+                  <p className="text-xs md:text-sm text-muted-foreground max-w-md mx-auto px-2 md:px-4" style={{ textAlign: 'center' }}>
                     {secondaryRoleDesc}
                   </p>
                 )}
@@ -190,15 +190,15 @@ export default function PersonalityTestResultPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+            className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2"
           >
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="flex flex-col items-center gap-2 text-muted-foreground"
+              className="flex flex-col items-center gap-1 md:gap-2 text-muted-foreground"
             >
-              <span className="text-sm">向下滚动查看详情</span>
-              <ChevronDown className="w-6 h-6" />
+              <span className="text-xs md:text-sm">向下滚动查看详情</span>
+              <ChevronDown className="w-5 h-5 md:w-6 md:h-6" />
             </motion.div>
           </motion.div>
         </div>
