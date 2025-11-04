@@ -390,126 +390,100 @@ export default function PersonalityTestPage() {
           </motion.div>
 
           {currentQ.questionType === "single" ? (
-            <RadioGroup
-              key={`single-${currentQ.id}`}
-              value={answers[currentQ.id]?.value || ""}
-              onValueChange={handleSingleChoice}
-              className="space-y-3"
-            >
-              {currentQ.options.map((option, index) => {
+            <div className="space-y-3">
+              {currentQ.options.map((option) => {
                 const isSelected = answers[currentQ.id]?.value === option.value;
                 return (
-                  <div
+                  <button
                     key={option.value}
-                    className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate active-elevate-2 transition-all ${
-                      isSelected ? "border-primary bg-primary/5" : ""
-                    }`}
+                    type="button"
+                    onClick={() => handleSingleChoice(option.value)}
+                    className={`
+                      w-full px-4 py-4 text-left rounded-lg border-2 transition-all text-base flex items-center gap-3
+                      ${isSelected
+                        ? 'border-primary bg-primary/5 text-foreground' 
+                        : 'border-border hover-elevate active-elevate-2'
+                      }
+                    `}
+                    data-testid={`button-q${currentQ.id}-${option.value}`}
                   >
-                    <RadioGroupItem
-                      value={option.value}
-                      id={`q${currentQ.id}-${option.value}`}
-                      data-testid={`radio-q${currentQ.id}-${option.value}`}
-                    />
-                    <Label
-                      htmlFor={`q${currentQ.id}-${option.value}`}
-                      className="flex-1 cursor-pointer font-normal"
-                    >
-                      <span className="font-semibold mr-2">{option.value}.</span>
-                      {option.text}
-                    </Label>
+                    <span className="font-semibold">{option.value}.</span>
+                    <span className="flex-1">{option.text}</span>
                     {isSelected && (
-                      <span className="text-primary font-bold">
-                        ✓
-                      </span>
+                      <span className="text-primary font-bold">✓</span>
                     )}
-                  </div>
+                  </button>
                 );
               })}
-            </RadioGroup>
+            </div>
           ) : (
             <div className="space-y-6">
               <div>
                 <div className="text-sm font-medium mb-3">最像我的（2分）</div>
-                <RadioGroup
-                  key={`most-${currentQ.id}`}
-                  value={answers[currentQ.id]?.mostLike || ""}
-                  onValueChange={(value) => handleDualChoice("most", value)}
-                  className="space-y-3"
-                >
-                  {currentQ.options.map((option, index) => {
+                <div className="space-y-3">
+                  {currentQ.options.map((option) => {
                     const isSelected = answers[currentQ.id]?.mostLike === option.value;
                     const isDisabled = answers[currentQ.id]?.secondLike === option.value;
                     return (
-                      <div
+                      <button
                         key={option.value}
-                        className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate active-elevate-2 transition-all ${
-                          isDisabled ? "opacity-50 pointer-events-none" : ""
-                        } ${isSelected ? "border-primary bg-primary/5" : ""}`}
+                        type="button"
+                        onClick={() => !isDisabled && handleDualChoice("most", option.value)}
+                        disabled={isDisabled}
+                        className={`
+                          w-full px-4 py-4 text-left rounded-lg border-2 transition-all text-base flex items-center gap-3
+                          ${isDisabled 
+                            ? 'opacity-50 cursor-not-allowed border-border' 
+                            : isSelected
+                              ? 'border-primary bg-primary/5 text-foreground' 
+                              : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-q${currentQ.id}-most-${option.value}`}
                       >
-                        <RadioGroupItem
-                          value={option.value}
-                          id={`q${currentQ.id}-most-${option.value}`}
-                          disabled={isDisabled}
-                          data-testid={`radio-q${currentQ.id}-most-${option.value}`}
-                        />
-                        <Label
-                          htmlFor={`q${currentQ.id}-most-${option.value}`}
-                          className="flex-1 cursor-pointer font-normal"
-                        >
-                          <span className="font-semibold mr-2">{option.value}.</span>
-                          {option.text}
-                        </Label>
+                        <span className="font-semibold">{option.value}.</span>
+                        <span className="flex-1">{option.text}</span>
                         {isSelected && (
-                          <span className="text-primary font-bold">
-                            ✓
-                          </span>
+                          <span className="text-primary font-bold">✓</span>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
-                </RadioGroup>
+                </div>
               </div>
 
               <div>
                 <div className="text-sm font-medium mb-3">其次像我的（1分）</div>
-                <RadioGroup
-                  key={`second-${currentQ.id}`}
-                  value={answers[currentQ.id]?.secondLike || ""}
-                  onValueChange={(value) => handleDualChoice("second", value)}
-                  className="space-y-3"
-                >
-                  {currentQ.options.map((option, index) => {
+                <div className="space-y-3">
+                  {currentQ.options.map((option) => {
                     const isSelected = answers[currentQ.id]?.secondLike === option.value;
                     const isDisabled = answers[currentQ.id]?.mostLike === option.value;
                     return (
-                      <div
+                      <button
                         key={option.value}
-                        className={`flex items-start space-x-3 p-4 rounded-lg border-2 hover-elevate active-elevate-2 transition-all ${
-                          isDisabled ? "opacity-50 pointer-events-none" : ""
-                        } ${isSelected ? "border-primary bg-primary/5" : ""}`}
+                        type="button"
+                        onClick={() => !isDisabled && handleDualChoice("second", option.value)}
+                        disabled={isDisabled}
+                        className={`
+                          w-full px-4 py-4 text-left rounded-lg border-2 transition-all text-base flex items-center gap-3
+                          ${isDisabled 
+                            ? 'opacity-50 cursor-not-allowed border-border' 
+                            : isSelected
+                              ? 'border-primary bg-primary/5 text-foreground' 
+                              : 'border-border hover-elevate active-elevate-2'
+                          }
+                        `}
+                        data-testid={`button-q${currentQ.id}-second-${option.value}`}
                       >
-                        <RadioGroupItem
-                          value={option.value}
-                          id={`q${currentQ.id}-second-${option.value}`}
-                          disabled={isDisabled}
-                          data-testid={`radio-q${currentQ.id}-second-${option.value}`}
-                        />
-                        <Label
-                          htmlFor={`q${currentQ.id}-second-${option.value}`}
-                          className="flex-1 cursor-pointer font-normal"
-                        >
-                          <span className="font-semibold mr-2">{option.value}.</span>
-                          {option.text}
-                          </Label>
+                        <span className="font-semibold">{option.value}.</span>
+                        <span className="flex-1">{option.text}</span>
                         {isSelected && (
-                          <span className="text-primary font-bold">
-                            ✓
-                          </span>
+                          <span className="text-primary font-bold">✓</span>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
-                </RadioGroup>
+                </div>
               </div>
             </div>
           )}
