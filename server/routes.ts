@@ -295,7 +295,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate role scores
       const roleScores = calculateRoleScores(responses);
-      console.log("[TEST-DEBUG] Role scores calculated:", roleScores);
       
       // Determine primary and secondary roles
       // Sort by score DESC, then by role name ASC for stability when scores are equal
@@ -305,14 +304,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return roleA.localeCompare(roleB);  // Stable sort by name when scores equal
         });
       
-      console.log("[TEST-DEBUG] Sorted roles after stable sort:", sortedRoles);
-      
       const primaryRole = sortedRoles[0][0];
       const primaryRoleScore = sortedRoles[0][1];
       const secondaryRole = sortedRoles[1]?.[0] || null;
       const secondaryRoleScore = sortedRoles[1]?.[1] || 0;
-      
-      console.log("[TEST-DEBUG] Determined roles - Primary:", primaryRole, "Score:", primaryRoleScore, "Secondary:", secondaryRole, "Score:", secondaryRoleScore);
 
       // Determine subtype (simplified - based on highest scoring items)
       const roleSubtype = determineSubtype(primaryRole, responses);
