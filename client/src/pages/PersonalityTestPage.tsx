@@ -168,18 +168,7 @@ export default function PersonalityTestPage() {
   const [showMilestone, setShowMilestone] = useState(false);
   const [showBlindBox, setShowBlindBox] = useState(false);
 
-  // Check if user has already completed the personality test
-  const { data: user } = useQuery<any>({
-    queryKey: ["/api/auth/user"],
-  });
-
-  // Redirect to results if test already completed
-  useEffect(() => {
-    if (user?.hasCompletedPersonalityTest) {
-      console.log("[PersonalityTest] User has already completed test, redirecting to results");
-      setLocation("/personality-test/results");
-    }
-  }, [user, setLocation]);
+  // Removed redirect logic - users can now retake the test anytime
 
   const submitTestMutation = useMutation({
     mutationFn: async (responses: Record<number, any>) => {
