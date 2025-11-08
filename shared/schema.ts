@@ -112,6 +112,10 @@ export const users = pgTable("users", {
   eventsAttended: integer("events_attended").default(0),
   matchesMade: integer("matches_made").default(0),
   
+  // Admin & Moderation
+  isAdmin: boolean("is_admin").default(false),
+  isBanned: boolean("is_banned").default(false),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -520,6 +524,248 @@ export const insertRoleResultSchema = createInsertSchema(roleResults).omit({
   createdAt: true,
 });
 
+// ============ ADMIN PORTAL TABLES ============
+
+// Venues table - Restaurant/Bar partners
+export const venues = pgTable("venues", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  type: varchar("type").notNull(), // restaurant, bar
+  address: text("address").notNull(),
+  city: varchar("city").notNull(), // 深圳, 香港
+  district: varchar("district").notNull(), // 南山区, 中环 etc.
+  contactName: varchar("contact_name"),
+  contactPhone: varchar("contact_phone"),
+  commissionRate: integer("commission_rate").default(20), // percentage
+  
+  // Venue tags for matching
+  tags: text("tags").array(), // atmosphere tags: cozy, lively, upscale, casual
+  cuisines: text("cuisines").array(), // 粤菜, 川菜, 日料, 西餐 etc.
+  priceRange: varchar("price_range"), // 100-200, 200-300, 300+ per person
+  
+  // Capacity management
+  maxConcurrentEvents: integer("max_concurrent_events").default(1), // How many events can run at same time
+  
+  // Status
+  isActive: boolean("is_active").default(true),
+  notes: text("notes"), // Internal admin notes
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Event Templates table - Recurring time slots and themes
+export const eventTemplates = pgTable("event_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(), // e.g., "周三晚餐局", "Girls Night"
+  eventType: varchar("event_type").notNull(), // 饭局, 酒局
+  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
+  timeOfDay: varchar("time_of_day").notNull(), // e.g., "19:00", "21:00"
+  
+  // Theme and restrictions
+  theme: varchar("theme"), // e.g., "Girls Night", "商务社交"
+  genderRestriction: varchar("gender_restriction"), // null, "Woman", "Man"
+  minAge: integer("min_age"),
+  maxAge: integer("max_age"),
+  
+  // Participant settings
+  minParticipants: integer("min_participants").default(5),
+  maxParticipants: integer("max_participants").default(10),
+  
+  // Pricing (for future premium events)
+  customPrice: integer("custom_price"), // null = use default pricing (会员免费/非会员¥68)
+  
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Subscriptions table - User memberships
+export const subscriptions = pgTable("subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  
+  // Subscription period
+  subscriptionType: varchar("subscription_type").notNull(), // "1_month", "3_months"
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  
+  // Payment
+  amount: integer("amount").notNull(), // ¥98 or ¥294
+  paymentId: varchar("payment_id"), // References payments table
+  
+  // Status
+  status: varchar("status").notNull().default("active"), // active, expired, cancelled
+  autoRenew: boolean("auto_renew").default(false),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Payments table - Unified payment records
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  
+  // Payment type
+  paymentType: varchar("payment_type").notNull(), // "subscription", "event"
+  relatedId: varchar("related_id"), // subscription ID or event ID
+  
+  // Amount
+  originalAmount: integer("original_amount").notNull(), // Before discount
+  discountAmount: integer("discount_amount").default(0),
+  finalAmount: integer("final_amount").notNull(), // After discount
+  
+  // Coupon
+  couponId: varchar("coupon_id"), // null if no coupon used
+  
+  // WeChat Pay details
+  wechatTransactionId: varchar("wechat_transaction_id"), // WeChat Pay transaction ID
+  wechatOrderId: varchar("wechat_order_id"), // Our order ID sent to WeChat
+  
+  // Status
+  status: varchar("status").notNull().default("pending"), // pending, completed, failed, refunded
+  paidAt: timestamp("paid_at"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Coupons table - Discount codes
+export const coupons = pgTable("coupons", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: varchar("code").notNull().unique(), // e.g., "WELCOME50"
+  
+  // Discount details
+  discountType: varchar("discount_type").notNull(), // "fixed_amount", "percentage"
+  discountValue: integer("discount_value").notNull(), // ¥50 or 20 (for 20%)
+  
+  // Usage limits
+  maxUses: integer("max_uses"), // null = unlimited
+  currentUses: integer("current_uses").default(0),
+  maxUsesPerUser: integer("max_uses_per_user").default(1),
+  
+  // Validity
+  validFrom: timestamp("valid_from").defaultNow(),
+  validUntil: timestamp("valid_until"),
+  
+  // Applicable to
+  applicableTo: varchar("applicable_to").default("all"), // "all", "subscription_only", "event_only"
+  
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Coupon Usage table - Track coupon redemptions
+export const couponUsage = pgTable("coupon_usage", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  couponId: varchar("coupon_id").notNull().references(() => coupons.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  paymentId: varchar("payment_id").notNull().references(() => payments.id),
+  
+  discountApplied: integer("discount_applied").notNull(), // Actual discount amount
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Venue Bookings table - Track venue capacity per time slot
+export const venueBookings = pgTable("venue_bookings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  venueId: varchar("venue_id").notNull().references(() => venues.id),
+  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id),
+  
+  bookingDate: timestamp("booking_date").notNull(),
+  bookingTime: varchar("booking_time").notNull(), // e.g., "19:00"
+  
+  participantCount: integer("participant_count").notNull(),
+  
+  // Sales tracking for commission
+  estimatedRevenue: integer("estimated_revenue"), // Per-person average × participant count
+  actualRevenue: integer("actual_revenue"), // Updated post-event
+  commissionAmount: integer("commission_amount"), // actualRevenue × commissionRate
+  
+  status: varchar("status").default("confirmed"), // confirmed, completed, cancelled
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Reports table - User reports
+export const reports = pgTable("reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reporterId: varchar("reporter_id").notNull().references(() => users.id),
+  reportedUserId: varchar("reported_user_id").references(() => users.id), // null if reporting content
+  
+  // Report details
+  category: varchar("category").notNull(), // harassment, inappropriate_content, fake_profile, other
+  description: text("description").notNull(),
+  relatedEventId: varchar("related_event_id").references(() => events.id),
+  
+  // Moderation
+  status: varchar("status").default("pending"), // pending, reviewing, resolved, dismissed
+  reviewedBy: varchar("reviewed_by").references(() => users.id), // Admin user ID
+  reviewedAt: timestamp("reviewed_at"),
+  resolution: text("resolution"), // Admin's resolution notes
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Moderation Logs table - Track admin actions
+export const moderationLogs = pgTable("moderation_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminId: varchar("admin_id").notNull().references(() => users.id),
+  
+  // Action details
+  action: varchar("action").notNull(), // ban_user, unban_user, delete_content, resolve_report
+  targetUserId: varchar("target_user_id").references(() => users.id),
+  relatedReportId: varchar("related_report_id").references(() => reports.id),
+  
+  reason: text("reason"),
+  notes: text("notes"), // Internal admin notes
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Insert schemas for admin tables
+export const insertVenueSchema = createInsertSchema(venues).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEventTemplateSchema = createInsertSchema(eventTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCouponSchema = createInsertSchema(coupons).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertReportSchema = createInsertSchema(reports).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertModerationLogSchema = createInsertSchema(moderationLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -548,6 +794,25 @@ export type InsertEventFeedback = z.infer<typeof insertEventFeedbackSchema>;
 export type InsertBlindBoxEvent = z.infer<typeof insertBlindBoxEventSchema>;
 export type InsertTestResponse = z.infer<typeof insertTestResponseSchema>;
 export type InsertRoleResult = z.infer<typeof insertRoleResultSchema>;
+
+// Admin Portal Types
+export type Venue = typeof venues.$inferSelect;
+export type EventTemplate = typeof eventTemplates.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type Payment = typeof payments.$inferSelect;
+export type Coupon = typeof coupons.$inferSelect;
+export type CouponUsage = typeof couponUsage.$inferSelect;
+export type VenueBooking = typeof venueBookings.$inferSelect;
+export type Report = typeof reports.$inferSelect;
+export type ModerationLog = typeof moderationLogs.$inferSelect;
+
+export type InsertVenue = z.infer<typeof insertVenueSchema>;
+export type InsertEventTemplate = z.infer<typeof insertEventTemplateSchema>;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type InsertCoupon = z.infer<typeof insertCouponSchema>;
+export type InsertReport = z.infer<typeof insertReportSchema>;
+export type InsertModerationLog = z.infer<typeof insertModerationLogSchema>;
 
 // Notifications table
 export const notifications = pgTable("notifications", {
