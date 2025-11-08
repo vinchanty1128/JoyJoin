@@ -2268,6 +2268,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Moderation - Get statistics
+  app.get("/api/admin/moderation/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getModerationStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching moderation stats:", error);
+      res.status(500).json({ message: "Failed to fetch moderation stats" });
+    }
+  });
+
+  // Moderation - Get all reports
+  app.get("/api/admin/moderation/reports", requireAdmin, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const reports = status === 'pending' 
+        ? await storage.getPendingReports()
+        : await storage.getAllReports();
+      res.json(reports);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+      res.status(500).json({ message: "Failed to fetch reports" });
+    }
+  });
+
+  // Moderation - Update report status
+  app.patch("/api/admin/moderation/reports/:id", requireAdmin, async (req, res) => {
+    try {
+      const { status, adminNotes } = req.body;
+      const report = await storage.updateReportStatus(req.params.id, status, adminNotes);
+      res.json(report);
+    } catch (error) {
+      console.error("Error updating report:", error);
+      res.status(500).json({ message: "Failed to update report" });
+    }
+  });
+
+  // Moderation - Create moderation log
+  app.post("/api/admin/moderation/logs", requireAdmin, async (req, res) => {
+    try {
+      const log = await storage.createModerationLog({
+        adminId: req.user!.id,
+        action: req.body.action,
+        targetUserId: req.body.targetUserId,
+        reason: req.body.reason,
+        notes: req.body.notes,
+      });
+      res.json(log);
+    } catch (error) {
+      console.error("Error creating moderation log:", error);
+      res.status(500).json({ message: "Failed to create moderation log" });
+    }
+  });
+
+  // Moderation - Get moderation logs
+  app.get("/api/admin/moderation/logs", requireAdmin, async (req, res) => {
+    try {
+      const logs = await storage.getModerationLogs();
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching moderation logs:", error);
+      res.status(500).json({ message: "Failed to fetch moderation logs" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
