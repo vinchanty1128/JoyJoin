@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, CreditCard, Calendar, DollarSign, UserPlus, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, CreditCard, Calendar, DollarSign, UserPlus, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface AdminStats {
@@ -13,8 +14,9 @@ interface AdminStats {
 }
 
 export default function AdminDashboard() {
-  const { data: stats, isLoading } = useQuery<AdminStats>({
+  const { data: stats, isLoading, isError, error, refetch } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
+    retry: 2,
   });
 
   if (isLoading) {
@@ -24,6 +26,36 @@ export default function AdminDashboard() {
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <p className="text-sm text-muted-foreground">加载中...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="space-y-4 text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+              <div>
+                <h3 className="text-lg font-semibold">加载失败</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {error instanceof Error && error.message.includes("401") 
+                    ? "您没有访问权限，请确认您拥有管理员权限"
+                    : "无法加载数据，请检查网络连接或稍后重试"}
+                </p>
+              </div>
+              <Button 
+                onClick={() => refetch()} 
+                variant="default"
+                data-testid="button-retry-stats"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                重试
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
