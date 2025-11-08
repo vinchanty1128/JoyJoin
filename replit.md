@@ -44,6 +44,7 @@ Preferred communication style: Simple, everyday language.
 - **Explainable Matching:** Transparent matching logic to build user trust.
 - **Chat Interface:** Tabbed interface for group and direct messages, with event-specific participant displays.
 - **Admin Portal:** Desktop-first design providing comprehensive management for users, subscriptions, coupons, venues, event templates, events, finance, moderation, and insights. Includes real-time statistics and analytics.
+- **Comprehensive Error Handling:** All admin portal pages include proper error states with retry functionality, preventing infinite loading spinners. AdminGuard displays helpful messages for authentication and authorization failures. Error messages are localized in Chinese with clear action buttons.
 
 ## External Dependencies
 
