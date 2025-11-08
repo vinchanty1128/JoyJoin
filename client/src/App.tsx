@@ -66,7 +66,13 @@ function RedirectToSetup() {
 }
 
 function AuthenticatedRouter() {
-  const { needsRegistration, needsInterestsTopics, needsPersonalityTest, needsProfileSetup } = useAuth();
+  const { user, needsRegistration, needsInterestsTopics, needsPersonalityTest, needsProfileSetup } = useAuth();
+  const [location] = useLocation();
+
+  // Admin users bypass onboarding requirements
+  if (user?.isAdmin && location.startsWith("/admin")) {
+    return <Route path="/admin/:rest*" component={AdminLayout} />;
+  }
 
   if (needsRegistration) {
     return (
@@ -136,7 +142,6 @@ function AuthenticatedRouter() {
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-  const [location] = useLocation();
 
   if (isLoading) {
     return (
@@ -151,10 +156,6 @@ function Router() {
 
   if (!isAuthenticated) {
     return <Route path="*" component={LoginPage} />;
-  }
-
-  if (location.startsWith("/admin")) {
-    return <Route path="/admin/:rest*" component={AdminLayout} />;
   }
 
   return <AuthenticatedRouter />;
