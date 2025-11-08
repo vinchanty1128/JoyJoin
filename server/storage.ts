@@ -14,6 +14,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   getUserByPhone(phoneNumber: string): Promise<User[]>;
   createUserWithPhone(data: { phoneNumber: string; email: string; firstName: string; lastName: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
@@ -56,6 +57,7 @@ export interface IStorage {
   sendDirectMessage(senderId: string, data: InsertDirectMessage): Promise<DirectMessage>;
 
   // Blind Box Event operations
+  getAllBlindBoxEvents(): Promise<Array<BlindBoxEvent>>;
   getUserBlindBoxEvents(userId: string): Promise<Array<BlindBoxEvent>>;
   getBlindBoxEventById(eventId: string, userId: string): Promise<BlindBoxEvent | undefined>;
   createBlindBoxEvent(userId: string, eventData: { 
@@ -103,6 +105,10 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   async getUserByPhone(phoneNumber: string): Promise<User[]> {
@@ -616,6 +622,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Blind Box Event operations
+  async getAllBlindBoxEvents(): Promise<Array<BlindBoxEvent>> {
+    return await db.select().from(blindBoxEvents);
+  }
+
   async getUserBlindBoxEvents(userId: string): Promise<Array<BlindBoxEvent>> {
     const events = await db
       .select()

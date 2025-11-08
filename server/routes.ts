@@ -1750,6 +1750,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ ADMIN MIDDLEWARE ============
+  
+  function requireAdmin(req: Request, res: any, next: any) {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    const user = req.user as any;
+    if (!user?.isAdmin) {
+      return res.status(403).json({ message: "Forbidden - Admin access required" });
+    }
+    
+    next();
+  }
+
+  // ============ ADMIN API ROUTES ============
+
+  // Dashboard Statistics
+  app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      
+      // Calculate stats
+      const totalUsers = allUsers.length;
+      const subscribedUsers = 0; // TODO: Count from subscriptions table
+      const newUsersThisWeek = 0; // TODO: Count users created in last 7 days
+      const userGrowth = 0; // TODO: Calculate growth percentage
+      
+      // Count events (for now using blindBoxEvents)
+      const allBlindBoxEvents = await storage.getAllBlindBoxEvents();
+      const thisMonth = new Date();
+      thisMonth.setDate(1);
+      const eventsThisMonth = allBlindBoxEvents.filter((event: any) => {
+        const eventDate = new Date(event.createdAt || '');
+        return eventDate >= thisMonth;
+      }).length;
+      
+      // Revenue stats (placeholder)
+      const monthlyRevenue = 0; // TODO: Calculate from payments table
+      
+      // Personality distribution
+      const personalityDistribution = allUsers.reduce((acc: Record<string, number>, user: any) => {
+        if (user.primaryRole) {
+          acc[user.primaryRole] = (acc[user.primaryRole] || 0) + 1;
+        }
+        return acc;
+      }, {});
+
+      res.json({
+        totalUsers,
+        subscribedUsers,
+        eventsThisMonth,
+        monthlyRevenue,
+        newUsersThisWeek,
+        userGrowth,
+        personalityDistribution,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

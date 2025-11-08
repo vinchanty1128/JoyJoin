@@ -107,3 +107,31 @@ Preferred communication style: Simple, everyday language.
 
 ### Fonts & Typography
 - Google Fonts: Inter, Outfit.
+
+## Recent Changes
+
+### Admin Portal Foundation (Latest - Nov 8, 2025)
+- **Database Schema Extended:** Added 9 new tables for Admin Portal:
+  - `venues` - Restaurant/bar partner management with tags, cuisines, capacity
+  - `eventTemplates` - Recurring time slots and themed events (Girls Night, etc.)
+  - `subscriptions` - User memberships (¥98/month or ¥294/3mo)
+  - `payments` - Unified payment records with WeChat Pay integration support
+  - `coupons` - Discount code system (fixed amount / percentage)
+  - `couponUsage` - Coupon redemption tracking
+  - `venueBookings` - Venue capacity management and commission tracking
+  - `reports` - User report system for moderation
+  - `moderationLogs` - Admin action audit trail
+  - Added `isAdmin` and `isBanned` fields to `users` table
+- **Admin Portal Layout:** Created desktop-first admin interface at `/admin/*` routes:
+  - Implemented Shadcn Sidebar with 12 navigation items across 2 groups
+  - Completely separated from user-facing app (mobile-first bottom nav)
+  - AdminGuard component for permission validation (checks `user.isAdmin`)
+  - Responsive sidebar with toggle, custom width (20rem)
+- **Admin Dashboard (/admin/dashboard):** Implemented with real-time statistics:
+  - 6 key metric cards: Total Users, Subscribers, Monthly Events, Revenue, New Users, Growth
+  - Personality type distribution display (top 5 roles)
+  - Backend API `/api/admin/stats` with `requireAdmin` middleware
+  - Real data from database via TanStack Query
+- **Storage Methods Added:** `getAllUsers()`, `getAllBlindBoxEvents()` for admin analytics
+- **Routes Registered:** All `/admin/*` routes integrated in App.tsx with permission checks
+- Admin portal pages currently show placeholder content ("开发中"), ready for implementation

@@ -1,41 +1,67 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, CreditCard, Calendar, DollarSign, UserPlus, TrendingUp } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+interface AdminStats {
+  totalUsers: number;
+  subscribedUsers: number;
+  eventsThisMonth: number;
+  monthlyRevenue: number;
+  newUsersThisWeek: number;
+  userGrowth: number;
+  personalityDistribution: Record<string, number>;
+}
 
 export default function AdminDashboard() {
-  const stats = [
+  const { data: stats, isLoading } = useQuery<AdminStats>({
+    queryKey: ["/api/admin/stats"],
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="space-y-4 text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const statCards = [
     {
       title: "用户总数",
-      value: "0",
+      value: stats?.totalUsers?.toString() || "0",
       icon: Users,
       description: "注册用户",
     },
     {
       title: "订阅会员",
-      value: "0",
+      value: stats?.subscribedUsers?.toString() || "0",
       icon: CreditCard,
       description: "活跃会员数",
     },
     {
       title: "本月活动",
-      value: "0",
+      value: stats?.eventsThisMonth?.toString() || "0",
       icon: Calendar,
       description: "已发布活动",
     },
     {
       title: "本月收入",
-      value: "¥0",
+      value: `¥${stats?.monthlyRevenue || 0}`,
       icon: DollarSign,
       description: "订阅 + 单次付费",
     },
     {
       title: "新增用户",
-      value: "0",
+      value: stats?.newUsersThisWeek?.toString() || "0",
       icon: UserPlus,
       description: "本周新用户",
     },
     {
       title: "用户增长",
-      value: "0%",
+      value: `${stats?.userGrowth || 0}%`,
       icon: TrendingUp,
       description: "相比上周",
     },
@@ -49,7 +75,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <Card key={stat.title} data-testid={`stat-card-${stat.title}`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -75,8 +101,22 @@ export default function AdminDashboard() {
             <CardTitle>性格类型分布</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex h-[200px] items-center justify-center text-muted-foreground">
-              数据图表开发中
+            <div className="space-y-2">
+              {stats?.personalityDistribution && Object.keys(stats.personalityDistribution).length > 0 ? (
+                Object.entries(stats.personalityDistribution)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5)
+                  .map(([role, count]) => (
+                    <div key={role} className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{role}</span>
+                      <span className="text-sm text-muted-foreground">{count} 人</span>
+                    </div>
+                  ))
+              ) : (
+                <div className="flex h-[200px] items-center justify-center text-muted-foreground">
+                  暂无数据
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
