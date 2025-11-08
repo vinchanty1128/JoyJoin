@@ -132,6 +132,12 @@ Preferred communication style: Simple, everyday language.
   - Personality type distribution display (top 5 roles)
   - Backend API `/api/admin/stats` with `requireAdmin` middleware
   - Real data from database via TanStack Query
-- **Storage Methods Added:** `getAllUsers()`, `getAllBlindBoxEvents()` for admin analytics
+- **User Management (/admin/users):** Full user management system:
+  - User list with real-time search (name, email, phone)
+  - Filter tabs: All / Subscribed / Banned users
+  - User detail dialog with complete profile info, events history, subscriptions
+  - Ban/unban functionality with optimistic UI updates
+  - Backend APIs: GET /api/admin/users (with filters), GET /api/admin/users/:id, PATCH /api/admin/users/:id/ban, PATCH /api/admin/users/:id/unban
+- **Storage Methods Added:** `getAllUsers()`, `getAllBlindBoxEvents()`, `updateUser()` for admin operations
 - **Routes Registered:** All `/admin/*` routes integrated in App.tsx with permission checks
-- Admin portal pages currently show placeholder content ("开发中"), ready for implementation
+- Remaining admin modules (subscriptions, coupons, venues, events, finance, etc.) ready for implementation
