@@ -99,6 +99,13 @@ export interface IStorage {
     message?: string;
     relatedResourceId?: string;
   }): Promise<void>;
+
+  // Admin Subscription operations
+  getAllSubscriptions(): Promise<any[]>;
+  getActiveSubscriptions(): Promise<any[]>;
+  getUserSubscription(userId: string): Promise<any | undefined>;
+  createSubscription(data: any): Promise<any>;
+  updateSubscription(id: string, updates: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -946,6 +953,75 @@ export class DatabaseStorage implements IStorage {
       relatedResourceId: data.relatedResourceId,
       isRead: false,
     });
+  }
+
+  // Admin Subscription operations
+  async getAllSubscriptions(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT s.*, u.first_name, u.last_name, u.email, u.phone_number
+      FROM subscriptions s
+      LEFT JOIN users u ON s.user_id = u.id
+      ORDER BY s.created_at DESC
+    `);
+    return result.rows;
+  }
+
+  async getActiveSubscriptions(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT s.*, u.first_name, u.last_name, u.email, u.phone_number
+      FROM subscriptions s
+      LEFT JOIN users u ON s.user_id = u.id
+      WHERE s.is_active = true AND s.end_date > NOW()
+      ORDER BY s.created_at DESC
+    `);
+    return result.rows;
+  }
+
+  async getUserSubscription(userId: string): Promise<any | undefined> {
+    const result = await db.execute(sql`
+      SELECT * FROM subscriptions
+      WHERE user_id = ${userId} AND is_active = true AND end_date > NOW()
+      ORDER BY created_at DESC
+      LIMIT 1
+    `);
+    return result.rows[0];
+  }
+
+  async createSubscription(data: any): Promise<any> {
+    const result = await db.execute(sql`
+      INSERT INTO subscriptions (user_id, plan_type, start_date, end_date, is_active, auto_renew, payment_id)
+      VALUES (${data.userId}, ${data.planType}, ${data.startDate}, ${data.endDate}, ${data.isActive || true}, ${data.autoRenew || false}, ${data.paymentId || null})
+      RETURNING *
+    `);
+    return result.rows[0];
+  }
+
+  async updateSubscription(id: string, updates: any): Promise<any> {
+    const setClauses = [];
+    const values: any[] = [];
+    
+    if (updates.isActive !== undefined) {
+      setClauses.push(`is_active = $${values.length + 1}`);
+      values.push(updates.isActive);
+    }
+    if (updates.autoRenew !== undefined) {
+      setClauses.push(`auto_renew = $${values.length + 1}`);
+      values.push(updates.autoRenew);
+    }
+    if (updates.endDate !== undefined) {
+      setClauses.push(`end_date = $${values.length + 1}`);
+      values.push(updates.endDate);
+    }
+
+    if (setClauses.length === 0) {
+      const result = await db.execute(sql`SELECT * FROM subscriptions WHERE id = ${id}`);
+      return result.rows[0];
+    }
+
+    values.push(id);
+    const query = `UPDATE subscriptions SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`;
+    const result = await db.execute({ text: query, values });
+    return result.rows[0];
   }
 }
 

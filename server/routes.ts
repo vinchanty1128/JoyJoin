@@ -1907,6 +1907,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Subscription Management - Get all subscriptions
+  app.get("/api/admin/subscriptions", requireAdmin, async (req, res) => {
+    try {
+      const { filter } = req.query;
+      let subscriptions;
+      
+      if (filter === "active") {
+        subscriptions = await storage.getActiveSubscriptions();
+      } else {
+        subscriptions = await storage.getAllSubscriptions();
+      }
+
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+      res.status(500).json({ message: "Failed to fetch subscriptions" });
+    }
+  });
+
+  // Subscription Management - Create subscription
+  app.post("/api/admin/subscriptions", requireAdmin, async (req, res) => {
+    try {
+      const { userId, planType, durationMonths } = req.body;
+      
+      if (!userId || !planType || !durationMonths) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + durationMonths);
+
+      const subscription = await storage.createSubscription({
+        userId,
+        planType,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        isActive: true,
+        autoRenew: false,
+      });
+
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ message: "Failed to create subscription" });
+    }
+  });
+
+  // Subscription Management - Update subscription
+  app.patch("/api/admin/subscriptions/:id", requireAdmin, async (req, res) => {
+    try {
+      const { isActive, autoRenew, endDate } = req.body;
+      
+      const subscription = await storage.updateSubscription(req.params.id, {
+        isActive,
+        autoRenew,
+        endDate,
+      });
+
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error updating subscription:", error);
+      res.status(500).json({ message: "Failed to update subscription" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

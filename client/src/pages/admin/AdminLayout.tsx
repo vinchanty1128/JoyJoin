@@ -4,6 +4,7 @@ import { AdminGuard } from "@/components/admin/AdminGuard";
 import { Route, Switch } from "wouter";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
+import AdminSubscriptionsPage from "@/pages/admin/AdminSubscriptionsPage";
 
 export default function AdminLayout() {
   const sidebarStyle = {
@@ -31,9 +32,7 @@ export default function AdminLayout() {
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/dashboard" component={AdminDashboard} />
               <Route path="/admin/users" component={AdminUsersPage} />
-              <Route path="/admin/subscriptions">
-                <div className="p-6">订阅管理 - 开发中</div>
-              </Route>
+              <Route path="/admin/subscriptions" component={AdminSubscriptionsPage} />
               <Route path="/admin/coupons">
                 <div className="p-6">优惠券管理 - 开发中</div>
               </Route>
