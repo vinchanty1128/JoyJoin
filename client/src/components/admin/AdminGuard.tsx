@@ -1,8 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle, Home, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import type { User } from "@shared/schema";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -10,7 +11,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && user && !user.isAdmin) {
-      setLocation("/");
+      // Redirect non-admin users after a short delay to show the message
+      const timer = setTimeout(() => setLocation("/"), 2000);
+      return () => clearTimeout(timer);
     }
   }, [isLoading, user, setLocation]);
 
@@ -25,13 +28,61 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user?.isAdmin) {
+  if (!user) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="space-y-4 text-center">
-          <p className="text-lg font-medium">无权访问</p>
-          <p className="text-sm text-muted-foreground">您没有访问管理后台的权限</p>
-        </div>
+      <div className="flex h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="space-y-4 text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+              <div>
+                <h3 className="text-lg font-semibold">未登录</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  请先登录后再访问管理后台
+                </p>
+              </div>
+              <Button 
+                onClick={() => setLocation("/")} 
+                variant="default"
+                data-testid="button-goto-login"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                返回首页
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!user.isAdmin) {
+    return (
+      <div className="flex h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="space-y-4 text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-warning" />
+              <div>
+                <h3 className="text-lg font-semibold">无权访问</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  您没有访问管理后台的权限
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  即将自动跳转至首页...
+                </p>
+              </div>
+              <Button 
+                onClick={() => setLocation("/")} 
+                variant="default"
+                data-testid="button-goto-home"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                返回首页
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
