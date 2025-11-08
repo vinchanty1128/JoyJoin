@@ -2052,6 +2052,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Venue Management - Get all venues
+  app.get("/api/admin/venues", requireAdmin, async (req, res) => {
+    try {
+      const venues = await storage.getAllVenues();
+      res.json(venues);
+    } catch (error) {
+      console.error("Error fetching venues:", error);
+      res.status(500).json({ message: "Failed to fetch venues" });
+    }
+  });
+
+  // Venue Management - Get venue details
+  app.get("/api/admin/venues/:id", requireAdmin, async (req, res) => {
+    try {
+      const venue = await storage.getVenue(req.params.id);
+      if (!venue) {
+        return res.status(404).json({ message: "Venue not found" });
+      }
+      res.json(venue);
+    } catch (error) {
+      console.error("Error fetching venue:", error);
+      res.status(500).json({ message: "Failed to fetch venue" });
+    }
+  });
+
+  // Venue Management - Create venue
+  app.post("/api/admin/venues", requireAdmin, async (req, res) => {
+    try {
+      const { name, type, address, city, district, contactName, contactPhone, commissionRate, tags, cuisines, priceRange, maxConcurrentEvents, notes } = req.body;
+      
+      if (!name || !type || !address || !city || !district) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const venue = await storage.createVenue({
+        name,
+        type,
+        address,
+        city,
+        district,
+        contactName: contactName || null,
+        contactPhone: contactPhone || null,
+        commissionRate: commissionRate || 20,
+        tags: tags || [],
+        cuisines: cuisines || [],
+        priceRange: priceRange || null,
+        maxConcurrentEvents: maxConcurrentEvents || 1,
+        isActive: true,
+        notes: notes || null,
+      });
+
+      res.json(venue);
+    } catch (error) {
+      console.error("Error creating venue:", error);
+      res.status(500).json({ message: "Failed to create venue" });
+    }
+  });
+
+  // Venue Management - Update venue
+  app.patch("/api/admin/venues/:id", requireAdmin, async (req, res) => {
+    try {
+      const venue = await storage.updateVenue(req.params.id, req.body);
+      res.json(venue);
+    } catch (error) {
+      console.error("Error updating venue:", error);
+      res.status(500).json({ message: "Failed to update venue" });
+    }
+  });
+
+  // Venue Management - Delete venue
+  app.delete("/api/admin/venues/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteVenue(req.params.id);
+      res.json({ message: "Venue deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting venue:", error);
+      res.status(500).json({ message: "Failed to delete venue" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

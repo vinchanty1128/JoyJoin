@@ -6,6 +6,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 import AdminSubscriptionsPage from "@/pages/admin/AdminSubscriptionsPage";
 import AdminCouponsPage from "@/pages/admin/AdminCouponsPage";
+import AdminVenuesPage from "@/pages/admin/AdminVenuesPage";
 
 export default function AdminLayout() {
   const sidebarStyle = {
@@ -35,9 +36,7 @@ export default function AdminLayout() {
               <Route path="/admin/users" component={AdminUsersPage} />
               <Route path="/admin/subscriptions" component={AdminSubscriptionsPage} />
               <Route path="/admin/coupons" component={AdminCouponsPage} />
-              <Route path="/admin/venues">
-                <div className="p-6">场地管理 - 开发中</div>
-              </Route>
+              <Route path="/admin/venues" component={AdminVenuesPage} />
               <Route path="/admin/templates">
                 <div className="p-6">活动模板管理 - 开发中</div>
               </Route>

@@ -1122,6 +1122,109 @@ export class DatabaseStorage implements IStorage {
     `);
     return result.rows;
   }
+
+  // ============ VENUES ============
+  async getAllVenues(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT v.*,
+        COALESCE(COUNT(DISTINCT vb.id), 0)::text as booking_count,
+        COALESCE(SUM(vb.commission_amount), 0)::text as total_commission
+      FROM venues v
+      LEFT JOIN venue_bookings vb ON v.id = vb.venue_id AND vb.status = 'completed'
+      GROUP BY v.id
+      ORDER BY v.created_at DESC
+    `);
+    return result.rows;
+  }
+
+  async getVenue(id: string): Promise<any> {
+    const result = await db.execute(sql`SELECT * FROM venues WHERE id = ${id}`);
+    return result.rows[0];
+  }
+
+  async createVenue(data: any): Promise<any> {
+    const result = await db.execute(sql`
+      INSERT INTO venues (name, type, address, city, district, contact_name, contact_phone, commission_rate, tags, cuisines, price_range, max_concurrent_events, is_active, notes)
+      VALUES (${data.name}, ${data.type}, ${data.address}, ${data.city}, ${data.district}, ${data.contactName || null}, ${data.contactPhone || null}, ${data.commissionRate || 20}, ${data.tags || []}, ${data.cuisines || []}, ${data.priceRange || null}, ${data.maxConcurrentEvents || 1}, ${data.isActive !== false}, ${data.notes || null})
+      RETURNING *
+    `);
+    return result.rows[0];
+  }
+
+  async updateVenue(id: string, updates: any): Promise<any> {
+    const setClauses = [];
+    const values: any[] = [];
+    
+    if (updates.name !== undefined) {
+      setClauses.push(`name = $${values.length + 1}`);
+      values.push(updates.name);
+    }
+    if (updates.type !== undefined) {
+      setClauses.push(`type = $${values.length + 1}`);
+      values.push(updates.type);
+    }
+    if (updates.address !== undefined) {
+      setClauses.push(`address = $${values.length + 1}`);
+      values.push(updates.address);
+    }
+    if (updates.city !== undefined) {
+      setClauses.push(`city = $${values.length + 1}`);
+      values.push(updates.city);
+    }
+    if (updates.district !== undefined) {
+      setClauses.push(`district = $${values.length + 1}`);
+      values.push(updates.district);
+    }
+    if (updates.contactName !== undefined) {
+      setClauses.push(`contact_name = $${values.length + 1}`);
+      values.push(updates.contactName);
+    }
+    if (updates.contactPhone !== undefined) {
+      setClauses.push(`contact_phone = $${values.length + 1}`);
+      values.push(updates.contactPhone);
+    }
+    if (updates.commissionRate !== undefined) {
+      setClauses.push(`commission_rate = $${values.length + 1}`);
+      values.push(updates.commissionRate);
+    }
+    if (updates.tags !== undefined) {
+      setClauses.push(`tags = $${values.length + 1}`);
+      values.push(updates.tags);
+    }
+    if (updates.cuisines !== undefined) {
+      setClauses.push(`cuisines = $${values.length + 1}`);
+      values.push(updates.cuisines);
+    }
+    if (updates.priceRange !== undefined) {
+      setClauses.push(`price_range = $${values.length + 1}`);
+      values.push(updates.priceRange);
+    }
+    if (updates.maxConcurrentEvents !== undefined) {
+      setClauses.push(`max_concurrent_events = $${values.length + 1}`);
+      values.push(updates.maxConcurrentEvents);
+    }
+    if (updates.isActive !== undefined) {
+      setClauses.push(`is_active = $${values.length + 1}`);
+      values.push(updates.isActive);
+    }
+    if (updates.notes !== undefined) {
+      setClauses.push(`notes = $${values.length + 1}`);
+      values.push(updates.notes);
+    }
+
+    if (setClauses.length === 0) {
+      return this.getVenue(id);
+    }
+
+    values.push(id);
+    const query = sql.raw(`UPDATE venues SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`);
+    const result = await db.execute(query);
+    return result.rows[0];
+  }
+
+  async deleteVenue(id: string): Promise<void> {
+    await db.execute(sql`DELETE FROM venues WHERE id = ${id}`);
+  }
 }
 
 export const storage = new DatabaseStorage();
