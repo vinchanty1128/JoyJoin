@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, UserX, UserCheck, Calendar, Crown } from "lucide-react";
+import { Search, UserX, UserCheck, Calendar, Crown, AlertCircle, RefreshCw } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -43,8 +43,9 @@ export default function AdminUsersPage() {
   const [filterStatus, setFilterStatus] = useState<"all" | "subscribed" | "banned">("all");
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
-  const { data: users = [], isLoading } = useQuery<User[]>({
+  const { data: users = [], isLoading, isError, error, refetch } = useQuery<User[]>({
     queryKey: ["/api/admin/users", { search: searchQuery, filter: filterStatus === "all" ? undefined : filterStatus }],
+    retry: 2,
   });
 
   const { data: userDetails, isLoading: isLoadingDetails } = useQuery<UserDetails>({
@@ -95,6 +96,36 @@ export default function AdminUsersPage() {
     }
     return age;
   };
+
+  if (isError) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="space-y-4 text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+              <div>
+                <h3 className="text-lg font-semibold">加载失败</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {error instanceof Error && error.message.includes("401") 
+                    ? "您没有访问权限"
+                    : "无法加载用户数据，请稍后重试"}
+                </p>
+              </div>
+              <Button 
+                onClick={() => refetch()} 
+                variant="default"
+                data-testid="button-retry-users"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                重试
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 space-y-6">
