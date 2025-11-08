@@ -2132,6 +2132,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Event Templates - Get all templates
+  app.get("/api/admin/event-templates", requireAdmin, async (req, res) => {
+    try {
+      const templates = await storage.getAllEventTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching event templates:", error);
+      res.status(500).json({ message: "Failed to fetch event templates" });
+    }
+  });
+
+  // Event Templates - Create template
+  app.post("/api/admin/event-templates", requireAdmin, async (req, res) => {
+    try {
+      const { name, eventType, dayOfWeek, timeOfDay, theme, genderRestriction, minAge, maxAge, minParticipants, maxParticipants, customPrice } = req.body;
+      
+      if (!name || !eventType || dayOfWeek === undefined || !timeOfDay) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const template = await storage.createEventTemplate({
+        name,
+        eventType,
+        dayOfWeek,
+        timeOfDay,
+        theme: theme || null,
+        genderRestriction: genderRestriction || null,
+        minAge: minAge || null,
+        maxAge: maxAge || null,
+        minParticipants: minParticipants || 5,
+        maxParticipants: maxParticipants || 10,
+        customPrice: customPrice || null,
+        isActive: true,
+      });
+
+      res.json(template);
+    } catch (error) {
+      console.error("Error creating event template:", error);
+      res.status(500).json({ message: "Failed to create event template" });
+    }
+  });
+
+  // Event Templates - Update template
+  app.patch("/api/admin/event-templates/:id", requireAdmin, async (req, res) => {
+    try {
+      const template = await storage.updateEventTemplate(req.params.id, req.body);
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating event template:", error);
+      res.status(500).json({ message: "Failed to update event template" });
+    }
+  });
+
+  // Event Templates - Delete template
+  app.delete("/api/admin/event-templates/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteEventTemplate(req.params.id);
+      res.json({ message: "Event template deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting event template:", error);
+      res.status(500).json({ message: "Failed to delete event template" });
+    }
+  });
+
+  // Event Management - Get all events (admin view)
+  app.get("/api/admin/events", requireAdmin, async (req, res) => {
+    try {
+      const events = await storage.getAllBlindBoxEventsAdmin();
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      res.status(500).json({ message: "Failed to fetch events" });
+    }
+  });
+
+  // Event Management - Get event details (admin view)
+  app.get("/api/admin/events/:id", requireAdmin, async (req, res) => {
+    try {
+      const event = await storage.getBlindBoxEventAdmin(req.params.id);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      res.json(event);
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      res.status(500).json({ message: "Failed to fetch event" });
+    }
+  });
+
+  // Event Management - Update event status
+  app.patch("/api/admin/events/:id", requireAdmin, async (req, res) => {
+    try {
+      const event = await storage.updateBlindBoxEventAdmin(req.params.id, req.body);
+      res.json(event);
+    } catch (error) {
+      console.error("Error updating event:", error);
+      res.status(500).json({ message: "Failed to update event" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

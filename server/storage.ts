@@ -1225,6 +1225,145 @@ export class DatabaseStorage implements IStorage {
   async deleteVenue(id: string): Promise<void> {
     await db.execute(sql`DELETE FROM venues WHERE id = ${id}`);
   }
+
+  // ============ EVENT TEMPLATES ============
+  async getAllEventTemplates(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT * FROM event_templates
+      ORDER BY day_of_week, time_of_day
+    `);
+    return result.rows;
+  }
+
+  async getEventTemplate(id: string): Promise<any> {
+    const result = await db.execute(sql`SELECT * FROM event_templates WHERE id = ${id}`);
+    return result.rows[0];
+  }
+
+  async createEventTemplate(data: any): Promise<any> {
+    const result = await db.execute(sql`
+      INSERT INTO event_templates (name, event_type, day_of_week, time_of_day, theme, gender_restriction, min_age, max_age, min_participants, max_participants, custom_price, is_active)
+      VALUES (${data.name}, ${data.eventType}, ${data.dayOfWeek}, ${data.timeOfDay}, ${data.theme || null}, ${data.genderRestriction || null}, ${data.minAge || null}, ${data.maxAge || null}, ${data.minParticipants || 5}, ${data.maxParticipants || 10}, ${data.customPrice || null}, ${data.isActive !== false})
+      RETURNING *
+    `);
+    return result.rows[0];
+  }
+
+  async updateEventTemplate(id: string, updates: any): Promise<any> {
+    const setClauses = [];
+    const values: any[] = [];
+    
+    if (updates.name !== undefined) {
+      setClauses.push(`name = $${values.length + 1}`);
+      values.push(updates.name);
+    }
+    if (updates.eventType !== undefined) {
+      setClauses.push(`event_type = $${values.length + 1}`);
+      values.push(updates.eventType);
+    }
+    if (updates.dayOfWeek !== undefined) {
+      setClauses.push(`day_of_week = $${values.length + 1}`);
+      values.push(updates.dayOfWeek);
+    }
+    if (updates.timeOfDay !== undefined) {
+      setClauses.push(`time_of_day = $${values.length + 1}`);
+      values.push(updates.timeOfDay);
+    }
+    if (updates.theme !== undefined) {
+      setClauses.push(`theme = $${values.length + 1}`);
+      values.push(updates.theme);
+    }
+    if (updates.genderRestriction !== undefined) {
+      setClauses.push(`gender_restriction = $${values.length + 1}`);
+      values.push(updates.genderRestriction);
+    }
+    if (updates.minAge !== undefined) {
+      setClauses.push(`min_age = $${values.length + 1}`);
+      values.push(updates.minAge);
+    }
+    if (updates.maxAge !== undefined) {
+      setClauses.push(`max_age = $${values.length + 1}`);
+      values.push(updates.maxAge);
+    }
+    if (updates.minParticipants !== undefined) {
+      setClauses.push(`min_participants = $${values.length + 1}`);
+      values.push(updates.minParticipants);
+    }
+    if (updates.maxParticipants !== undefined) {
+      setClauses.push(`max_participants = $${values.length + 1}`);
+      values.push(updates.maxParticipants);
+    }
+    if (updates.customPrice !== undefined) {
+      setClauses.push(`custom_price = $${values.length + 1}`);
+      values.push(updates.customPrice);
+    }
+    if (updates.isActive !== undefined) {
+      setClauses.push(`is_active = $${values.length + 1}`);
+      values.push(updates.isActive);
+    }
+
+    if (setClauses.length === 0) {
+      return this.getEventTemplate(id);
+    }
+
+    values.push(id);
+    const query = sql.raw(`UPDATE event_templates SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`);
+    const result = await db.execute(query);
+    return result.rows[0];
+  }
+
+  async deleteEventTemplate(id: string): Promise<void> {
+    await db.execute(sql`DELETE FROM event_templates WHERE id = ${id}`);
+  }
+
+  // ============ EVENT MANAGEMENT (Admin view of user events) ============
+  async getAllBlindBoxEventsAdmin(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT 
+        e.*,
+        u.first_name as creator_first_name,
+        u.last_name as creator_last_name,
+        u.email as creator_email
+      FROM blind_box_events e
+      LEFT JOIN users u ON e.user_id = u.id
+      ORDER BY e.created_at DESC
+    `);
+    return result.rows;
+  }
+
+  async getBlindBoxEventAdmin(id: string): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        e.*,
+        u.first_name as creator_first_name,
+        u.last_name as creator_last_name,
+        u.email as creator_email,
+        u.phone_number as creator_phone
+      FROM blind_box_events e
+      LEFT JOIN users u ON e.user_id = u.id
+      WHERE e.id = ${id}
+    `);
+    return result.rows[0];
+  }
+
+  async updateBlindBoxEventAdmin(id: string, updates: any): Promise<any> {
+    const setClauses = [];
+    const values: any[] = [];
+    
+    if (updates.status !== undefined) {
+      setClauses.push(`status = $${values.length + 1}`);
+      values.push(updates.status);
+    }
+
+    if (setClauses.length === 0) {
+      return this.getBlindBoxEventAdmin(id);
+    }
+
+    values.push(id);
+    const query = sql.raw(`UPDATE blind_box_events SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`);
+    const result = await db.execute(query);
+    return result.rows[0];
+  }
 }
 
 export const storage = new DatabaseStorage();
