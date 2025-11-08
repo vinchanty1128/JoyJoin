@@ -138,6 +138,13 @@ Preferred communication style: Simple, everyday language.
   - User detail dialog with complete profile info, events history, subscriptions
   - Ban/unban functionality with optimistic UI updates
   - Backend APIs: GET /api/admin/users (with filters), GET /api/admin/users/:id, PATCH /api/admin/users/:id/ban, PATCH /api/admin/users/:id/unban
-- **Storage Methods Added:** `getAllUsers()`, `getAllBlindBoxEvents()`, `updateUser()` for admin operations
-- **Routes Registered:** All `/admin/*` routes integrated in App.tsx with permission checks
-- Remaining admin modules (subscriptions, coupons, venues, events, finance, etc.) ready for implementation
+- **Subscription Management (/admin/subscriptions):** Complete subscription system:
+  - 4 metric cards: Active Subscriptions, Total Subscriptions, Revenue, Conversion Rate
+  - Subscription list with card-based layout showing user info, plan type, dates, remaining days
+  - Filter tabs: Active / All subscriptions
+  - Status badges: Active, Expiring Soon (≤7 days), Expired, Disabled
+  - Create subscription dialog: select user, plan type (monthly ¥98 / quarterly ¥294), custom duration
+  - Auto-renew indicator display
+  - Backend APIs: GET /api/admin/subscriptions (with filter), POST /api/admin/subscriptions, PATCH /api/admin/subscriptions/:id
+  - Storage methods: getAllSubscriptions(), getActiveSubscriptions(), getUserSubscription(), createSubscription(), updateSubscription()
+- Remaining admin modules (coupons, venues, templates, events, finance, etc.) ready for implementation

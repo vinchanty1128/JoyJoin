@@ -5,21 +5,16 @@ import { useLocation } from "wouter";
 import type { User } from "@shared/schema";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
-  const { data: fullUser, isLoading: userLoading } = useQuery<User>({
-    queryKey: ["/api/user"],
-    enabled: !!user,
-  });
-
   useEffect(() => {
-    if (!authLoading && !userLoading && fullUser && !fullUser.isAdmin) {
+    if (!isLoading && user && !user.isAdmin) {
       setLocation("/");
     }
-  }, [authLoading, userLoading, fullUser, setLocation]);
+  }, [isLoading, user, setLocation]);
 
-  if (authLoading || userLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="space-y-4 text-center">
@@ -30,7 +25,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!fullUser?.isAdmin) {
+  if (!user?.isAdmin) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="space-y-4 text-center">
