@@ -1813,6 +1813,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Management - Get all users with filters
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const { search, filter } = req.query;
+      let users = await storage.getAllUsers();
+
+      // Apply search filter
+      if (search && typeof search === "string") {
+        const searchLower = search.toLowerCase();
+        users = users.filter((user: any) => 
+          user.firstName?.toLowerCase().includes(searchLower) ||
+          user.lastName?.toLowerCase().includes(searchLower) ||
+          user.email?.toLowerCase().includes(searchLower) ||
+          user.phoneNumber?.includes(search)
+        );
+      }
+
+      // Apply status filter
+      if (filter === "banned") {
+        users = users.filter((user: any) => user.isBanned);
+      } else if (filter === "subscribed") {
+        // TODO: Filter by subscription status when subscriptions table is implemented
+        users = [];
+      } else if (filter === "non-subscribed") {
+        // TODO: Filter by non-subscription status
+        users = users;
+      }
+
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // User Management - Get user details
+  app.get("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get user's events
+      const events = await storage.getUserBlindBoxEvents(req.params.id);
+      
+      res.json({
+        ...user,
+        events,
+        subscriptions: [], // TODO: Get from subscriptions table
+        payments: [], // TODO: Get from payments table
+      });
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      res.status(500).json({ message: "Failed to fetch user details" });
+    }
+  });
+
+  // User Management - Ban user
+  app.patch("/api/admin/users/:id/ban", requireAdmin, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updatedUser = await storage.updateUser(req.params.id, { isBanned: true });
+      
+      // TODO: Log moderation action
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error banning user:", error);
+      res.status(500).json({ message: "Failed to ban user" });
+    }
+  });
+
+  // User Management - Unban user
+  app.patch("/api/admin/users/:id/unban", requireAdmin, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updatedUser = await storage.updateUser(req.params.id, { isBanned: false });
+      
+      // TODO: Log moderation action
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error unbanning user:", error);
+      res.status(500).json({ message: "Failed to unban user" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

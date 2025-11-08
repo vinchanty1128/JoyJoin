@@ -3,6 +3,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { Route, Switch } from "wouter";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 
 export default function AdminLayout() {
   const sidebarStyle = {
@@ -29,9 +30,7 @@ export default function AdminLayout() {
             <Switch>
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/dashboard" component={AdminDashboard} />
-              <Route path="/admin/users">
-                <div className="p-6">用户管理 - 开发中</div>
-              </Route>
+              <Route path="/admin/users" component={AdminUsersPage} />
               <Route path="/admin/subscriptions">
                 <div className="p-6">订阅管理 - 开发中</div>
               </Route>
