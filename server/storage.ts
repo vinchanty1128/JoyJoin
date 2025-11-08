@@ -1542,6 +1542,60 @@ export class DatabaseStorage implements IStorage {
     `);
     return result.rows;
   }
+
+  // ============ DATA INSIGHTS ============
+  async getInsightsData(): Promise<any> {
+    // Engagement metrics
+    const totalUsers = await db.execute(sql`SELECT COUNT(*)::int as count FROM users`);
+    const activeUsers = await db.execute(sql`
+      SELECT COUNT(DISTINCT user_id)::int as count FROM blind_box_events 
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+    `);
+    const totalEvents = await db.execute(sql`SELECT COUNT(*)::int as count FROM blind_box_events`);
+    
+    // User growth (last 30 days)
+    const userGrowth = await db.execute(sql`
+      SELECT DATE(created_at) as date, COUNT(*)::int as count 
+      FROM users 
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY DATE(created_at)
+      ORDER BY date DESC
+    `);
+
+    // Event trends (last 30 days)
+    const eventTrends = await db.execute(sql`
+      SELECT DATE(created_at) as date, COUNT(*)::int as count 
+      FROM blind_box_events 
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY DATE(created_at)
+      ORDER BY date DESC
+    `);
+
+    // Personality distribution
+    const personalityDistribution = await db.execute(sql`
+      SELECT social_archetype as archetype, COUNT(*)::int as count 
+      FROM users 
+      WHERE social_archetype IS NOT NULL
+      GROUP BY social_archetype
+      ORDER BY count DESC
+    `);
+
+    const avgEventsPerUser = totalUsers.rows[0].count > 0 
+      ? totalEvents.rows[0].count / totalUsers.rows[0].count 
+      : 0;
+
+    return {
+      engagementMetrics: {
+        totalUsers: totalUsers.rows[0].count,
+        activeUsers: activeUsers.rows[0].count,
+        totalEvents: totalEvents.rows[0].count,
+        avgEventsPerUser,
+      },
+      userGrowth: userGrowth.rows,
+      eventTrends: eventTrends.rows,
+      personalityDistribution: personalityDistribution.rows,
+    };
+  }
 }
 
 export const storage = new DatabaseStorage();

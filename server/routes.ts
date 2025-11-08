@@ -2333,6 +2333,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Data Insights - Get analytics data
+  app.get("/api/admin/insights", requireAdmin, async (req, res) => {
+    try {
+      const insights = await storage.getInsightsData();
+      res.json(insights);
+    } catch (error) {
+      console.error("Error fetching insights:", error);
+      res.status(500).json({ message: "Failed to fetch insights" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

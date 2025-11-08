@@ -9,6 +9,11 @@ import AdminCouponsPage from "@/pages/admin/AdminCouponsPage";
 import AdminVenuesPage from "@/pages/admin/AdminVenuesPage";
 import AdminEventTemplatesPage from "@/pages/admin/AdminEventTemplatesPage";
 import AdminEventsPage from "@/pages/admin/AdminEventsPage";
+import AdminFinancePage from "@/pages/admin/AdminFinancePage";
+import AdminDataInsightsPage from "@/pages/admin/AdminDataInsightsPage";
+import AdminContentPage from "@/pages/admin/AdminContentPage";
+import AdminModerationPage from "@/pages/admin/AdminModerationPage";
+import AdminMatchingLabPage from "@/pages/admin/AdminMatchingLabPage";
 
 export default function AdminLayout() {
   const sidebarStyle = {
@@ -41,21 +46,11 @@ export default function AdminLayout() {
               <Route path="/admin/venues" component={AdminVenuesPage} />
               <Route path="/admin/templates" component={AdminEventTemplatesPage} />
               <Route path="/admin/events" component={AdminEventsPage} />
-              <Route path="/admin/finance">
-                <div className="p-6">财务管理 - 开发中</div>
-              </Route>
-              <Route path="/admin/insights">
-                <div className="p-6">数据洞察 - 开发中</div>
-              </Route>
-              <Route path="/admin/content">
-                <div className="p-6">内容管理 - 开发中</div>
-              </Route>
-              <Route path="/admin/moderation">
-                <div className="p-6">举报审核 - 开发中</div>
-              </Route>
-              <Route path="/admin/matching">
-                <div className="p-6">匹配实验室 - 开发中</div>
-              </Route>
+              <Route path="/admin/finance" component={AdminFinancePage} />
+              <Route path="/admin/insights" component={AdminDataInsightsPage} />
+              <Route path="/admin/content" component={AdminContentPage} />
+              <Route path="/admin/moderation" component={AdminModerationPage} />
+              <Route path="/admin/matching" component={AdminMatchingLabPage} />
             </Switch>
           </main>
         </div>
