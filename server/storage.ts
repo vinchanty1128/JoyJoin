@@ -106,6 +106,13 @@ export interface IStorage {
   getUserSubscription(userId: string): Promise<any | undefined>;
   createSubscription(data: any): Promise<any>;
   updateSubscription(id: string, updates: any): Promise<any>;
+
+  // Admin Coupon operations
+  getAllCoupons(): Promise<any[]>;
+  getCoupon(id: string): Promise<any | undefined>;
+  createCoupon(data: any): Promise<any>;
+  updateCoupon(id: string, updates: any): Promise<any>;
+  getCouponUsageStats(couponId: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1019,9 +1026,101 @@ export class DatabaseStorage implements IStorage {
     }
 
     values.push(id);
-    const query = `UPDATE subscriptions SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`;
-    const result = await db.execute({ text: query, values });
+    const query = sql.raw(`UPDATE subscriptions SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`);
+    const result = await db.execute(query);
     return result.rows[0];
+  }
+
+  // Admin Coupon operations
+  async getAllCoupons(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT c.*, 
+        COUNT(cu.id) as usage_count
+      FROM coupons c
+      LEFT JOIN coupon_usage cu ON c.id = cu.coupon_id
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `);
+    return result.rows;
+  }
+
+  async getCoupon(id: string): Promise<any | undefined> {
+    const result = await db.execute(sql`
+      SELECT c.*, 
+        COUNT(cu.id) as usage_count
+      FROM coupons c
+      LEFT JOIN coupon_usage cu ON c.id = cu.coupon_id
+      WHERE c.id = ${id}
+      GROUP BY c.id
+    `);
+    return result.rows[0];
+  }
+
+  async createCoupon(data: any): Promise<any> {
+    const result = await db.execute(sql`
+      INSERT INTO coupons (code, discount_type, discount_value, valid_from, valid_until, usage_limit, is_active)
+      VALUES (${data.code}, ${data.discountType}, ${data.discountValue}, ${data.validFrom}, ${data.validUntil}, ${data.maxUses || null}, true)
+      RETURNING *
+    `);
+    return result.rows[0];
+  }
+
+  async updateCoupon(id: string, updates: any): Promise<any> {
+    const setClauses = [];
+    const values: any[] = [];
+    
+    if (updates.code !== undefined) {
+      setClauses.push(`code = $${values.length + 1}`);
+      values.push(updates.code);
+    }
+    if (updates.discountType !== undefined) {
+      setClauses.push(`discount_type = $${values.length + 1}`);
+      values.push(updates.discountType);
+    }
+    if (updates.discountValue !== undefined) {
+      setClauses.push(`discount_value = $${values.length + 1}`);
+      values.push(updates.discountValue);
+    }
+    if (updates.validFrom !== undefined) {
+      setClauses.push(`valid_from = $${values.length + 1}`);
+      values.push(updates.validFrom);
+    }
+    if (updates.validUntil !== undefined) {
+      setClauses.push(`valid_until = $${values.length + 1}`);
+      values.push(updates.validUntil);
+    }
+    if (updates.maxUses !== undefined) {
+      setClauses.push(`usage_limit = $${values.length + 1}`);
+      values.push(updates.maxUses);
+    }
+    if (updates.isActive !== undefined) {
+      setClauses.push(`is_active = $${values.length + 1}`);
+      values.push(updates.isActive);
+    }
+
+    if (setClauses.length === 0) {
+      return this.getCoupon(id);
+    }
+
+    values.push(id);
+    const query = sql.raw(`UPDATE coupons SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`);
+    const result = await db.execute(query);
+    return result.rows[0];
+  }
+
+  async getCouponUsageStats(couponId: string): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        cu.*, 
+        u.first_name, 
+        u.last_name, 
+        u.email
+      FROM coupon_usage cu
+      LEFT JOIN users u ON cu.user_id = u.id
+      WHERE cu.coupon_id = ${couponId}
+      ORDER BY cu.used_at DESC
+    `);
+    return result.rows;
   }
 }
 

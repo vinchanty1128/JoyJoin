@@ -116,7 +116,7 @@ Preferred communication style: Simple, everyday language.
   - `eventTemplates` - Recurring time slots and themed events (Girls Night, etc.)
   - `subscriptions` - User memberships (¥98/month or ¥294/3mo)
   - `payments` - Unified payment records with WeChat Pay integration support
-  - `coupons` - Discount code system (fixed amount / percentage)
+  - `coupons` - Discount code system (fixed amount / percentage; columns: code, discount_type, discount_value, usage_limit, used_count, valid_from, valid_until, is_active)
   - `couponUsage` - Coupon redemption tracking
   - `venueBookings` - Venue capacity management and commission tracking
   - `reports` - User report system for moderation
@@ -147,4 +147,14 @@ Preferred communication style: Simple, everyday language.
   - Auto-renew indicator display
   - Backend APIs: GET /api/admin/subscriptions (with filter), POST /api/admin/subscriptions, PATCH /api/admin/subscriptions/:id
   - Storage methods: getAllSubscriptions(), getActiveSubscriptions(), getUserSubscription(), createSubscription(), updateSubscription()
-- Remaining admin modules (coupons, venues, templates, events, finance, etc.) ready for implementation
+- **Coupon Management (/admin/coupons):** Complete coupon system with testing verified:
+  - 4 metric cards: Active Coupons (活跃优惠券), Total Created (总优惠券数), Total Uses (总使用次数), Revenue Saved (优惠总额)
+  - Coupon list with card-based layout showing code, discount type/value, usage stats, validity dates
+  - Create coupon dialog: code input, discount type (percentage/fixed_amount), discount value, max uses, validity dates
+  - Toggle enable/disable functionality with optimistic UI updates
+  - View usage details dialog showing all coupon redemptions
+  - Status badges: Active (活跃), Disabled (已禁用), Expired (已过期), Used Up (已用完)
+  - Backend APIs: GET /api/admin/coupons, POST /api/admin/coupons, PATCH /api/admin/coupons/:id
+  - Storage methods: getAllCoupons(), getCoupon(), createCoupon(), updateCoupon()
+  - Column mapping: maxUses → usage_limit, usageCount → used_count
+- Remaining admin modules (venues, templates, events, finance, etc.) ready for implementation

@@ -1752,17 +1752,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ ADMIN MIDDLEWARE ============
   
-  function requireAdmin(req: Request, res: any, next: any) {
-    if (!req.isAuthenticated()) {
+  async function requireAdmin(req: Request, res: any, next: any) {
+    const session = req.session as any;
+    if (!session?.userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     
-    const user = req.user as any;
-    if (!user?.isAdmin) {
-      return res.status(403).json({ message: "Forbidden - Admin access required" });
+    try {
+      const user = await storage.getUser(session.userId);
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Forbidden - Admin access required" });
+      }
+      
+      next();
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
-    
-    next();
   }
 
   // ============ ADMIN API ROUTES ============
@@ -1970,6 +1976,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating subscription:", error);
       res.status(500).json({ message: "Failed to update subscription" });
+    }
+  });
+
+  // Coupon Management - Get all coupons
+  app.get("/api/admin/coupons", requireAdmin, async (req, res) => {
+    try {
+      const coupons = await storage.getAllCoupons();
+      res.json(coupons);
+    } catch (error) {
+      console.error("Error fetching coupons:", error);
+      res.status(500).json({ message: "Failed to fetch coupons" });
+    }
+  });
+
+  // Coupon Management - Get coupon details
+  app.get("/api/admin/coupons/:id", requireAdmin, async (req, res) => {
+    try {
+      const coupon = await storage.getCoupon(req.params.id);
+      if (!coupon) {
+        return res.status(404).json({ message: "Coupon not found" });
+      }
+      res.json(coupon);
+    } catch (error) {
+      console.error("Error fetching coupon:", error);
+      res.status(500).json({ message: "Failed to fetch coupon" });
+    }
+  });
+
+  // Coupon Management - Get coupon usage stats
+  app.get("/api/admin/coupons/:id/usage", requireAdmin, async (req, res) => {
+    try {
+      const usage = await storage.getCouponUsageStats(req.params.id);
+      res.json(usage);
+    } catch (error) {
+      console.error("Error fetching coupon usage:", error);
+      res.status(500).json({ message: "Failed to fetch coupon usage" });
+    }
+  });
+
+  // Coupon Management - Create coupon
+  app.post("/api/admin/coupons", requireAdmin, async (req, res) => {
+    try {
+      const { code, discountType, discountValue, validFrom, validUntil, maxUses } = req.body;
+      
+      if (!code || !discountType || !discountValue) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const coupon = await storage.createCoupon({
+        code: code.toUpperCase(),
+        discountType,
+        discountValue,
+        validFrom: validFrom || new Date().toISOString(),
+        validUntil: validUntil || null,
+        maxUses: maxUses || null,
+        isActive: true,
+      });
+
+      res.json(coupon);
+    } catch (error) {
+      console.error("Error creating coupon:", error);
+      res.status(500).json({ message: "Failed to create coupon" });
+    }
+  });
+
+  // Coupon Management - Update coupon
+  app.patch("/api/admin/coupons/:id", requireAdmin, async (req, res) => {
+    try {
+      const coupon = await storage.updateCoupon(req.params.id, req.body);
+      res.json(coupon);
+    } catch (error) {
+      console.error("Error updating coupon:", error);
+      res.status(500).json({ message: "Failed to update coupon" });
     }
   });
 
