@@ -2232,6 +2232,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Finance - Get statistics
+  app.get("/api/admin/finance/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getFinanceStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching finance stats:", error);
+      res.status(500).json({ message: "Failed to fetch finance stats" });
+    }
+  });
+
+  // Finance - Get all payments
+  app.get("/api/admin/finance/payments", requireAdmin, async (req, res) => {
+    try {
+      const { type } = req.query;
+      const payments = type 
+        ? await storage.getPaymentsByType(type as string)
+        : await storage.getAllPayments();
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      res.status(500).json({ message: "Failed to fetch payments" });
+    }
+  });
+
+  // Finance - Get venue commissions
+  app.get("/api/admin/finance/commissions", requireAdmin, async (req, res) => {
+    try {
+      const commissions = await storage.getVenueCommissions();
+      res.json(commissions);
+    } catch (error) {
+      console.error("Error fetching commissions:", error);
+      res.status(500).json({ message: "Failed to fetch commissions" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

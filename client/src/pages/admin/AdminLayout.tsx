@@ -8,6 +8,7 @@ import AdminSubscriptionsPage from "@/pages/admin/AdminSubscriptionsPage";
 import AdminCouponsPage from "@/pages/admin/AdminCouponsPage";
 import AdminVenuesPage from "@/pages/admin/AdminVenuesPage";
 import AdminEventTemplatesPage from "@/pages/admin/AdminEventTemplatesPage";
+import AdminEventsPage from "@/pages/admin/AdminEventsPage";
 
 export default function AdminLayout() {
   const sidebarStyle = {
@@ -39,9 +40,7 @@ export default function AdminLayout() {
               <Route path="/admin/coupons" component={AdminCouponsPage} />
               <Route path="/admin/venues" component={AdminVenuesPage} />
               <Route path="/admin/templates" component={AdminEventTemplatesPage} />
-              <Route path="/admin/events">
-                <div className="p-6">活动管理 - 开发中</div>
-              </Route>
+              <Route path="/admin/events" component={AdminEventsPage} />
               <Route path="/admin/finance">
                 <div className="p-6">财务管理 - 开发中</div>
               </Route>

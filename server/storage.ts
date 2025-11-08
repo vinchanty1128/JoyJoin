@@ -1364,6 +1364,84 @@ export class DatabaseStorage implements IStorage {
     const result = await db.execute(query);
     return result.rows[0];
   }
+
+  // ============ FINANCE MANAGEMENT ============
+  async getFinanceStats(): Promise<any> {
+    // Total revenue from all payments
+    const totalRevenue = await db.execute(sql`
+      SELECT COALESCE(SUM(amount), 0)::int as total FROM payments WHERE status = 'completed'
+    `);
+    
+    // Subscription revenue
+    const subscriptionRevenue = await db.execute(sql`
+      SELECT COALESCE(SUM(amount), 0)::int as total FROM payments 
+      WHERE payment_type = 'subscription' AND status = 'completed'
+    `);
+    
+    // Event revenue
+    const eventRevenue = await db.execute(sql`
+      SELECT COALESCE(SUM(amount), 0)::int as total FROM payments 
+      WHERE payment_type = 'event' AND status = 'completed'
+    `);
+    
+    // Total payments count
+    const totalPayments = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM payments
+    `);
+
+    return {
+      totalRevenue: totalRevenue.rows[0].total,
+      subscriptionRevenue: subscriptionRevenue.rows[0].total,
+      eventRevenue: eventRevenue.rows[0].total,
+      totalPayments: totalPayments.rows[0].count,
+    };
+  }
+
+  async getAllPayments(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT 
+        p.*,
+        u.first_name as user_first_name,
+        u.last_name as user_last_name,
+        u.email as user_email
+      FROM payments p
+      LEFT JOIN users u ON p.user_id = u.id
+      ORDER BY p.created_at DESC
+    `);
+    return result.rows;
+  }
+
+  async getPaymentsByType(paymentType: string): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT 
+        p.*,
+        u.first_name as user_first_name,
+        u.last_name as user_last_name,
+        u.email as user_email
+      FROM payments p
+      LEFT JOIN users u ON p.user_id = u.id
+      WHERE p.payment_type = ${paymentType}
+      ORDER BY p.created_at DESC
+    `);
+    return result.rows;
+  }
+
+  async getVenueCommissions(): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT 
+        v.id,
+        v.name as venue_name,
+        v.commission_rate,
+        COUNT(vb.id)::int as booking_count,
+        COALESCE(SUM(vb.final_amount), 0)::int as total_revenue,
+        COALESCE(SUM(vb.commission_amount), 0)::int as total_commission
+      FROM venues v
+      LEFT JOIN venue_bookings vb ON v.id = vb.venue_id
+      GROUP BY v.id, v.name, v.commission_rate
+      ORDER BY total_commission DESC
+    `);
+    return result.rows;
+  }
 }
 
 export const storage = new DatabaseStorage();
