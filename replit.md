@@ -22,6 +22,7 @@ Preferred communication style: Simple, everyday language.
 - **Runtime:** Node.js with Express.js, TypeScript.
 - **API Design:** RESTful API with Express middleware.
 - **Development vs. Production:** Vite dev server in middleware mode for development; Express serves pre-built static assets in production.
+- **Payment System:** WeChat Pay integration structure in `server/paymentService.ts` with webhook handlers, payment creation, status queries, and refund capabilities. Ready for SDK integration (requires merchant credentials).
 
 ### Data Storage Solutions
 - **Database:** PostgreSQL (Neon serverless) with Drizzle ORM.
@@ -44,6 +45,7 @@ Preferred communication style: Simple, everyday language.
 - **Explainable Matching:** Transparent matching logic to build user trust.
 - **Chat Interface:** Tabbed interface for group and direct messages, with event-specific participant displays.
 - **Admin Portal:** Desktop-first design providing comprehensive management for users, subscriptions, coupons, venues, event templates, events, finance, moderation, and insights. Includes real-time statistics and analytics.
+- **Payment & Subscription System:** Complete payment infrastructure with WeChat Pay integration structure, webhook handlers for automatic subscription activation, coupon validation, discount calculation, refund management, and payment tracking. Payment service located in `server/paymentService.ts` with API routes at `/api/payments/*` and `/api/webhooks/wechat-pay`.
 - **Comprehensive Error Handling:** All admin portal pages include proper error states with retry functionality, preventing infinite loading spinners. AdminGuard displays helpful messages for authentication and authorization failures. Error messages are localized in Chinese with clear action buttons.
 
 ## External Dependencies
