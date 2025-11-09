@@ -6,7 +6,7 @@ import {
   type Notification, type InsertNotification, type NotificationCounts,
   type DirectMessageThread, type DirectMessage, type InsertDirectMessageThread, type InsertDirectMessage,
   users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents, testResponses, roleResults, notifications,
-  directMessageThreads, directMessages
+  directMessageThreads, directMessages, payments, coupons, couponUsage, subscriptions
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -113,6 +113,12 @@ export interface IStorage {
   createCoupon(data: any): Promise<any>;
   updateCoupon(id: string, updates: any): Promise<any>;
   getCouponUsageStats(couponId: string): Promise<any>;
+  recordCouponUsage(data: { couponId: string; userId: string; paymentId: string; discountApplied: number }): Promise<void>;
+
+  // Admin Payment operations
+  getAllPayments(): Promise<any[]>;
+  createPayment(data: any): Promise<any>;
+  updatePayment(id: string, updates: any): Promise<any>;
 
   // Admin Venue operations
   getAllVenues(): Promise<any[]>;
@@ -1144,9 +1150,59 @@ export class DatabaseStorage implements IStorage {
       FROM coupon_usage cu
       LEFT JOIN users u ON cu.user_id = u.id
       WHERE cu.coupon_id = ${couponId}
-      ORDER BY cu.used_at DESC
+      ORDER BY cu.created_at DESC
     `);
     return result.rows;
+  }
+
+  async recordCouponUsage(data: { couponId: string; userId: string; paymentId: string; discountApplied: number }): Promise<void> {
+    await db.execute(sql`
+      INSERT INTO coupon_usage (coupon_id, user_id, payment_id, discount_applied)
+      VALUES (${data.couponId}, ${data.userId}, ${data.paymentId}, ${data.discountApplied})
+    `);
+    
+    // Increment coupon usage count
+    await db.execute(sql`
+      UPDATE coupons SET current_uses = current_uses + 1 WHERE id = ${data.couponId}
+    `);
+  }
+
+  // ============ PAYMENTS ============
+  async createPayment(data: any): Promise<any> {
+    const result = await db.execute(sql`
+      INSERT INTO payments (user_id, payment_type, related_id, original_amount, discount_amount, final_amount, coupon_id, wechat_order_id, status)
+      VALUES (${data.userId}, ${data.paymentType}, ${data.relatedId || null}, ${data.originalAmount}, ${data.discountAmount || 0}, ${data.finalAmount}, ${data.couponId || null}, ${data.wechatOrderId}, ${data.status || 'pending'})
+      RETURNING *
+    `);
+    return result.rows[0];
+  }
+
+  async updatePayment(id: string, updates: any): Promise<any> {
+    const setClauses = [];
+    const values: any[] = [];
+    
+    if (updates.status !== undefined) {
+      setClauses.push(`status = $${values.length + 1}`);
+      values.push(updates.status);
+    }
+    if (updates.wechatTransactionId !== undefined) {
+      setClauses.push(`wechat_transaction_id = $${values.length + 1}`);
+      values.push(updates.wechatTransactionId);
+    }
+    if (updates.paidAt !== undefined) {
+      setClauses.push(`paid_at = $${values.length + 1}`);
+      values.push(updates.paidAt);
+    }
+
+    if (setClauses.length === 0) {
+      const result = await db.execute(sql`SELECT * FROM payments WHERE id = ${id}`);
+      return result.rows[0];
+    }
+
+    values.push(id);
+    const query = sql.raw(`UPDATE payments SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`);
+    const result = await db.execute(query);
+    return result.rows[0];
   }
 
   // ============ VENUES ============
