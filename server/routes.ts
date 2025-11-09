@@ -2,6 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
+import { paymentService } from "./paymentService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
@@ -2342,6 +2343,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching insights:", error);
       res.status(500).json({ message: "Failed to fetch insights" });
+    }
+  });
+
+  // ============ PAYMENT & WEBHOOKS ============
+  
+  // Create payment order for subscription
+  app.post("/api/payments/create", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { paymentType, relatedId, originalAmount, couponCode } = req.body;
+      
+      // Validate coupon if provided
+      let couponId: string | undefined;
+      if (couponCode) {
+        const coupons = await storage.getAllCoupons();
+        const coupon = coupons.find(c => c.code === couponCode && c.isActive);
+        if (coupon) {
+          couponId = coupon.id;
+        }
+      }
+      
+      const paymentResult = await paymentService.createPayment({
+        userId,
+        paymentType,
+        relatedId,
+        originalAmount,
+        couponId,
+      });
+      
+      res.json(paymentResult);
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      res.status(500).json({ message: "Failed to create payment" });
+    }
+  });
+  
+  // WeChat Pay webhook - receives payment status updates
+  app.post("/api/webhooks/wechat-pay", async (req, res) => {
+    try {
+      await paymentService.handleWebhook(req.body);
+      res.json({ code: "SUCCESS", message: "OK" });
+    } catch (error) {
+      console.error("Error processing WeChat Pay webhook:", error);
+      res.status(500).json({ code: "FAIL", message: "Internal server error" });
+    }
+  });
+  
+  // Query payment status
+  app.get("/api/payments/:wechatOrderId/status", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const { wechatOrderId } = req.params;
+      const status = await paymentService.queryPaymentStatus(wechatOrderId);
+      res.json({ status });
+    } catch (error) {
+      console.error("Error querying payment status:", error);
+      res.status(500).json({ message: "Failed to query payment status" });
+    }
+  });
+  
+  // Admin - Get all payments
+  app.get("/api/admin/payments", requireAdmin, async (req, res) => {
+    try {
+      const payments = await storage.getAllPayments();
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      res.status(500).json({ message: "Failed to fetch payments" });
+    }
+  });
+  
+  // Admin - Create refund
+  app.post("/api/admin/payments/:paymentId/refund", requireAdmin, async (req, res) => {
+    try {
+      const { paymentId } = req.params;
+      const { reason } = req.body;
+      await paymentService.createRefund(paymentId, reason);
+      res.json({ message: "Refund initiated" });
+    } catch (error) {
+      console.error("Error creating refund:", error);
+      res.status(500).json({ message: "Failed to create refund" });
     }
   });
 
