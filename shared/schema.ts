@@ -592,7 +592,7 @@ export const subscriptions = pgTable("subscriptions", {
   
   // Payment
   amount: integer("amount").notNull(), // ¥98 or ¥294
-  paymentId: varchar("payment_id"), // References payments table
+  paymentId: varchar("payment_id").references(() => payments.id), // References payments table
   
   // Status
   status: varchar("status").notNull().default("active"), // active, expired, cancelled
