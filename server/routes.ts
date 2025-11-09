@@ -2308,8 +2308,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Moderation - Create moderation log
   app.post("/api/admin/moderation/logs", requireAdmin, async (req, res) => {
     try {
+      const session = req.session as any;
       const log = await storage.createModerationLog({
-        adminId: req.user!.id,
+        adminId: session.userId,
         action: req.body.action,
         targetUserId: req.body.targetUserId,
         reason: req.body.reason,

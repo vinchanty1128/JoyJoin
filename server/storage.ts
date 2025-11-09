@@ -1580,8 +1580,8 @@ export class DatabaseStorage implements IStorage {
       ORDER BY count DESC
     `);
 
-    const avgEventsPerUser = totalUsers.rows[0].count > 0 
-      ? totalEvents.rows[0].count / totalUsers.rows[0].count 
+    const avgEventsPerUser = (totalUsers.rows[0] as any).count > 0 
+      ? (totalEvents.rows[0] as any).count / (totalUsers.rows[0] as any).count 
       : 0;
 
     return {
