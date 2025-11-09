@@ -1822,10 +1822,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User Management - Get all users with filters
+  // User Management - Get all users with filters and pagination
   app.get("/api/admin/users", requireAdmin, async (req, res) => {
     try {
       const { search, filter } = req.query;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = (page - 1) * limit;
+      
       let users = await storage.getAllUsers();
 
       // Apply search filter
@@ -1850,7 +1854,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         users = users;
       }
 
-      res.json(users);
+      const totalUsers = users.length;
+      const paginatedUsers = users.slice(offset, offset + limit);
+
+      res.json({
+        users: paginatedUsers,
+        pagination: {
+          page,
+          limit,
+          total: totalUsers,
+          totalPages: Math.ceil(totalUsers / limit),
+        },
+      });
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ message: "Failed to fetch users" });
@@ -1916,10 +1931,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Subscription Management - Get all subscriptions
+  // Subscription Management - Get all subscriptions with pagination
   app.get("/api/admin/subscriptions", requireAdmin, async (req, res) => {
     try {
       const { filter } = req.query;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = (page - 1) * limit;
+      
       let subscriptions;
       
       if (filter === "active") {
@@ -1928,7 +1947,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptions = await storage.getAllSubscriptions();
       }
 
-      res.json(subscriptions);
+      const total = subscriptions.length;
+      const paginatedData = subscriptions.slice(offset, offset + limit);
+
+      res.json({
+        subscriptions: paginatedData,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
     } catch (error) {
       console.error("Error fetching subscriptions:", error);
       res.status(500).json({ message: "Failed to fetch subscriptions" });

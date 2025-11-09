@@ -46,6 +46,8 @@ Preferred communication style: Simple, everyday language.
 - **Chat Interface:** Tabbed interface for group and direct messages, with event-specific participant displays.
 - **Admin Portal:** Desktop-first design providing comprehensive management for users, subscriptions, coupons, venues, event templates, events, finance, moderation, and insights. Includes real-time statistics and analytics.
 - **Payment & Subscription System:** Complete payment infrastructure with WeChat Pay integration structure, webhook handlers for automatic subscription activation, coupon validation, discount calculation, refund management, and payment tracking. Payment service located in `server/paymentService.ts` with API routes at `/api/payments/*` and `/api/webhooks/wechat-pay`.
+- **Subscription Management:** Automated expiry checker (`server/subscriptionService.ts`) runs hourly to detect expired subscriptions, send expiration warnings (3 days before), automatically update status, and send notifications. Supports subscription renewal, cancellation, and status checking via `/api/subscription/*` endpoints.
+- **Intelligent Venue Matching:** Algorithm-based venue selection (`server/venueMatchingService.ts`) that scores venues based on event type compatibility, capacity, location, cuisine preferences, and price range. Returns top 5 matched venues with detailed match reasoning via `/api/venues/match` and `/api/venues/select-best`.
 - **Comprehensive Error Handling:** All admin portal pages include proper error states with retry functionality, preventing infinite loading spinners. AdminGuard displays helpful messages for authentication and authorization failures. Error messages are localized in Chinese with clear action buttons.
 
 ## External Dependencies
