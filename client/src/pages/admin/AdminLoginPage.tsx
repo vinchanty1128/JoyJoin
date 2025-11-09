@@ -73,7 +73,7 @@ export default function AdminLoginPage() {
         title: "登录成功",
         description: "欢迎访问管理后台",
       });
-      setLocation("/admin");
+      window.location.href = "/admin";
     },
     onError: (error: Error) => {
       toast({

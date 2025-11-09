@@ -72,12 +72,7 @@ function AuthenticatedRouter() {
 
   // Admin routes - separate from user flow
   if (user?.isAdmin && location.startsWith("/admin")) {
-    return (
-      <Switch>
-        <Route path="/admin/:rest*" component={AdminLayout} />
-        <Route component={NotFound} />
-      </Switch>
-    );
+    return <AdminLayout />;
   }
 
   if (needsRegistration) {
