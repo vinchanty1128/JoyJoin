@@ -1755,6 +1755,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ ADMIN MIDDLEWARE ============
   
+  async function requireAuth(req: Request, res: any, next: any) {
+    const session = req.session as any;
+    if (!session?.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    next();
+  }
+  
   async function requireAdmin(req: Request, res: any, next: any) {
     const session = req.session as any;
     if (!session?.userId) {
@@ -2162,6 +2170,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting venue:", error);
       res.status(500).json({ message: "Failed to delete venue" });
+    }
+  });
+
+  // Venue Booking - Check availability
+  app.post("/api/venues/check-availability", requireAuth, async (req, res) => {
+    try {
+      const { venueId, bookingDate, bookingTime } = req.body;
+      
+      if (!venueId || !bookingDate || !bookingTime) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const isAvailable = await storage.checkVenueAvailability(
+        venueId,
+        new Date(bookingDate),
+        bookingTime
+      );
+
+      res.json({ available: isAvailable });
+    } catch (error) {
+      console.error("Error checking venue availability:", error);
+      res.status(500).json({ message: "Failed to check venue availability" });
+    }
+  });
+
+  // Venue Booking - Create booking
+  app.post("/api/venues/book", requireAuth, async (req, res) => {
+    try {
+      const { venueId, eventId, bookingDate, bookingTime, participantCount, estimatedRevenue } = req.body;
+      
+      if (!venueId || !eventId || !bookingDate || !bookingTime || !participantCount) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const booking = await storage.createVenueBooking({
+        venueId,
+        eventId,
+        bookingDate: new Date(bookingDate),
+        bookingTime,
+        participantCount,
+        estimatedRevenue,
+      });
+
+      res.json(booking);
+    } catch (error: any) {
+      console.error("Error creating venue booking:", error);
+      if (error.message === 'Venue is not available at the requested time') {
+        res.status(409).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create venue booking" });
+      }
+    }
+  });
+
+  // Venue Booking - Get bookings for a venue
+  app.get("/api/admin/venues/:venueId/bookings", requireAdmin, async (req, res) => {
+    try {
+      const bookings = await storage.getVenueBookings(req.params.venueId);
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching venue bookings:", error);
+      res.status(500).json({ message: "Failed to fetch venue bookings" });
+    }
+  });
+
+  // Venue Booking - Get booking for an event
+  app.get("/api/events/:eventId/venue-booking", requireAuth, async (req, res) => {
+    try {
+      const booking = await storage.getEventVenueBooking(req.params.eventId);
+      res.json(booking || null);
+    } catch (error) {
+      console.error("Error fetching event venue booking:", error);
+      res.status(500).json({ message: "Failed to fetch event venue booking" });
+    }
+  });
+
+  // Venue Booking - Cancel booking
+  app.post("/api/venues/bookings/:bookingId/cancel", requireAuth, async (req, res) => {
+    try {
+      const booking = await storage.cancelVenueBooking(req.params.bookingId);
+      res.json(booking);
+    } catch (error) {
+      console.error("Error cancelling venue booking:", error);
+      res.status(500).json({ message: "Failed to cancel venue booking" });
+    }
+  });
+
+  // Venue Booking - Update revenue (Admin only)
+  app.patch("/api/admin/venues/bookings/:bookingId/revenue", requireAdmin, async (req, res) => {
+    try {
+      const { actualRevenue } = req.body;
+      
+      if (actualRevenue === undefined) {
+        return res.status(400).json({ message: "Missing actualRevenue" });
+      }
+
+      const booking = await storage.updateVenueBookingRevenue(req.params.bookingId, actualRevenue);
+      res.json(booking);
+    } catch (error) {
+      console.error("Error updating venue booking revenue:", error);
+      res.status(500).json({ message: "Failed to update venue booking revenue" });
     }
   });
 

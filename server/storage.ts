@@ -126,6 +126,21 @@ export interface IStorage {
   updateVenue(id: string, updates: any): Promise<any>;
   deleteVenue(id: string): Promise<void>;
 
+  // Venue Booking operations
+  checkVenueAvailability(venueId: string, bookingDate: Date, bookingTime: string): Promise<boolean>;
+  createVenueBooking(data: {
+    venueId: string;
+    eventId: string;
+    bookingDate: Date;
+    bookingTime: string;
+    participantCount: number;
+    estimatedRevenue?: number;
+  }): Promise<any>;
+  getVenueBookings(venueId: string): Promise<any[]>;
+  getEventVenueBooking(eventId: string): Promise<any | undefined>;
+  cancelVenueBooking(bookingId: string): Promise<any>;
+  updateVenueBookingRevenue(bookingId: string, actualRevenue: number): Promise<any>;
+
   // Admin Event Template operations
   getAllEventTemplates(): Promise<any[]>;
   createEventTemplate(data: any): Promise<any>;
@@ -1306,6 +1321,123 @@ export class DatabaseStorage implements IStorage {
 
   async deleteVenue(id: string): Promise<void> {
     await db.execute(sql`DELETE FROM venues WHERE id = ${id}`);
+  }
+
+  // ============ VENUE BOOKINGS ============
+  async checkVenueAvailability(venueId: string, bookingDate: Date, bookingTime: string): Promise<boolean> {
+    const dateStr = bookingDate.toISOString().split('T')[0];
+    
+    const result = await db.execute(sql`
+      SELECT v.max_concurrent_events,
+        COALESCE(COUNT(vb.id), 0)::integer as current_bookings
+      FROM venues v
+      LEFT JOIN venue_bookings vb ON v.id = vb.venue_id
+        AND DATE(vb.booking_date) = ${dateStr}::date
+        AND vb.booking_time = ${bookingTime}
+        AND vb.status IN ('confirmed', 'completed')
+      WHERE v.id = ${venueId}
+      GROUP BY v.id, v.max_concurrent_events
+    `);
+
+    if (result.rows.length === 0) {
+      return false;
+    }
+
+    const venue = result.rows[0] as { max_concurrent_events: number; current_bookings: number };
+    return venue.current_bookings < venue.max_concurrent_events;
+  }
+
+  async createVenueBooking(data: {
+    venueId: string;
+    eventId: string;
+    bookingDate: Date;
+    bookingTime: string;
+    participantCount: number;
+    estimatedRevenue?: number;
+  }): Promise<any> {
+    const dateStr = data.bookingDate.toISOString().split('T')[0];
+    
+    const result = await db.execute(sql`
+      WITH venue_check AS (
+        SELECT v.id, v.max_concurrent_events,
+          COALESCE(COUNT(vb.id), 0)::integer as current_bookings
+        FROM venues v
+        LEFT JOIN venue_bookings vb ON v.id = vb.venue_id
+          AND DATE(vb.booking_date) = ${dateStr}::date
+          AND vb.booking_time = ${data.bookingTime}
+          AND vb.status IN ('confirmed', 'completed')
+        WHERE v.id = ${data.venueId}
+        GROUP BY v.id, v.max_concurrent_events
+        FOR UPDATE
+      )
+      INSERT INTO venue_bookings (
+        venue_id, event_id, booking_date, booking_time,
+        participant_count, estimated_revenue, status
+      )
+      SELECT 
+        ${data.venueId}, ${data.eventId}, ${dateStr}::timestamp, ${data.bookingTime},
+        ${data.participantCount}, ${data.estimatedRevenue || null}, 'confirmed'
+      FROM venue_check
+      WHERE current_bookings < max_concurrent_events
+      RETURNING *
+    `);
+
+    if (result.rows.length === 0) {
+      throw new Error('Venue is not available at the requested time');
+    }
+
+    return result.rows[0];
+  }
+
+  async getVenueBookings(venueId: string): Promise<any[]> {
+    const result = await db.execute(sql`
+      SELECT vb.*, e.event_type, e.city, e.area
+      FROM venue_bookings vb
+      LEFT JOIN blind_box_events e ON vb.event_id = e.id
+      WHERE vb.venue_id = ${venueId}
+      ORDER BY vb.booking_date DESC, vb.booking_time DESC
+    `);
+    return result.rows;
+  }
+
+  async getEventVenueBooking(eventId: string): Promise<any | undefined> {
+    const result = await db.execute(sql`
+      SELECT vb.*, v.name as venue_name, v.address, v.city, v.district
+      FROM venue_bookings vb
+      LEFT JOIN venues v ON vb.venue_id = v.id
+      WHERE vb.event_id = ${eventId}
+      ORDER BY vb.created_at DESC
+      LIMIT 1
+    `);
+    return result.rows[0];
+  }
+
+  async cancelVenueBooking(bookingId: string): Promise<any> {
+    const result = await db.execute(sql`
+      UPDATE venue_bookings
+      SET status = 'cancelled', updated_at = NOW()
+      WHERE id = ${bookingId}
+      RETURNING *
+    `);
+    return result.rows[0];
+  }
+
+  async updateVenueBookingRevenue(bookingId: string, actualRevenue: number): Promise<any> {
+    const result = await db.execute(sql`
+      UPDATE venue_bookings vb
+      SET 
+        actual_revenue = ${actualRevenue},
+        commission_amount = (
+          SELECT ROUND(${actualRevenue} * v.commission_rate / 100.0)
+          FROM venues v
+          WHERE v.id = vb.venue_id
+        ),
+        status = 'completed',
+        updated_at = NOW()
+      WHERE vb.id = ${bookingId}
+      RETURNING *
+    `);
+    return result.rows[0];
   }
 
   // ============ EVENT TEMPLATES ============
