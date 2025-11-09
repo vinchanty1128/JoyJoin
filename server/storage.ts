@@ -113,6 +113,32 @@ export interface IStorage {
   createCoupon(data: any): Promise<any>;
   updateCoupon(id: string, updates: any): Promise<any>;
   getCouponUsageStats(couponId: string): Promise<any>;
+
+  // Admin Venue operations
+  getAllVenues(): Promise<any[]>;
+  getVenue(id: string): Promise<any>;
+  updateVenue(id: string, updates: any): Promise<any>;
+  deleteVenue(id: string): Promise<void>;
+
+  // Admin Event Template operations
+  getAllEventTemplates(): Promise<any[]>;
+  createEventTemplate(data: any): Promise<any>;
+  updateEventTemplate(id: string, updates: any): Promise<any>;
+
+  // Admin Finance operations
+  getFinanceStats(): Promise<any>;
+  getVenueCommissions(): Promise<any[]>;
+
+  // Admin Moderation operations
+  getModerationStats(): Promise<any>;
+  getAllReports(): Promise<any[]>;
+  getPendingReports(): Promise<any[]>;
+  updateReportStatus(id: string, status: string, adminNotes?: string): Promise<any>;
+  createModerationLog(data: any): Promise<any>;
+  getModerationLogs(): Promise<any[]>;
+
+  // Admin Insights operations
+  getInsightsData(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
