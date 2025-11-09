@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import { paymentService } from "./paymentService";
 import { subscriptionService } from "./subscriptionService";
+import { venueMatchingService } from "./venueMatchingService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
@@ -2512,6 +2513,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating refund:", error);
       res.status(500).json({ message: "Failed to create refund" });
+    }
+  });
+
+  // ============ VENUE MATCHING ============
+  
+  // Find matching venues for event criteria
+  app.post("/api/venues/match", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const { eventType, theme, participantCount, preferredDistrict, preferredCity, cuisinePreferences, priceRange } = req.body;
+      
+      if (!eventType || !participantCount) {
+        return res.status(400).json({ message: "eventType and participantCount are required" });
+      }
+      
+      const matches = await venueMatchingService.findMatchingVenues({
+        eventType,
+        theme,
+        participantCount,
+        preferredDistrict,
+        preferredCity,
+        cuisinePreferences,
+        priceRange,
+      });
+      
+      res.json({ venues: matches });
+    } catch (error) {
+      console.error("Error matching venues:", error);
+      res.status(500).json({ message: "Failed to match venues" });
+    }
+  });
+  
+  // Get best venue for event
+  app.post("/api/venues/select-best", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const { eventType, theme, participantCount, preferredDistrict, preferredCity, cuisinePreferences, priceRange } = req.body;
+      
+      if (!eventType || !participantCount) {
+        return res.status(400).json({ message: "eventType and participantCount are required" });
+      }
+      
+      const bestMatch = await venueMatchingService.selectBestVenue({
+        eventType,
+        theme,
+        participantCount,
+        preferredDistrict,
+        preferredCity,
+        cuisinePreferences,
+        priceRange,
+      });
+      
+      if (!bestMatch) {
+        return res.status(404).json({ message: "No suitable venue found" });
+      }
+      
+      res.json(bestMatch);
+    } catch (error) {
+      console.error("Error selecting venue:", error);
+      res.status(500).json({ message: "Failed to select venue" });
     }
   });
 
