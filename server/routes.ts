@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import { paymentService } from "./paymentService";
+import { subscriptionService } from "./subscriptionService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
@@ -2343,6 +2344,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching insights:", error);
       res.status(500).json({ message: "Failed to fetch insights" });
+    }
+  });
+
+  // ============ SUBSCRIPTION MANAGEMENT ============
+  
+  // Get current user's subscription status
+  app.get("/api/subscription/status", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const status = await subscriptionService.getUserSubscriptionStatus(userId);
+      res.json(status);
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ message: "Failed to fetch subscription status" });
+    }
+  });
+  
+  // Create subscription renewal (returns payment details)
+  app.post("/api/subscription/renew", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { planType, couponCode } = req.body;
+      
+      if (!planType || !["monthly", "quarterly"].includes(planType)) {
+        return res.status(400).json({ message: "Invalid plan type" });
+      }
+      
+      // Create pending subscription
+      const renewalData = await subscriptionService.renewSubscription(userId, planType);
+      
+      // Create payment for the renewal
+      let couponId: string | undefined;
+      if (couponCode) {
+        const coupons = await storage.getAllCoupons();
+        const coupon = coupons.find(c => c.code === couponCode && c.isActive);
+        if (coupon) {
+          couponId = coupon.id;
+        }
+      }
+      
+      const paymentResult = await paymentService.createPayment({
+        userId,
+        paymentType: "subscription",
+        relatedId: renewalData.subscriptionId,
+        originalAmount: renewalData.amount,
+        couponId,
+      });
+      
+      res.json({
+        subscription: renewalData,
+        payment: paymentResult,
+      });
+    } catch (error) {
+      console.error("Error renewing subscription:", error);
+      res.status(500).json({ message: "Failed to renew subscription" });
+    }
+  });
+  
+  // Cancel subscription
+  app.post("/api/subscription/cancel", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const subscription = await storage.getUserSubscription(userId);
+      if (!subscription) {
+        return res.status(404).json({ message: "No active subscription found" });
+      }
+      
+      await subscriptionService.cancelSubscription(subscription.id, req.body.reason);
+      res.json({ message: "Subscription cancelled" });
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ message: "Failed to cancel subscription" });
     }
   });
 

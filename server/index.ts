@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { warmupDatabase } from "./db";
+import { subscriptionService } from "./subscriptionService";
 
 const app = express();
 app.use(express.json());
@@ -71,5 +72,8 @@ app.use((req, res, next) => {
     
     // Warmup database connection to prevent autosuspend issues
     warmupDatabase();
+    
+    // Start subscription expiry checker (runs every hour)
+    subscriptionService.startExpiryChecker();
   });
 })();
