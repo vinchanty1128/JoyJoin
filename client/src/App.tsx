@@ -31,6 +31,7 @@ import BlindBoxEventDetailPage from "@/pages/BlindBoxEventDetailPage";
 import EventFeedbackFlow from "@/pages/EventFeedbackFlow";
 import DeepFeedbackFlow from "@/pages/DeepFeedbackFlow";
 import AdminLayout from "@/pages/admin/AdminLayout";
+import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import NotFound from "@/pages/not-found";
 
 function RedirectToRegistration() {
@@ -69,9 +70,14 @@ function AuthenticatedRouter() {
   const { user, needsRegistration, needsInterestsTopics, needsPersonalityTest, needsProfileSetup } = useAuth();
   const [location] = useLocation();
 
-  // Admin users bypass onboarding requirements
+  // Admin routes - separate from user flow
   if (user?.isAdmin && location.startsWith("/admin")) {
-    return <Route path="/admin/:rest*" component={AdminLayout} />;
+    return (
+      <Switch>
+        <Route path="/admin/:rest*" component={AdminLayout} />
+        <Route component={NotFound} />
+      </Switch>
+    );
   }
 
   if (needsRegistration) {
@@ -142,6 +148,7 @@ function AuthenticatedRouter() {
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
 
   if (isLoading) {
     return (
@@ -154,6 +161,20 @@ function Router() {
     );
   }
 
+  // Admin login is always accessible (even when not authenticated)
+  if (location.startsWith("/admin/login") || location === "/admin/login") {
+    return <Route path="/admin/login" component={AdminLoginPage} />;
+  }
+
+  // Admin routes require authentication
+  if (location.startsWith("/admin")) {
+    if (!isAuthenticated) {
+      return <Route path="*" component={AdminLoginPage} />;
+    }
+    return <AuthenticatedRouter />;
+  }
+
+  // Regular user routes
   if (!isAuthenticated) {
     return <Route path="*" component={LoginPage} />;
   }
