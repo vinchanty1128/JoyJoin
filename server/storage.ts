@@ -1879,6 +1879,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async saveMatchingResult(result: any): Promise<any> {
+    // Format userIds as properly escaped PostgreSQL array
+    const userIdsArray = result.userIds || [];
+    // Each UUID needs to be quoted and escaped
+    const userIdsLiteral = `ARRAY[${userIdsArray.map((id: string) => `'${id}'`).join(',')}]::text[]`;
+    
     const insertResult = await db.execute(sql`
       INSERT INTO matching_results (
         event_id,
@@ -1896,9 +1901,9 @@ export class DatabaseStorage implements IStorage {
       ) VALUES (
         ${result.eventId || null},
         ${result.configId || null},
-        ${result.userIds || []},
+        ${sql.raw(userIdsLiteral)},
         ${result.userCount || 0},
-        ${JSON.stringify(result.groups || [])},
+        ${JSON.stringify(result.groups || [])}::jsonb,
         ${result.groupCount || 0},
         ${result.avgChemistryScore || 0},
         ${result.avgDiversityScore || 0},

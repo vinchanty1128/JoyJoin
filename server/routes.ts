@@ -2779,7 +2779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ MATCHING ALGORITHM ENDPOINTS ============
   
   // Calculate match score between two users
-  app.post("/api/matching/calculate-pair", isPhoneAuthenticated, async (req, res) => {
+  app.post("/api/matching/calculate-pair", requireAdmin, async (req, res) => {
     try {
       const { userId1, userId2, weights } = req.body;
       
@@ -2805,7 +2805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Match users to groups (主匹配算法)
-  app.post("/api/matching/create-groups", isPhoneAuthenticated, async (req, res) => {
+  app.post("/api/matching/create-groups", requireAdmin, async (req, res) => {
     try {
       const { userIds, config } = req.body;
       
@@ -2843,7 +2843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get current matching configuration
-  app.get("/api/matching/config", isPhoneAuthenticated, async (req, res) => {
+  app.get("/api/matching/config", requireAdmin, async (req, res) => {
     try {
       // 从数据库获取活跃配置，如果没有则返回默认配置
       const activeConfig = await storage.getActiveMatchingConfig();
@@ -2873,12 +2873,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update matching configuration (Admin only)
-  app.post("/api/matching/config", isPhoneAuthenticated, async (req, res) => {
+  app.post("/api/matching/config", requireAdmin, async (req, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
       
       const config = req.body;
       
@@ -2904,12 +2900,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Test matching scenario (Admin only - for algorithm tuning)
-  app.post("/api/matching/test-scenario", isPhoneAuthenticated, async (req, res) => {
+  app.post("/api/matching/test-scenario", requireAdmin, async (req, res) => {
     try {
-      const user = req.user as any;
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
       
       const { userIds, config } = req.body;
       

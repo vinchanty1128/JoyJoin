@@ -34,6 +34,16 @@ interface User {
   archetype: string | null;
 }
 
+interface UsersResponse {
+  users: User[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 interface MatchGroup {
   groupId: string;
   userIds: string[];
@@ -89,10 +99,12 @@ export default function AdminMatchingLabPage() {
     }
   }, [currentConfig]);
 
-  // 加载所有用户（用于测试场景）
-  const { data: allUsers = [], isLoading: usersLoading } = useQuery<User[]>({
-    queryKey: ["/api/admin/users"],
+  // 加载所有用户（用于测试场景）- 请求更多用户以确保有足够archetype用户
+  const { data: usersResponse, isLoading: usersLoading } = useQuery<UsersResponse>({
+    queryKey: ["/api/admin/users?limit=200"],
   });
+
+  const allUsers = usersResponse?.users || [];
 
   // 保存配置
   const saveConfigMutation = useMutation({
