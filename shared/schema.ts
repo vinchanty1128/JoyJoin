@@ -73,6 +73,7 @@ export const users = pgTable("users", {
   longTermBase: varchar("long_term_base"), // Deprecated - use location preferences
   wechatId: varchar("wechat_id"), // WeChat ID
   phoneNumber: varchar("phone_number").unique(), // Phone number for authentication
+  password: varchar("password"), // Hashed password for admin login
   
   // Registration fields - Access & Safety
   accessibilityNeeds: text("accessibility_needs"), // Optional text
