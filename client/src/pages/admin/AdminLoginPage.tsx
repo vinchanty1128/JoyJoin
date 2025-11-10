@@ -14,60 +14,15 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const [accessDenied, setAccessDenied] = useState(false);
-
-  const sendCodeMutation = useMutation({
-    mutationFn: async (phone: string) => {
-      return await apiRequest("POST", "/api/auth/send-code", { phoneNumber: phone });
-    },
-    onSuccess: () => {
-      setCodeSent(true);
-      setCountdown(60);
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      
-      toast({
-        title: "验证码已发送",
-        description: "请查收短信验证码",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "发送失败",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const loginMutation = useMutation({
-    mutationFn: async (data: { phoneNumber: string; code: string }) => {
-      return await apiRequest("POST", "/api/auth/phone-login", data);
+    mutationFn: async (data: { phoneNumber: string; password: string }) => {
+      return await apiRequest("POST", "/api/auth/admin-login", data);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      
-      const userData = await apiRequest("GET", "/api/auth/user") as { isAdmin?: boolean };
-      
-      if (!userData.isAdmin) {
-        setAccessDenied(true);
-        toast({
-          title: "无权访问",
-          description: "该账号没有管理员权限",
-          variant: "destructive",
-        });
-        return;
-      }
       
       toast({
         title: "登录成功",
@@ -76,6 +31,7 @@ export default function AdminLoginPage() {
       window.location.href = "/admin";
     },
     onError: (error: Error) => {
+      setError(error.message);
       toast({
         title: "登录失败",
         description: error.message,
@@ -84,8 +40,19 @@ export default function AdminLoginPage() {
     },
   });
 
-  const handleSendCode = () => {
-    if (!phoneNumber || phoneNumber.length !== 11) {
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!phoneNumber || !password) {
+      toast({
+        title: "信息不完整",
+        description: "请输入手机号和密码",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (phoneNumber.length !== 11) {
       toast({
         title: "手机号格式错误",
         description: "请输入11位手机号",
@@ -93,21 +60,9 @@ export default function AdminLoginPage() {
       });
       return;
     }
-    setAccessDenied(false);
-    sendCodeMutation.mutate(phoneNumber);
-  };
-
-  const handleLogin = () => {
-    if (!phoneNumber || !verificationCode) {
-      toast({
-        title: "信息不完整",
-        description: "请输入手机号和验证码",
-        variant: "destructive",
-      });
-      return;
-    }
-    setAccessDenied(false);
-    loginMutation.mutate({ phoneNumber, code: verificationCode });
+    
+    setError("");
+    loginMutation.mutate({ phoneNumber, password });
   };
 
   return (
@@ -129,16 +84,16 @@ export default function AdminLoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-5">
-          {accessDenied && (
+          {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                该账号没有管理员权限，请使用管理员账号登录
+                {error}
               </AlertDescription>
             </Alert>
           )}
 
-          <div className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="admin-phone" className="text-sm font-medium">
                 管理员手机号
@@ -156,43 +111,30 @@ export default function AdminLoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="admin-code" className="text-sm font-medium">
-                验证码
+              <Label htmlFor="admin-password" className="text-sm font-medium">
+                密码
               </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="admin-code"
-                  type="text"
-                  placeholder="请输入验证码"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  maxLength={6}
-                  className="h-11"
-                  data-testid="input-admin-code"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleSendCode}
-                  disabled={countdown > 0 || sendCodeMutation.isPending}
-                  className="min-w-[100px] h-11"
-                  data-testid="button-send-admin-code"
-                >
-                  {countdown > 0 ? `${countdown}秒` : codeSent ? "重新发送" : "发送验证码"}
-                </Button>
-              </div>
+              <Input
+                id="admin-password"
+                type="password"
+                placeholder="请输入密码"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-11"
+                data-testid="input-admin-password"
+              />
             </div>
 
             <Button
+              type="submit"
               size="lg"
               className="w-full h-11"
-              onClick={handleLogin}
               disabled={loginMutation.isPending}
               data-testid="button-admin-login"
             >
-              {loginMutation.isPending ? "验证中..." : "登录管理后台"}
+              {loginMutation.isPending ? "登录中..." : "登录管理后台"}
             </Button>
-          </div>
+          </form>
 
           <div className="pt-4 border-t">
             <p className="text-xs text-center text-muted-foreground">
