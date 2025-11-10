@@ -282,159 +282,6 @@ export default function AdminEventTemplatesPage() {
   const activeTemplates = templates.filter(t => t.isActive).length;
   const weeklyEvents = templates.filter(t => t.isActive).length;
 
-  const TemplateFormFields = () => (
-    <div className="space-y-4 py-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">模板名称 *</Label>
-          <Input
-            id="name"
-            placeholder="例：周五女生局"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            data-testid="input-name"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="eventType">活动类型 *</Label>
-          <Select value={formData.eventType} onValueChange={(v) => setFormData({ ...formData, eventType: v })}>
-            <SelectTrigger data-testid="select-event-type">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EVENT_TYPES.map(type => (
-                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="dayOfWeek">星期 *</Label>
-          <Select value={formData.dayOfWeek} onValueChange={(v) => setFormData({ ...formData, dayOfWeek: v })}>
-            <SelectTrigger data-testid="select-day-of-week">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(DAY_OF_WEEK_MAP).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="timeOfDay">时间 *</Label>
-          <Input
-            id="timeOfDay"
-            type="time"
-            value={formData.timeOfDay}
-            onChange={(e) => setFormData({ ...formData, timeOfDay: e.target.value })}
-            data-testid="input-time-of-day"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="theme">主题</Label>
-        <Input
-          id="theme"
-          placeholder="例：Girls Night, 商务社交"
-          value={formData.theme}
-          onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
-          data-testid="input-theme"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="genderRestriction">性别限制</Label>
-        <Select value={formData.genderRestriction} onValueChange={(v) => setFormData({ ...formData, genderRestriction: v })}>
-          <SelectTrigger data-testid="select-gender-restriction">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {GENDER_RESTRICTIONS.map(restriction => (
-              <SelectItem key={restriction.value} value={restriction.value}>{restriction.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="minAge">最小年龄</Label>
-          <Input
-            id="minAge"
-            type="number"
-            min="18"
-            max="100"
-            placeholder="无限制"
-            value={formData.minAge}
-            onChange={(e) => setFormData({ ...formData, minAge: e.target.value })}
-            data-testid="input-min-age"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="maxAge">最大年龄</Label>
-          <Input
-            id="maxAge"
-            type="number"
-            min="18"
-            max="100"
-            placeholder="无限制"
-            value={formData.maxAge}
-            onChange={(e) => setFormData({ ...formData, maxAge: e.target.value })}
-            data-testid="input-max-age"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="minParticipants">最少参与人数 *</Label>
-          <Input
-            id="minParticipants"
-            type="number"
-            min="2"
-            value={formData.minParticipants}
-            onChange={(e) => setFormData({ ...formData, minParticipants: e.target.value })}
-            data-testid="input-min-participants"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="maxParticipants">最多参与人数 *</Label>
-          <Input
-            id="maxParticipants"
-            type="number"
-            min="2"
-            value={formData.maxParticipants}
-            onChange={(e) => setFormData({ ...formData, maxParticipants: e.target.value })}
-            data-testid="input-max-participants"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="customPrice">自定义价格 (¥)</Label>
-        <Input
-          id="customPrice"
-          type="number"
-          min="0"
-          placeholder="默认：会员免费/非会员¥68"
-          value={formData.customPrice}
-          onChange={(e) => setFormData({ ...formData, customPrice: e.target.value })}
-          data-testid="input-custom-price"
-        />
-        <p className="text-xs text-muted-foreground">留空则使用默认定价</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -613,7 +460,156 @@ export default function AdminEventTemplatesPage() {
             <DialogTitle>创建活动模板</DialogTitle>
             <DialogDescription>创建新的周期性活动模板</DialogDescription>
           </DialogHeader>
-          <TemplateFormFields />
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">模板名称 *</Label>
+                <Input
+                  id="name"
+                  placeholder="例：周五女生局"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  data-testid="input-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="eventType">活动类型 *</Label>
+                <Select value={formData.eventType} onValueChange={(v) => setFormData({ ...formData, eventType: v })}>
+                  <SelectTrigger data-testid="select-event-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dayOfWeek">星期 *</Label>
+                <Select value={formData.dayOfWeek} onValueChange={(v) => setFormData({ ...formData, dayOfWeek: v })}>
+                  <SelectTrigger data-testid="select-day-of-week">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(DAY_OF_WEEK_MAP).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="timeOfDay">时间 *</Label>
+                <Input
+                  id="timeOfDay"
+                  type="time"
+                  value={formData.timeOfDay}
+                  onChange={(e) => setFormData({ ...formData, timeOfDay: e.target.value })}
+                  data-testid="input-time-of-day"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="theme">主题</Label>
+              <Input
+                id="theme"
+                placeholder="例：Girls Night, 商务社交"
+                value={formData.theme}
+                onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
+                data-testid="input-theme"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="genderRestriction">性别限制</Label>
+              <Select value={formData.genderRestriction} onValueChange={(v) => setFormData({ ...formData, genderRestriction: v })}>
+                <SelectTrigger data-testid="select-gender-restriction">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {GENDER_RESTRICTIONS.map(restriction => (
+                    <SelectItem key={restriction.value} value={restriction.value}>{restriction.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="minAge">最小年龄</Label>
+                <Input
+                  id="minAge"
+                  type="number"
+                  min="18"
+                  max="100"
+                  placeholder="无限制"
+                  value={formData.minAge}
+                  onChange={(e) => setFormData({ ...formData, minAge: e.target.value })}
+                  data-testid="input-min-age"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxAge">最大年龄</Label>
+                <Input
+                  id="maxAge"
+                  type="number"
+                  min="18"
+                  max="100"
+                  placeholder="无限制"
+                  value={formData.maxAge}
+                  onChange={(e) => setFormData({ ...formData, maxAge: e.target.value })}
+                  data-testid="input-max-age"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="minParticipants">最少参与人数 *</Label>
+                <Input
+                  id="minParticipants"
+                  type="number"
+                  min="2"
+                  value={formData.minParticipants}
+                  onChange={(e) => setFormData({ ...formData, minParticipants: e.target.value })}
+                  data-testid="input-min-participants"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxParticipants">最多参与人数 *</Label>
+                <Input
+                  id="maxParticipants"
+                  type="number"
+                  min="2"
+                  value={formData.maxParticipants}
+                  onChange={(e) => setFormData({ ...formData, maxParticipants: e.target.value })}
+                  data-testid="input-max-participants"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customPrice">自定义价格 (¥)</Label>
+              <Input
+                id="customPrice"
+                type="number"
+                min="0"
+                placeholder="默认：会员免费/非会员¥68"
+                value={formData.customPrice}
+                onChange={(e) => setFormData({ ...formData, customPrice: e.target.value })}
+                data-testid="input-custom-price"
+              />
+              <p className="text-xs text-muted-foreground">留空则使用默认定价</p>
+            </div>
+          </div>
           <DialogFooter>
             <Button
               variant="outline"
@@ -639,7 +635,156 @@ export default function AdminEventTemplatesPage() {
             <DialogTitle>编辑活动模板</DialogTitle>
             <DialogDescription>修改活动模板信息</DialogDescription>
           </DialogHeader>
-          <TemplateFormFields />
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">模板名称 *</Label>
+                <Input
+                  id="edit-name"
+                  placeholder="例：周五女生局"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  data-testid="input-edit-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-eventType">活动类型 *</Label>
+                <Select value={formData.eventType} onValueChange={(v) => setFormData({ ...formData, eventType: v })}>
+                  <SelectTrigger data-testid="select-edit-event-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-dayOfWeek">星期 *</Label>
+                <Select value={formData.dayOfWeek} onValueChange={(v) => setFormData({ ...formData, dayOfWeek: v })}>
+                  <SelectTrigger data-testid="select-edit-day-of-week">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(DAY_OF_WEEK_MAP).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-timeOfDay">时间 *</Label>
+                <Input
+                  id="edit-timeOfDay"
+                  type="time"
+                  value={formData.timeOfDay}
+                  onChange={(e) => setFormData({ ...formData, timeOfDay: e.target.value })}
+                  data-testid="input-edit-time-of-day"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-theme">主题</Label>
+              <Input
+                id="edit-theme"
+                placeholder="例：Girls Night, 商务社交"
+                value={formData.theme}
+                onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
+                data-testid="input-edit-theme"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-genderRestriction">性别限制</Label>
+              <Select value={formData.genderRestriction} onValueChange={(v) => setFormData({ ...formData, genderRestriction: v })}>
+                <SelectTrigger data-testid="select-edit-gender-restriction">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {GENDER_RESTRICTIONS.map(restriction => (
+                    <SelectItem key={restriction.value} value={restriction.value}>{restriction.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-minAge">最小年龄</Label>
+                <Input
+                  id="edit-minAge"
+                  type="number"
+                  min="18"
+                  max="100"
+                  placeholder="无限制"
+                  value={formData.minAge}
+                  onChange={(e) => setFormData({ ...formData, minAge: e.target.value })}
+                  data-testid="input-edit-min-age"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-maxAge">最大年龄</Label>
+                <Input
+                  id="edit-maxAge"
+                  type="number"
+                  min="18"
+                  max="100"
+                  placeholder="无限制"
+                  value={formData.maxAge}
+                  onChange={(e) => setFormData({ ...formData, maxAge: e.target.value })}
+                  data-testid="input-edit-max-age"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-minParticipants">最少参与人数 *</Label>
+                <Input
+                  id="edit-minParticipants"
+                  type="number"
+                  min="2"
+                  value={formData.minParticipants}
+                  onChange={(e) => setFormData({ ...formData, minParticipants: e.target.value })}
+                  data-testid="input-edit-min-participants"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-maxParticipants">最多参与人数 *</Label>
+                <Input
+                  id="edit-maxParticipants"
+                  type="number"
+                  min="2"
+                  value={formData.maxParticipants}
+                  onChange={(e) => setFormData({ ...formData, maxParticipants: e.target.value })}
+                  data-testid="input-edit-max-participants"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-customPrice">自定义价格 (¥)</Label>
+              <Input
+                id="edit-customPrice"
+                type="number"
+                min="0"
+                placeholder="默认：会员免费/非会员¥68"
+                value={formData.customPrice}
+                onChange={(e) => setFormData({ ...formData, customPrice: e.target.value })}
+                data-testid="input-edit-custom-price"
+              />
+              <p className="text-xs text-muted-foreground">留空则使用默认定价</p>
+            </div>
+          </div>
           <DialogFooter>
             <Button
               variant="outline"
