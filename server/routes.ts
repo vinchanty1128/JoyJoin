@@ -192,6 +192,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Phone auth setup
   setupPhoneAuth(app);
 
+  // Admin password login endpoint
+  app.post('/api/auth/admin-login', async (req: any, res) => {
+    try {
+      const { phoneNumber, password } = req.body;
+
+      if (!phoneNumber || !password) {
+        return res.status(400).json({ message: "Phone number and password are required" });
+      }
+
+      // Get user by phone number
+      const users = await storage.getUserByPhone(phoneNumber);
+      
+      if (users.length === 0) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const user = users[0];
+
+      // Check if user is admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Check if user has password set
+      if (!user.password) {
+        return res.status(401).json({ message: "Password not set for this account" });
+      }
+
+      // Verify password
+      const bcrypt = await import('bcrypt');
+      const isValidPassword = await bcrypt.compare(password, user.password);
+
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Set session
+      req.session.regenerate((err: any) => {
+        if (err) {
+          console.error("Session regeneration error:", err);
+          return res.status(500).json({ message: "Login failed" });
+        }
+
+        req.session.userId = user.id;
+        req.session.save((err: any) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.status(500).json({ message: "Login failed" });
+          }
+
+          res.json({ 
+            message: "Login successful",
+            userId: user.id
+          });
+        });
+      });
+    } catch (error) {
+      console.error("Error during admin login:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   // Auth routes
   app.get('/api/auth/user', isPhoneAuthenticated, async (req: any, res) => {
     try {
