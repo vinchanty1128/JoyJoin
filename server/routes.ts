@@ -8,7 +8,7 @@ import { venueMatchingService } from "./venueMatchingService";
 import { calculateUserMatchScore, matchUsersToGroups, validateWeights, DEFAULT_WEIGHTS, type MatchingWeights } from "./userMatchingService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
+import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, type User } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and } from "drizzle-orm";
 
@@ -2818,7 +2818,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userIds.map(id => storage.getUserById(id))
       );
       
-      const validUsers = users.filter(Boolean);
+      const validUsers = users.filter((u): u is User => u !== undefined);
       
       if (validUsers.length < (config?.minGroupSize || 5)) {
         return res.status(400).json({ 
@@ -2921,7 +2921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userIds.map(id => storage.getUserById(id))
       );
       
-      const validUsers = users.filter(Boolean);
+      const validUsers = users.filter((u): u is User => u !== undefined);
       
       const startTime = Date.now();
       const groups = matchUsersToGroups(validUsers, config);
