@@ -57,9 +57,9 @@ export default function AdminLoginPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       
-      const userData = await apiRequest("GET", "/api/auth/user") as { is_admin?: boolean };
+      const userData = await apiRequest("GET", "/api/auth/user") as { isAdmin?: boolean };
       
-      if (!userData.is_admin) {
+      if (!userData.isAdmin) {
         setAccessDenied(true);
         toast({
           title: "无权访问",
