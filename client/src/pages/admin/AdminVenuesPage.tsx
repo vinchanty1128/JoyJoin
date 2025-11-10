@@ -318,187 +318,6 @@ export default function AdminVenuesPage() {
   const totalBookings = venues.reduce((sum, v) => sum + (v.bookingCount || 0), 0);
   const totalCommission = venues.reduce((sum, v) => sum + (v.totalCommission || 0), 0);
 
-  const VenueFormFields = () => (
-    <div className="space-y-4 py-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">场地名称 *</Label>
-          <Input
-            id="name"
-            placeholder="例：海底捞火锅"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            data-testid="input-name"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="type">场地类型 *</Label>
-          <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
-            <SelectTrigger data-testid="select-type">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {VENUE_TYPES.map(type => (
-                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="address">地址 *</Label>
-        <Textarea
-          id="address"
-          placeholder="详细地址"
-          value={formData.address}
-          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          rows={2}
-          data-testid="input-address"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="city">城市 *</Label>
-          <Select value={formData.city} onValueChange={(v) => setFormData({ ...formData, city: v })}>
-            <SelectTrigger data-testid="select-city">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CITIES.map(city => (
-                <SelectItem key={city.value} value={city.value}>{city.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="district">区域 *</Label>
-          <Input
-            id="district"
-            placeholder="例：南山区"
-            value={formData.district}
-            onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-            data-testid="input-district"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="contactName">联系人</Label>
-          <Input
-            id="contactName"
-            placeholder="联系人姓名"
-            value={formData.contactName}
-            onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-            data-testid="input-contact-name"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="contactPhone">联系电话</Label>
-          <Input
-            id="contactPhone"
-            placeholder="联系电话"
-            value={formData.contactPhone}
-            onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-            data-testid="input-contact-phone"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="commissionRate">佣金比例 (%)</Label>
-          <Input
-            id="commissionRate"
-            type="number"
-            min="0"
-            max="100"
-            value={formData.commissionRate}
-            onChange={(e) => setFormData({ ...formData, commissionRate: e.target.value })}
-            data-testid="input-commission-rate"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="priceRange">人均消费</Label>
-          <Select value={formData.priceRange} onValueChange={(v) => setFormData({ ...formData, priceRange: v })}>
-            <SelectTrigger data-testid="select-price-range">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PRICE_RANGES.map(range => (
-                <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="maxConcurrentEvents">最大同时活动数</Label>
-          <Input
-            id="maxConcurrentEvents"
-            type="number"
-            min="1"
-            value={formData.maxConcurrentEvents}
-            onChange={(e) => setFormData({ ...formData, maxConcurrentEvents: e.target.value })}
-            data-testid="input-max-events"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>氛围标签</Label>
-        <div className="flex flex-wrap gap-2">
-          {TAGS.map(tag => (
-            <Badge
-              key={tag}
-              variant={formData.tags.includes(tag) ? "default" : "outline"}
-              className="cursor-pointer hover-elevate active-elevate-2"
-              onClick={() => toggleTag(tag)}
-              data-testid={`tag-${tag}`}
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>菜系类型</Label>
-        <div className="flex flex-wrap gap-2">
-          {CUISINES.map(cuisine => (
-            <Badge
-              key={cuisine}
-              variant={formData.cuisines.includes(cuisine) ? "default" : "outline"}
-              className="cursor-pointer hover-elevate active-elevate-2"
-              onClick={() => toggleCuisine(cuisine)}
-              data-testid={`cuisine-${cuisine}`}
-            >
-              {cuisine}
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes">备注</Label>
-        <Textarea
-          id="notes"
-          placeholder="内部备注信息"
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          rows={3}
-          data-testid="input-notes"
-        />
-      </div>
-    </div>
-  );
-
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -692,7 +511,184 @@ export default function AdminVenuesPage() {
             <DialogDescription>创建新的活动场地</DialogDescription>
           </DialogHeader>
 
-          <VenueFormFields />
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">场地名称 *</Label>
+                <Input
+                  id="name"
+                  placeholder="例：海底捞火锅"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  data-testid="input-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="type">场地类型 *</Label>
+                <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
+                  <SelectTrigger data-testid="select-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VENUE_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">地址 *</Label>
+              <Textarea
+                id="address"
+                placeholder="详细地址"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                rows={2}
+                data-testid="input-address"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">城市 *</Label>
+                <Select value={formData.city} onValueChange={(v) => setFormData({ ...formData, city: v })}>
+                  <SelectTrigger data-testid="select-city">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CITIES.map(city => (
+                      <SelectItem key={city.value} value={city.value}>{city.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="district">区域 *</Label>
+                <Input
+                  id="district"
+                  placeholder="例：南山区"
+                  value={formData.district}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  data-testid="input-district"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contactName">联系人</Label>
+                <Input
+                  id="contactName"
+                  placeholder="联系人姓名"
+                  value={formData.contactName}
+                  onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                  data-testid="input-contact-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contactPhone">联系电话</Label>
+                <Input
+                  id="contactPhone"
+                  placeholder="联系电话"
+                  value={formData.contactPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                  data-testid="input-contact-phone"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="commissionRate">佣金比例 (%)</Label>
+                <Input
+                  id="commissionRate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.commissionRate}
+                  onChange={(e) => setFormData({ ...formData, commissionRate: e.target.value })}
+                  data-testid="input-commission-rate"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="priceRange">人均消费</Label>
+                <Select value={formData.priceRange} onValueChange={(v) => setFormData({ ...formData, priceRange: v })}>
+                  <SelectTrigger data-testid="select-price-range">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRICE_RANGES.map(range => (
+                      <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxConcurrentEvents">最大同时活动数</Label>
+                <Input
+                  id="maxConcurrentEvents"
+                  type="number"
+                  min="1"
+                  value={formData.maxConcurrentEvents}
+                  onChange={(e) => setFormData({ ...formData, maxConcurrentEvents: e.target.value })}
+                  data-testid="input-max-events"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>氛围标签</Label>
+              <div className="flex flex-wrap gap-2">
+                {TAGS.map(tag => (
+                  <Badge
+                    key={tag}
+                    variant={formData.tags.includes(tag) ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate active-elevate-2"
+                    onClick={() => toggleTag(tag)}
+                    data-testid={`tag-${tag}`}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>菜系类型</Label>
+              <div className="flex flex-wrap gap-2">
+                {CUISINES.map(cuisine => (
+                  <Badge
+                    key={cuisine}
+                    variant={formData.cuisines.includes(cuisine) ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate active-elevate-2"
+                    onClick={() => toggleCuisine(cuisine)}
+                    data-testid={`cuisine-${cuisine}`}
+                  >
+                    {cuisine}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">备注</Label>
+              <Textarea
+                id="notes"
+                placeholder="内部备注信息"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
+                data-testid="input-notes"
+              />
+            </div>
+          </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowCreateDialog(false); resetForm(); }} data-testid="button-cancel">
@@ -712,7 +708,184 @@ export default function AdminVenuesPage() {
             <DialogDescription>修改场地信息</DialogDescription>
           </DialogHeader>
 
-          <VenueFormFields />
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">场地名称 *</Label>
+                <Input
+                  id="edit-name"
+                  placeholder="例：海底捞火锅"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  data-testid="input-edit-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-type">场地类型 *</Label>
+                <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
+                  <SelectTrigger data-testid="select-edit-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VENUE_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-address">地址 *</Label>
+              <Textarea
+                id="edit-address"
+                placeholder="详细地址"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                rows={2}
+                data-testid="input-edit-address"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-city">城市 *</Label>
+                <Select value={formData.city} onValueChange={(v) => setFormData({ ...formData, city: v })}>
+                  <SelectTrigger data-testid="select-edit-city">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CITIES.map(city => (
+                      <SelectItem key={city.value} value={city.value}>{city.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-district">区域 *</Label>
+                <Input
+                  id="edit-district"
+                  placeholder="例：南山区"
+                  value={formData.district}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  data-testid="input-edit-district"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-contactName">联系人</Label>
+                <Input
+                  id="edit-contactName"
+                  placeholder="联系人姓名"
+                  value={formData.contactName}
+                  onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                  data-testid="input-edit-contact-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-contactPhone">联系电话</Label>
+                <Input
+                  id="edit-contactPhone"
+                  placeholder="联系电话"
+                  value={formData.contactPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                  data-testid="input-edit-contact-phone"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-commissionRate">佣金比例 (%)</Label>
+                <Input
+                  id="edit-commissionRate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.commissionRate}
+                  onChange={(e) => setFormData({ ...formData, commissionRate: e.target.value })}
+                  data-testid="input-edit-commission-rate"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-priceRange">人均消费</Label>
+                <Select value={formData.priceRange} onValueChange={(v) => setFormData({ ...formData, priceRange: v })}>
+                  <SelectTrigger data-testid="select-edit-price-range">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRICE_RANGES.map(range => (
+                      <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-maxConcurrentEvents">最大同时活动数</Label>
+                <Input
+                  id="edit-maxConcurrentEvents"
+                  type="number"
+                  min="1"
+                  value={formData.maxConcurrentEvents}
+                  onChange={(e) => setFormData({ ...formData, maxConcurrentEvents: e.target.value })}
+                  data-testid="input-edit-max-events"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>氛围标签</Label>
+              <div className="flex flex-wrap gap-2">
+                {TAGS.map(tag => (
+                  <Badge
+                    key={tag}
+                    variant={formData.tags.includes(tag) ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate active-elevate-2"
+                    onClick={() => toggleTag(tag)}
+                    data-testid={`edit-tag-${tag}`}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>菜系类型</Label>
+              <div className="flex flex-wrap gap-2">
+                {CUISINES.map(cuisine => (
+                  <Badge
+                    key={cuisine}
+                    variant={formData.cuisines.includes(cuisine) ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate active-elevate-2"
+                    onClick={() => toggleCuisine(cuisine)}
+                    data-testid={`edit-cuisine-${cuisine}`}
+                  >
+                    {cuisine}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">备注</Label>
+              <Textarea
+                id="edit-notes"
+                placeholder="内部备注信息"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
+                data-testid="input-edit-notes"
+              />
+            </div>
+          </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)} data-testid="button-cancel-edit">
