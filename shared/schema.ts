@@ -815,6 +815,91 @@ export type InsertCoupon = z.infer<typeof insertCouponSchema>;
 export type InsertReport = z.infer<typeof insertReportSchema>;
 export type InsertModerationLog = z.infer<typeof insertModerationLogSchema>;
 
+// ============ MATCHING ALGORITHM TABLES ============
+
+// Matching configuration table - stores algorithm weights
+export const matchingConfig = pgTable("matching_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  configName: varchar("config_name").notNull().default("default"), // config version name
+  
+  // 5个维度的权重 (0-100, 总和应为100)
+  personalityWeight: integer("personality_weight").notNull().default(30), // 性格兼容性权重
+  interestsWeight: integer("interests_weight").notNull().default(25),     // 兴趣匹配权重
+  intentWeight: integer("intent_weight").notNull().default(20),           // 意图匹配权重
+  backgroundWeight: integer("background_weight").notNull().default(15),   // 背景多样性权重
+  cultureWeight: integer("culture_weight").notNull().default(10),         // 文化语言权重
+  
+  // 其他匹配参数
+  minGroupSize: integer("min_group_size").default(5),
+  maxGroupSize: integer("max_group_size").default(10),
+  preferredGroupSize: integer("preferred_group_size").default(7),
+  
+  // 约束条件
+  maxSameArchetypeRatio: integer("max_same_archetype_ratio").default(40), // 同一原型最多占比（%）
+  minChemistryScore: integer("min_chemistry_score").default(60),          // 最低化学反应分数
+  
+  // 是否为活跃配置
+  isActive: boolean("is_active").default(false),
+  
+  // 元数据
+  notes: text("notes"), // 配置说明
+  createdBy: varchar("created_by"), // 创建者ID（admin）
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMatchingConfigSchema = createInsertSchema(matchingConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  configName: z.string().min(1, "配置名称不能为空"),
+  personalityWeight: z.number().min(0).max(100),
+  interestsWeight: z.number().min(0).max(100),
+  intentWeight: z.number().min(0).max(100),
+  backgroundWeight: z.number().min(0).max(100),
+  cultureWeight: z.number().min(0).max(100),
+});
+
+export type MatchingConfig = typeof matchingConfig.$inferSelect;
+export type InsertMatchingConfig = z.infer<typeof insertMatchingConfigSchema>;
+
+// Matching results table - stores historical matching results for analysis
+export const matchingResults = pgTable("matching_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: varchar("event_id"), // 可选，关联到具体活动
+  configId: varchar("config_id").references(() => matchingConfig.id),
+  
+  // 输入数据
+  userIds: text("user_ids").array(), // 参与匹配的用户ID列表
+  userCount: integer("user_count").notNull(),
+  
+  // 匹配结果
+  groups: jsonb("groups").notNull(), // [{groupId, userIds, chemistryScore, diversityScore, overallScore}]
+  groupCount: integer("group_count").notNull(),
+  
+  // 评分指标
+  avgChemistryScore: integer("avg_chemistry_score"), // 平均化学反应分数
+  avgDiversityScore: integer("avg_diversity_score"), // 平均多样性分数
+  overallMatchQuality: integer("overall_match_quality"), // 整体匹配质量 (0-100)
+  
+  // 性能指标
+  executionTimeMs: integer("execution_time_ms"), // 匹配算法执行时间（毫秒）
+  
+  // 元数据
+  isTestRun: boolean("is_test_run").default(false), // 是否为测试运行
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMatchingResultSchema = createInsertSchema(matchingResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type MatchingResult = typeof matchingResults.$inferSelect;
+export type InsertMatchingResult = z.infer<typeof insertMatchingResultSchema>;
+
 // Notifications table
 export const notifications = pgTable("notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

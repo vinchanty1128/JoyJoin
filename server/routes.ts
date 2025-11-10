@@ -5,6 +5,7 @@ import { setupPhoneAuth, isPhoneAuthenticated } from "./phoneAuth";
 import { paymentService } from "./paymentService";
 import { subscriptionService } from "./subscriptionService";
 import { venueMatchingService } from "./venueMatchingService";
+import { calculateUserMatchScore, matchUsersToGroups, validateWeights, DEFAULT_WEIGHTS, type MatchingWeights } from "./userMatchingService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages } from "@shared/schema";
@@ -2772,6 +2773,205 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error selecting venue:", error);
       res.status(500).json({ message: "Failed to select venue" });
+    }
+  });
+
+  // ============ MATCHING ALGORITHM ENDPOINTS ============
+  
+  // Calculate match score between two users
+  app.post("/api/matching/calculate-pair", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const { userId1, userId2, weights } = req.body;
+      
+      if (!userId1 || !userId2) {
+        return res.status(400).json({ message: "userId1 and userId2 are required" });
+      }
+      
+      const user1 = await storage.getUserById(userId1);
+      const user2 = await storage.getUserById(userId2);
+      
+      if (!user1 || !user2) {
+        return res.status(404).json({ message: "One or both users not found" });
+      }
+      
+      const matchWeights: MatchingWeights = weights || DEFAULT_WEIGHTS;
+      const score = calculateUserMatchScore(user1, user2, matchWeights);
+      
+      res.json(score);
+    } catch (error) {
+      console.error("Error calculating match score:", error);
+      res.status(500).json({ message: "Failed to calculate match score" });
+    }
+  });
+  
+  // Match users to groups (主匹配算法)
+  app.post("/api/matching/create-groups", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const { userIds, config } = req.body;
+      
+      if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ message: "userIds array is required" });
+      }
+      
+      // 获取所有用户信息
+      const users = await Promise.all(
+        userIds.map(id => storage.getUserById(id))
+      );
+      
+      const validUsers = users.filter(Boolean);
+      
+      if (validUsers.length < (config?.minGroupSize || 5)) {
+        return res.status(400).json({ 
+          message: `至少需要${config?.minGroupSize || 5}个有效用户` 
+        });
+      }
+      
+      const startTime = Date.now();
+      const groups = matchUsersToGroups(validUsers, config);
+      const executionTime = Date.now() - startTime;
+      
+      res.json({
+        groups,
+        totalUsers: validUsers.length,
+        groupCount: groups.length,
+        executionTimeMs: executionTime,
+      });
+    } catch (error: any) {
+      console.error("Error creating groups:", error);
+      res.status(500).json({ message: error.message || "Failed to create groups" });
+    }
+  });
+  
+  // Get current matching configuration
+  app.get("/api/matching/config", isPhoneAuthenticated, async (req, res) => {
+    try {
+      // 从数据库获取活跃配置，如果没有则返回默认配置
+      const activeConfig = await storage.getActiveMatchingConfig();
+      
+      if (activeConfig) {
+        res.json(activeConfig);
+      } else {
+        res.json({
+          configName: "default",
+          personalityWeight: 30,
+          interestsWeight: 25,
+          intentWeight: 20,
+          backgroundWeight: 15,
+          cultureWeight: 10,
+          minGroupSize: 5,
+          maxGroupSize: 10,
+          preferredGroupSize: 7,
+          maxSameArchetypeRatio: 40,
+          minChemistryScore: 60,
+          isActive: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error getting matching config:", error);
+      res.status(500).json({ message: "Failed to get matching config" });
+    }
+  });
+  
+  // Update matching configuration (Admin only)
+  app.post("/api/matching/config", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const config = req.body;
+      
+      // 验证权重
+      const validation = validateWeights({
+        personalityWeight: config.personalityWeight,
+        interestsWeight: config.interestsWeight,
+        intentWeight: config.intentWeight,
+        backgroundWeight: config.backgroundWeight,
+        cultureWeight: config.cultureWeight,
+      });
+      
+      if (!validation.valid) {
+        return res.status(400).json({ message: validation.error });
+      }
+      
+      const updatedConfig = await storage.updateMatchingConfig(config);
+      res.json(updatedConfig);
+    } catch (error) {
+      console.error("Error updating matching config:", error);
+      res.status(500).json({ message: "Failed to update matching config" });
+    }
+  });
+  
+  // Test matching scenario (Admin only - for algorithm tuning)
+  app.post("/api/matching/test-scenario", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { userIds, config } = req.body;
+      
+      if (!userIds || !Array.isArray(userIds)) {
+        return res.status(400).json({ message: "userIds array is required" });
+      }
+      
+      const users = await Promise.all(
+        userIds.map(id => storage.getUserById(id))
+      );
+      
+      const validUsers = users.filter(Boolean);
+      
+      const startTime = Date.now();
+      const groups = matchUsersToGroups(validUsers, config);
+      const executionTime = Date.now() - startTime;
+      
+      // 计算整体评分指标
+      const avgChemistryScore = Math.round(
+        groups.reduce((sum, g) => sum + g.avgChemistryScore, 0) / groups.length
+      );
+      const avgDiversityScore = Math.round(
+        groups.reduce((sum, g) => sum + g.diversityScore, 0) / groups.length
+      );
+      const overallMatchQuality = Math.round((avgChemistryScore + avgDiversityScore) / 2);
+      
+      // 保存测试结果到数据库
+      const result = await storage.saveMatchingResult({
+        userIds,
+        userCount: validUsers.length,
+        groups: groups.map(g => ({
+          groupId: g.groupId,
+          userIds: g.userIds,
+          chemistryScore: g.avgChemistryScore,
+          diversityScore: g.diversityScore,
+          overallScore: g.overallScore,
+        })),
+        groupCount: groups.length,
+        avgChemistryScore,
+        avgDiversityScore,
+        overallMatchQuality,
+        executionTimeMs: executionTime,
+        isTestRun: true,
+        configId: config?.configId,
+        notes: config?.notes,
+      });
+      
+      res.json({
+        testId: result.id,
+        groups,
+        metrics: {
+          totalUsers: validUsers.length,
+          groupCount: groups.length,
+          avgChemistryScore,
+          avgDiversityScore,
+          overallMatchQuality,
+          executionTimeMs: executionTime,
+        },
+      });
+    } catch (error: any) {
+      console.error("Error testing matching scenario:", error);
+      res.status(500).json({ message: error.message || "Failed to test matching scenario" });
     }
   });
 
