@@ -6,6 +6,7 @@ import { paymentService } from "./paymentService";
 import { subscriptionService } from "./subscriptionService";
 import { venueMatchingService } from "./venueMatchingService";
 import { calculateUserMatchScore, matchUsersToGroups, validateWeights, DEFAULT_WEIGHTS, type MatchingWeights } from "./userMatchingService";
+import { broadcastEventStatusChanged, broadcastAdminAction } from "./eventBroadcast";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, type User } from "@shared/schema";
@@ -2429,8 +2430,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Event Management - Update event status
   app.patch("/api/admin/events/:id", requireAdmin, async (req, res) => {
     try {
-      const event = await storage.updateBlindBoxEventAdmin(req.params.id, req.body);
-      res.json(event);
+      const eventId = req.params.id;
+      const user = req.user as User;
+      
+      // Get old event state
+      const oldEvent = await storage.getBlindBoxEventAdmin(eventId);
+      if (!oldEvent) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      // Update event
+      const updatedEvent = await storage.updateBlindBoxEventAdmin(eventId, req.body);
+      
+      // Broadcast status change if status was updated
+      if (req.body.status && req.body.status !== oldEvent.status) {
+        await broadcastEventStatusChanged(
+          eventId,
+          oldEvent.status,
+          req.body.status,
+          user.id,
+          req.body.reason
+        );
+      }
+      
+      // Broadcast admin action for other changes
+      if (Object.keys(req.body).length > 0 && !req.body.status) {
+        await broadcastAdminAction(
+          eventId,
+          'update_event',
+          user.id,
+          req.body
+        );
+      }
+      
+      res.json(updatedEvent);
     } catch (error) {
       console.error("Error updating event:", error);
       res.status(500).json({ message: "Failed to update event" });
