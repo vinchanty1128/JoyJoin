@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { warmupDatabase } from "./db";
 import { subscriptionService } from "./subscriptionService";
+import { wsService } from "./wsService";
 
 const app = express();
 app.use(express.json());
@@ -62,6 +63,9 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
+  // Initialize WebSocket server
+  wsService.initialize(server);
+
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen({
     port,
@@ -75,5 +79,7 @@ app.use((req, res, next) => {
     
     // Start subscription expiry checker (runs every hour)
     subscriptionService.startExpiryChecker();
+    
+    log(`WebSocket server ready at ws://0.0.0.0:${port}/ws`);
   });
 })();
