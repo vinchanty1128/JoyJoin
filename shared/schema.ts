@@ -961,3 +961,69 @@ export type NotificationCounts = {
   chat: number;
   total: number;
 };
+
+// ============ CHAT MODERATION & LOGGING TABLES ============
+
+// Chat reports table - user reports of inappropriate messages
+export const chatReports = pgTable("chat_reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  messageId: varchar("message_id").notNull().references(() => chatMessages.id),
+  eventId: varchar("event_id").references(() => events.id),
+  threadId: varchar("thread_id").references(() => directMessageThreads.id),
+  reportedBy: varchar("reported_by").notNull().references(() => users.id),
+  reportedUserId: varchar("reported_user_id").notNull().references(() => users.id),
+  
+  reportType: varchar("report_type").notNull(), // harassment, spam, inappropriate, hate_speech, other
+  description: text("description"),
+  
+  status: varchar("status").notNull().default("pending"), // pending, reviewed, dismissed, action_taken
+  reviewedBy: varchar("reviewed_by").references(() => users.id), // Admin who reviewed
+  reviewNotes: text("review_notes"),
+  actionTaken: varchar("action_taken"), // none, warning, temporary_ban, permanent_ban, message_deleted
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+});
+
+// Chat logs table - technical logs for debugging
+export const chatLogs = pgTable("chat_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: varchar("event_type").notNull(), // message_sent, message_failed, connection_error, ws_connected, ws_disconnected
+  eventId: varchar("event_id").references(() => events.id),
+  threadId: varchar("thread_id").references(() => directMessageThreads.id),
+  userId: varchar("user_id").references(() => users.id),
+  
+  severity: varchar("severity").notNull().default("info"), // info, warning, error
+  message: text("message").notNull(),
+  metadata: jsonb("metadata"), // Additional context (error details, message ID, etc.)
+  
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("chat_logs_event_id_idx").on(table.eventId),
+  index("chat_logs_user_id_idx").on(table.userId),
+  index("chat_logs_severity_idx").on(table.severity),
+  index("chat_logs_created_at_idx").on(table.createdAt),
+]);
+
+export const insertChatReportSchema = createInsertSchema(chatReports).omit({
+  id: true,
+  createdAt: true,
+  reviewedAt: true,
+}).extend({
+  reportType: z.enum(["harassment", "spam", "inappropriate", "hate_speech", "other"]),
+  description: z.string().optional(),
+});
+
+export const insertChatLogSchema = createInsertSchema(chatLogs).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  eventType: z.string().min(1),
+  severity: z.enum(["info", "warning", "error"]),
+  message: z.string().min(1),
+});
+
+export type ChatReport = typeof chatReports.$inferSelect;
+export type ChatLog = typeof chatLogs.$inferSelect;
+export type InsertChatReport = z.infer<typeof insertChatReportSchema>;
+export type InsertChatLog = z.infer<typeof insertChatLogSchema>;
