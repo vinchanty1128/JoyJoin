@@ -101,6 +101,18 @@ export interface IStorage {
     relatedResourceId?: string;
   }): Promise<void>;
 
+  // Admin Notification operations
+  getAdminNotifications(adminId: string): Promise<Array<Notification & { recipientCount: number; readCount: number }>>;
+  createBroadcastNotification(data: {
+    sentBy: string;
+    category: string;
+    type: string;
+    title: string;
+    message?: string;
+    userIds: string[];
+  }): Promise<{ sent: number }>;
+  getNotificationStats(notificationId: string): Promise<{ recipientCount: number; readCount: number }>;
+
   // Admin Subscription operations
   getAllSubscriptions(): Promise<any[]>;
   getActiveSubscriptions(): Promise<any[]>;
@@ -1022,6 +1034,104 @@ export class DatabaseStorage implements IStorage {
       relatedResourceId: data.relatedResourceId,
       isRead: false,
     });
+  }
+
+  // Admin Notification operations
+  async getAdminNotifications(adminId: string): Promise<Array<Notification & { recipientCount: number; readCount: number }>> {
+    const result = await db.execute(sql`
+      SELECT 
+        DISTINCT ON (n.title, n.message, n.created_at, n.sent_by) 
+        n.id,
+        n.user_id,
+        n.category,
+        n.type,
+        n.title,
+        n.message,
+        n.related_resource_id,
+        n.is_read,
+        n.sent_by,
+        n.is_broadcast,
+        n.created_at,
+        COUNT(*) OVER (PARTITION BY n.title, n.message, n.created_at, n.sent_by) as recipient_count,
+        SUM(CASE WHEN n.is_read THEN 1 ELSE 0 END) OVER (PARTITION BY n.title, n.message, n.created_at, n.sent_by) as read_count
+      FROM notifications n
+      WHERE n.sent_by = ${adminId}
+      ORDER BY n.title, n.message, n.created_at DESC, n.sent_by, n.created_at DESC
+    `);
+    
+    return result.rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      category: row.category,
+      type: row.type,
+      title: row.title,
+      message: row.message,
+      relatedResourceId: row.related_resource_id,
+      isRead: row.is_read,
+      sentBy: row.sent_by,
+      isBroadcast: row.is_broadcast,
+      createdAt: row.created_at,
+      recipientCount: Number(row.recipient_count) || 0,
+      readCount: Number(row.read_count) || 0,
+    }));
+  }
+
+  async createBroadcastNotification(data: {
+    sentBy: string;
+    category: string;
+    type: string;
+    title: string;
+    message?: string;
+    userIds: string[];
+  }): Promise<{ sent: number }> {
+    if (data.userIds.length === 0) {
+      return { sent: 0 };
+    }
+
+    const values = data.userIds.map(userId => ({
+      userId,
+      category: data.category,
+      type: data.type,
+      title: data.title,
+      message: data.message,
+      isRead: false,
+      sentBy: data.sentBy,
+      isBroadcast: true,
+    }));
+
+    await db.insert(notifications).values(values);
+    return { sent: data.userIds.length };
+  }
+
+  async getNotificationStats(notificationId: string): Promise<{ recipientCount: number; readCount: number }> {
+    const notification = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.id, notificationId))
+      .limit(1);
+
+    if (notification.length === 0) {
+      return { recipientCount: 0, readCount: 0 };
+    }
+
+    const n = notification[0];
+
+    const result = await db.execute(sql`
+      SELECT 
+        COUNT(*) as recipient_count,
+        SUM(CASE WHEN is_read THEN 1 ELSE 0 END) as read_count
+      FROM notifications
+      WHERE title = ${n.title}
+        AND message = ${n.message}
+        AND sent_by = ${n.sentBy}
+        AND created_at = ${n.createdAt}
+    `);
+
+    const row = result.rows[0] as any;
+    return {
+      recipientCount: Number(row.recipient_count) || 0,
+      readCount: Number(row.read_count) || 0,
+    };
   }
 
   // Admin Subscription operations
