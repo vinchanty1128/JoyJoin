@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, FileText, Send, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, FileText, Send, Eye, Bell } from "lucide-react";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 
@@ -41,6 +42,9 @@ export default function AdminContentPage() {
   const [activeTab, setActiveTab] = useState<ContentType>("announcement");
   const [editingContent, setEditingContent] = useState<Content | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [publishingContent, setPublishingContent] = useState<Content | null>(null);
+  const [sendNotification, setSendNotification] = useState(false);
   const { toast } = useToast();
 
   // Form state
@@ -90,17 +94,32 @@ export default function AdminContentPage() {
   });
 
   const publishMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest("POST", `/api/admin/contents/${id}/publish`);
+    mutationFn: async ({ id, sendNotification }: { id: string; sendNotification: boolean }) => {
+      return apiRequest("POST", `/api/admin/contents/${id}/publish`, { sendNotification });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contents"] });
+      setIsPublishDialogOpen(false);
+      setSendNotification(false);
+      setPublishingContent(null);
       toast({ title: "发布成功", description: "内容已发布" });
     },
     onError: () => {
       toast({ title: "发布失败", description: "请稍后重试", variant: "destructive" });
     },
   });
+
+  const handleOpenPublishDialog = (content: Content) => {
+    setPublishingContent(content);
+    setSendNotification(content.type === "announcement");
+    setIsPublishDialogOpen(true);
+  };
+
+  const handleConfirmPublish = () => {
+    if (publishingContent) {
+      publishMutation.mutate({ id: publishingContent.id, sendNotification });
+    }
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -222,7 +241,7 @@ export default function AdminContentPage() {
                             <Button
                               size="sm"
                               variant="default"
-                              onClick={() => publishMutation.mutate(content.id)}
+                              onClick={() => handleOpenPublishDialog(content)}
                               data-testid={`button-publish-${content.id}`}
                             >
                               <Send className="h-4 w-4 mr-1" />
@@ -352,6 +371,69 @@ export default function AdminContentPage() {
               data-testid="button-submit"
             >
               {editingContent ? "更新" : "创建"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Publish Confirmation Dialog */}
+      <Dialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
+        <DialogContent data-testid="dialog-publish-confirmation">
+          <DialogHeader>
+            <DialogTitle>确认发布内容</DialogTitle>
+            <DialogDescription>
+              确定要发布这条{publishingContent && CONTENT_TYPES[publishingContent.type].label}吗？
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="space-y-4">
+              <div className="rounded-md bg-muted p-4">
+                <h4 className="font-semibold mb-2">{publishingContent?.title}</h4>
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {publishingContent?.content}
+                </p>
+              </div>
+
+              {publishingContent?.type === "announcement" && (
+                <div className="flex items-start space-x-3 rounded-md border p-4">
+                  <Checkbox
+                    id="send-notification"
+                    checked={sendNotification}
+                    onCheckedChange={(checked) => setSendNotification(checked as boolean)}
+                    data-testid="checkbox-send-notification"
+                  />
+                  <div className="space-y-1 leading-none">
+                    <label
+                      htmlFor="send-notification"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2"
+                    >
+                      <Bell className="h-4 w-4" />
+                      推送通知给所有用户
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      勾选后将向所有用户推送此公告通知
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsPublishDialogOpen(false)}
+              data-testid="button-cancel-publish"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirmPublish}
+              disabled={publishMutation.isPending}
+              data-testid="button-confirm-publish"
+            >
+              {publishMutation.isPending ? "发布中..." : "确认发布"}
             </Button>
           </DialogFooter>
         </DialogContent>

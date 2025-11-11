@@ -2618,10 +2618,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Publish content (update status to published and set published_at)
   app.post("/api/admin/contents/:id/publish", requireAdmin, async (req, res) => {
     try {
+      const session = req.session as any;
+      const adminId = session.userId;
+      const { sendNotification } = req.body;
+
       const content = await storage.updateContent(req.params.id, {
         status: 'published',
         publishedAt: new Date(),
       });
+
+      // If sendNotification is true and content type is announcement, send notification to all users
+      if (sendNotification && content.type === 'announcement') {
+        const users = await storage.getAllUsers();
+        const userIds = users.map(u => u.id);
+        
+        if (userIds.length > 0) {
+          await storage.createBroadcastNotification({
+            sentBy: adminId,
+            category: 'discover',
+            type: 'admin_announcement',
+            title: content.title,
+            message: content.content?.substring(0, 100), // Limit to 100 characters
+            userIds,
+          });
+        }
+      }
+
       res.json(content);
     } catch (error) {
       console.error("Error publishing content:", error);
