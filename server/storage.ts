@@ -1899,13 +1899,26 @@ export class DatabaseStorage implements IStorage {
 
   // ============ DATA INSIGHTS ============
   async getInsightsData(): Promise<any> {
-    // Engagement metrics
+    // Basic engagement metrics
     const totalUsers = await db.execute(sql`SELECT COUNT(*)::int as count FROM users`);
     const activeUsers = await db.execute(sql`
       SELECT COUNT(DISTINCT user_id)::int as count FROM blind_box_events 
       WHERE created_at >= NOW() - INTERVAL '30 days'
     `);
     const totalEvents = await db.execute(sql`SELECT COUNT(*)::int as count FROM blind_box_events`);
+    
+    // New users last 7 days
+    const newUsers7Days = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM users 
+      WHERE created_at >= NOW() - INTERVAL '7 days'
+    `);
+    
+    // New users previous 7 days (for growth calculation)
+    const newUsersPrevious7Days = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM users 
+      WHERE created_at >= NOW() - INTERVAL '14 days' 
+      AND created_at < NOW() - INTERVAL '7 days'
+    `);
     
     // User growth (last 30 days)
     const userGrowth = await db.execute(sql`
@@ -1927,10 +1940,10 @@ export class DatabaseStorage implements IStorage {
 
     // Personality distribution
     const personalityDistribution = await db.execute(sql`
-      SELECT social_archetype as archetype, COUNT(*)::int as count 
+      SELECT archetype, COUNT(*)::int as count 
       FROM users 
-      WHERE social_archetype IS NOT NULL
-      GROUP BY social_archetype
+      WHERE archetype IS NOT NULL
+      GROUP BY archetype
       ORDER BY count DESC
     `);
 
@@ -1938,16 +1951,268 @@ export class DatabaseStorage implements IStorage {
       ? (totalEvents.rows[0] as any).count / (totalUsers.rows[0] as any).count 
       : 0;
 
+    // ============ 1. MATCHING EFFICIENCY ANALYSIS ============
+    const matchedEvents = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM blind_box_events 
+      WHERE status IN ('matched', 'completed')
+    `);
+    
+    const matchingSuccessRate = (totalEvents.rows[0] as any).count > 0
+      ? ((matchedEvents.rows[0] as any).count / (totalEvents.rows[0] as any).count) * 100
+      : 0;
+    
+    // Average match time (in hours)
+    const avgMatchTimeResult = await db.execute(sql`
+      SELECT AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 3600)::float as avg_hours
+      FROM blind_box_events
+      WHERE status IN ('matched', 'completed') AND updated_at IS NOT NULL
+    `);
+    const avgMatchTime = avgMatchTimeResult.rows[0]?.avg_hours || 0;
+    
+    // Attempts per user (total events / total users)
+    const attemptsPerUser = (totalUsers.rows[0] as any).count > 0
+      ? (totalEvents.rows[0] as any).count / (totalUsers.rows[0] as any).count
+      : 0;
+
+    // ============ 2. USER RETENTION ANALYSIS ============
+    
+    // Weekly retention (weeks 1-8)
+    const weeklyRetention = [];
+    for (let week = 1; week <= 8; week++) {
+      const retentionResult = await db.execute(sql`
+        WITH cohort AS (
+          SELECT DISTINCT user_id, DATE_TRUNC('week', created_at) as cohort_week
+          FROM users
+          WHERE created_at >= NOW() - INTERVAL '8 weeks'
+        ),
+        activity AS (
+          SELECT DISTINCT user_id, DATE_TRUNC('week', created_at) as activity_week
+          FROM blind_box_events
+        )
+        SELECT 
+          COUNT(DISTINCT CASE WHEN a.activity_week = c.cohort_week + INTERVAL '${week} weeks' THEN c.user_id END)::float /
+          NULLIF(COUNT(DISTINCT c.user_id), 0) * 100 as retention_rate
+        FROM cohort c
+        LEFT JOIN activity a ON c.user_id = a.user_id
+        WHERE c.cohort_week <= NOW() - INTERVAL '${week} weeks'
+      `);
+      weeklyRetention.push({
+        week: week,
+        retentionRate: retentionResult.rows[0]?.retention_rate || 0
+      });
+    }
+    
+    // User segments
+    const newUsersSegment = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM users 
+      WHERE created_at >= NOW() - INTERVAL '7 days'
+    `);
+    
+    const activeUsersSegment = await db.execute(sql`
+      SELECT COUNT(DISTINCT user_id)::int as count FROM blind_box_events 
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+    `);
+    
+    const dormantUsers = await db.execute(sql`
+      SELECT COUNT(DISTINCT user_id)::int as count FROM blind_box_events 
+      WHERE created_at >= NOW() - INTERVAL '90 days'
+      AND created_at < NOW() - INTERVAL '30 days'
+      AND user_id NOT IN (
+        SELECT DISTINCT user_id FROM blind_box_events 
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+      )
+    `);
+    
+    const churnedUsers = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM users 
+      WHERE id NOT IN (
+        SELECT DISTINCT user_id FROM blind_box_events 
+        WHERE created_at >= NOW() - INTERVAL '90 days'
+      )
+      AND created_at < NOW() - INTERVAL '90 days'
+    `);
+    
+    // Super users (participated in 3+ events in last 30 days)
+    const superUsersResult = await db.execute(sql`
+      SELECT COUNT(DISTINCT user_id)::int as count FROM (
+        SELECT user_id, COUNT(*) as event_count
+        FROM blind_box_events
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY user_id
+        HAVING COUNT(*) >= 3
+      ) super_user_counts
+    `);
+    
+    const superUsersArchetypes = await db.execute(sql`
+      SELECT u.archetype, COUNT(*)::int as count
+      FROM (
+        SELECT user_id, COUNT(*) as event_count
+        FROM blind_box_events
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY user_id
+        HAVING COUNT(*) >= 3
+      ) su
+      JOIN users u ON su.user_id = u.id
+      WHERE u.archetype IS NOT NULL
+      GROUP BY u.archetype
+      ORDER BY count DESC
+      LIMIT 3
+    `);
+
+    // ============ 3. EVENT QUALITY INDICATORS ============
+    
+    const completedEvents = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM blind_box_events 
+      WHERE status = 'completed'
+    `);
+    
+    const matchedOrCompletedEvents = await db.execute(sql`
+      SELECT COUNT(*)::int as count FROM blind_box_events 
+      WHERE status IN ('matched', 'completed')
+    `);
+    
+    const completionRate = (matchedOrCompletedEvents.rows[0] as any).count > 0
+      ? ((completedEvents.rows[0] as any).count / (matchedOrCompletedEvents.rows[0] as any).count) * 100
+      : 0;
+    
+    // Average rating from feedback
+    const avgRatingResult = await db.execute(sql`
+      SELECT AVG(rating)::float as avg_rating 
+      FROM event_feedback 
+      WHERE rating IS NOT NULL
+    `);
+    const avgRating = avgRatingResult.rows[0]?.avg_rating || 0;
+    
+    // Complaint rate (events with reports)
+    const eventsWithReports = await db.execute(sql`
+      SELECT COUNT(DISTINCT event_id)::int as count FROM chat_reports 
+      WHERE event_id IS NOT NULL
+    `);
+    
+    const complaintRate = (totalEvents.rows[0] as any).count > 0
+      ? ((eventsWithReports.rows[0] as any).count / (totalEvents.rows[0] as any).count) * 100
+      : 0;
+    
+    // Low-rated events (rating < 3.0)
+    const lowRatedEvents = await db.execute(sql`
+      SELECT 
+        e.id as event_id,
+        e.title,
+        AVG(f.rating)::float as avg_rating,
+        e.date_time as date
+      FROM blind_box_events e
+      JOIN event_feedback f ON e.id = f.event_id
+      WHERE f.rating IS NOT NULL
+      GROUP BY e.id, e.title, e.date_time
+      HAVING AVG(f.rating) < 3.0
+      ORDER BY avg_rating ASC
+      LIMIT 10
+    `);
+
+    // ============ 4. MONETIZATION FUNNEL ============
+    
+    const paidUsers = await db.execute(sql`
+      SELECT COUNT(DISTINCT user_id)::int as count FROM payments 
+      WHERE status = 'completed'
+    `);
+    
+    const conversionRate = (totalUsers.rows[0] as any).count > 0
+      ? ((paidUsers.rows[0] as any).count / (totalUsers.rows[0] as any).count) * 100
+      : 0;
+    
+    // Revenue breakdown
+    const subscriptionRevenue = await db.execute(sql`
+      SELECT COALESCE(SUM(final_amount), 0)::int as total 
+      FROM payments 
+      WHERE payment_type = 'subscription' AND status = 'completed'
+    `);
+    
+    const eventRevenue = await db.execute(sql`
+      SELECT COALESCE(SUM(final_amount), 0)::int as total 
+      FROM payments 
+      WHERE payment_type = 'event' AND status = 'completed'
+    `);
+    
+    const totalRevenue = (subscriptionRevenue.rows[0] as any).total + (eventRevenue.rows[0] as any).total;
+    
+    const arpu = (totalUsers.rows[0] as any).count > 0
+      ? totalRevenue / (totalUsers.rows[0] as any).count
+      : 0;
+    
+    // Conversion funnel
+    const browsedEvents = await db.execute(sql`
+      SELECT COUNT(DISTINCT user_id)::int as count FROM blind_box_events
+    `);
+    
+    const signedUpUsers = await db.execute(sql`
+      SELECT COUNT(DISTINCT user_id)::int as count FROM blind_box_events
+    `);
+    
+    // Monthly revenue (current month)
+    const monthlyRevenue = await db.execute(sql`
+      SELECT COALESCE(SUM(final_amount), 0)::int as total 
+      FROM payments 
+      WHERE status = 'completed' 
+      AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM NOW())
+      AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM NOW())
+    `);
+
     return {
       engagementMetrics: {
         totalUsers: totalUsers.rows[0].count,
         activeUsers: activeUsers.rows[0].count,
         totalEvents: totalEvents.rows[0].count,
         avgEventsPerUser,
+        newUsers7Days: newUsers7Days.rows[0].count,
+        newUsersPrevious7Days: newUsersPrevious7Days.rows[0].count,
       },
       userGrowth: userGrowth.rows,
       eventTrends: eventTrends.rows,
       personalityDistribution: personalityDistribution.rows,
+      
+      // New analytics
+      matchingEfficiency: {
+        successRate: matchingSuccessRate,
+        avgMatchTime: avgMatchTime,
+        attemptsPerUser: attemptsPerUser,
+      },
+      
+      retention: {
+        weeklyRetention: weeklyRetention,
+        userSegments: {
+          new: newUsersSegment.rows[0].count,
+          active: activeUsersSegment.rows[0].count,
+          dormant: dormantUsers.rows[0].count,
+          churned: churnedUsers.rows[0].count,
+        },
+        superUsers: {
+          count: superUsersResult.rows[0].count,
+          topArchetypes: superUsersArchetypes.rows,
+        },
+      },
+      
+      eventQuality: {
+        completionRate: completionRate,
+        avgRating: avgRating,
+        complaintRate: complaintRate,
+        lowRatedEvents: lowRatedEvents.rows,
+      },
+      
+      monetization: {
+        conversionRate: conversionRate,
+        revenueBreakdown: {
+          subscription: subscriptionRevenue.rows[0].total,
+          singleEvent: eventRevenue.rows[0].total,
+        },
+        arpu: arpu,
+        conversionFunnel: {
+          registered: totalUsers.rows[0].count,
+          browsedEvents: browsedEvents.rows[0].count,
+          signedUp: signedUpUsers.rows[0].count,
+          paid: paidUsers.rows[0].count,
+        },
+        monthlyRevenue: monthlyRevenue.rows[0].total,
+      },
     };
   }
 
