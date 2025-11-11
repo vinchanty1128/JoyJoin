@@ -9,6 +9,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { invalidateCacheForEvent } from "@/lib/cacheInvalidation";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 
 export default function EventsPage() {
@@ -16,11 +18,60 @@ export default function EventsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const markAsRead = useMarkNotificationsAsRead();
+  const { subscribe } = useWebSocket();
 
   // Auto-clear activities notifications when entering the page
   useEffect(() => {
     markAsRead.mutate('activities');
   }, []);
+
+  // WebSocket实时更新订阅
+  useEffect(() => {
+    const unsubscribeMatched = subscribe('EVENT_MATCHED', async (message) => {
+      console.log('[User] Event matched:', message);
+      await invalidateCacheForEvent(message);
+      
+      const matchData = message.data as any;
+      toast({
+        title: "匹配成功！",
+        description: `你的活动已成功匹配，地点：${matchData.restaurantName || '未知'}`,
+      });
+      
+      // 自动切换到"已匹配"标签
+      setActiveTab("matched");
+    });
+
+    const unsubscribeStatus = subscribe('EVENT_STATUS_CHANGED', async (message) => {
+      console.log('[User] Event status changed:', message);
+      await invalidateCacheForEvent(message);
+      
+      const statusData = message.data as any;
+      if (statusData.newStatus === 'completed') {
+        toast({
+          title: "活动已完成",
+          description: "期待你的反馈！",
+        });
+        setActiveTab("completed");
+      } else if (statusData.newStatus === 'canceled') {
+        toast({
+          title: "活动已取消",
+          description: statusData.reason || "活动已被取消",
+          variant: "destructive",
+        });
+      }
+    });
+
+    const unsubscribeCompleted = subscribe('EVENT_COMPLETED', async (message) => {
+      console.log('[User] Event completed:', message);
+      await invalidateCacheForEvent(message);
+    });
+
+    return () => {
+      unsubscribeMatched();
+      unsubscribeStatus();
+      unsubscribeCompleted();
+    };
+  }, [subscribe, toast]);
 
   const { data: events, isLoading } = useQuery<Array<BlindBoxEvent>>({
     queryKey: ["/api/my-events"],

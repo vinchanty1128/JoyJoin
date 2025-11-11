@@ -1,5 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,15 +11,72 @@ import { calculateAge } from "@shared/utils";
 import IcebreakerTool from "@/components/IcebreakerTool";
 import PostMatchEventCard from "@/components/PostMatchEventCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { invalidateCacheForEvent } from "@/lib/cacheInvalidation";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BlindBoxEventDetailPage() {
   const { eventId } = useParams();
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  const { subscribe } = useWebSocket();
+  const { toast } = useToast();
 
   const { data: event, isLoading } = useQuery<BlindBoxEvent>({
     queryKey: ["/api/blind-box-events", eventId],
   });
+
+  // WebSocket实时更新订阅（仅订阅当前活动）
+  useEffect(() => {
+    if (!eventId) return;
+
+    const unsubscribeMatched = subscribe('EVENT_MATCHED', async (message) => {
+      if (message.eventId !== eventId) return;
+      
+      console.log('[Detail] Event matched:', message);
+      await invalidateCacheForEvent(message);
+      
+      const matchData = message.data as any;
+      toast({
+        title: "匹配成功！",
+        description: `活动已成功匹配，地点：${matchData.restaurantName || '未知'}`,
+      });
+    });
+
+    const unsubscribeStatus = subscribe('EVENT_STATUS_CHANGED', async (message) => {
+      if (message.eventId !== eventId) return;
+      
+      console.log('[Detail] Event status changed:', message);
+      await invalidateCacheForEvent(message);
+      
+      const statusData = message.data as any;
+      if (statusData.newStatus === 'completed') {
+        toast({
+          title: "活动已完成",
+          description: "期待你的反馈！",
+        });
+      } else if (statusData.newStatus === 'canceled') {
+        toast({
+          title: "活动已取消",
+          description: statusData.reason || "活动已被取消",
+          variant: "destructive",
+        });
+      }
+    });
+
+    const unsubscribeUserJoined = subscribe('USER_JOINED', async (message) => {
+      if (message.eventId !== eventId) return;
+      
+      console.log('[Detail] User joined:', message);
+      await invalidateCacheForEvent(message);
+    });
+
+    return () => {
+      unsubscribeMatched();
+      unsubscribeStatus();
+      unsubscribeUserJoined();
+    };
+  }, [eventId, subscribe, toast]);
 
   if (isLoading) {
     return (
