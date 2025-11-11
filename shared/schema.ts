@@ -936,11 +936,13 @@ export const notifications = pgTable("notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   category: varchar("category").notNull(), // discover, activities, chat
-  type: varchar("type").notNull(), // new_activity, matching_progress, match_success, activity_reminder, feedback_reminder, new_message
+  type: varchar("type").notNull(), // new_activity, matching_progress, match_success, activity_reminder, feedback_reminder, new_message, admin_announcement
   title: varchar("title").notNull(),
   message: text("message"),
   relatedResourceId: varchar("related_resource_id"), // event ID, chat ID, etc.
   isRead: boolean("is_read").default(false),
+  sentBy: varchar("sent_by").references(() => users.id), // Admin user ID if sent by admin
+  isBroadcast: boolean("is_broadcast").default(false), // Whether this is a broadcast notification
   createdAt: timestamp("created_at").defaultNow(),
 });
 
