@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { invalidateCacheForEvent } from "@/lib/cacheInvalidation";
 
 interface EventCreator {
   id: string;
@@ -77,10 +79,57 @@ export default function AdminEventsPage() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   
   const { toast } = useToast();
+  const { subscribe, isConnected } = useWebSocket();
 
   const { data: events = [], isLoading } = useQuery<BlindBoxEvent[]>({
     queryKey: ["/api/admin/events"],
   });
+
+  // WebSocket实时更新订阅
+  useEffect(() => {
+    const unsubscribeStatus = subscribe('EVENT_STATUS_CHANGED', async (message) => {
+      console.log('[Admin] Event status changed:', message);
+      await invalidateCacheForEvent(message);
+      
+      const statusData = message.data as any;
+      toast({
+        title: "活动状态更新",
+        description: `活动"${statusData.eventTitle || '未知'}"状态已变更为: ${statusData.newStatus}`,
+      });
+    });
+
+    const unsubscribeMatched = subscribe('EVENT_MATCHED', async (message) => {
+      console.log('[Admin] Event matched:', message);
+      await invalidateCacheForEvent(message);
+      
+      toast({
+        title: "新匹配完成",
+        description: "有活动完成匹配，列表已更新",
+      });
+    });
+
+    const unsubscribeUser = subscribe('USER_CONFIRMED', async (message) => {
+      console.log('[Admin] User confirmed:', message);
+      await invalidateCacheForEvent(message);
+    });
+
+    const unsubscribeCompleted = subscribe('EVENT_COMPLETED', async (message) => {
+      console.log('[Admin] Event completed:', message);
+      await invalidateCacheForEvent(message);
+      
+      toast({
+        title: "活动已完成",
+        description: "有活动已标记为完成",
+      });
+    });
+
+    return () => {
+      unsubscribeStatus();
+      unsubscribeMatched();
+      unsubscribeUser();
+      unsubscribeCompleted();
+    };
+  }, [subscribe, toast]);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
