@@ -175,6 +175,25 @@ export interface IStorage {
   // Admin Insights operations
   getInsightsData(): Promise<any>;
 
+  // Admin Feedback operations
+  getAllFeedbacks(filters?: {
+    eventId?: string;
+    minRating?: number;
+    maxRating?: number;
+    startDate?: Date;
+    endDate?: Date;
+    hasDeepFeedback?: boolean;
+  }): Promise<Array<EventFeedback & { user: { displayName: string | null; phoneNumber: string | null }; event: { title: string; dateTime: Date; status: string | null } }>>;
+  getFeedbackById(id: string): Promise<(EventFeedback & { user: User; event: Event }) | undefined>;
+  getFeedbackStats(): Promise<{
+    totalFeedbacks: number;
+    avgAtmosphereScore: number;
+    lowRatedCount: number;
+    deepFeedbackRate: number;
+    topImprovementAreas: Array<{ area: string; count: number }>;
+    connectionStatusBreakdown: Record<string, number>;
+  }>;
+
   // Chat Report operations
   createChatReport(data: InsertChatReport): Promise<ChatReport>;
   getChatReports(status?: string): Promise<Array<ChatReport & { reporter: User; reportedUser: User; message: ChatMessage }>>;
@@ -2357,6 +2376,203 @@ export class DatabaseStorage implements IStorage {
       RETURNING *
     `);
     return insertResult.rows[0];
+  }
+
+  // ============ ADMIN FEEDBACK OPERATIONS ============
+  async getAllFeedbacks(filters?: {
+    eventId?: string;
+    minRating?: number;
+    maxRating?: number;
+    startDate?: Date;
+    endDate?: Date;
+    hasDeepFeedback?: boolean;
+  }): Promise<Array<EventFeedback & { user: { displayName: string | null; phoneNumber: string | null }; event: { title: string; dateTime: Date; status: string | null } }>> {
+    const conditions = [];
+    
+    if (filters?.eventId) {
+      conditions.push(eq(eventFeedback.eventId, filters.eventId));
+    }
+    
+    if (filters?.minRating !== undefined) {
+      conditions.push(gte(eventFeedback.atmosphereScore, filters.minRating));
+    }
+    
+    if (filters?.maxRating !== undefined) {
+      conditions.push(lte(eventFeedback.atmosphereScore, filters.maxRating));
+    }
+    
+    if (filters?.startDate) {
+      conditions.push(gte(eventFeedback.createdAt, filters.startDate));
+    }
+    
+    if (filters?.endDate) {
+      conditions.push(lte(eventFeedback.createdAt, filters.endDate));
+    }
+    
+    if (filters?.hasDeepFeedback !== undefined) {
+      conditions.push(eq(eventFeedback.hasDeepFeedback, filters.hasDeepFeedback));
+    }
+
+    const baseQuery = db
+      .select({
+        id: eventFeedback.id,
+        eventId: eventFeedback.eventId,
+        userId: eventFeedback.userId,
+        rating: eventFeedback.rating,
+        vibeMatch: eventFeedback.vibeMatch,
+        energyMatch: eventFeedback.energyMatch,
+        wouldAttendAgain: eventFeedback.wouldAttendAgain,
+        feedback: eventFeedback.feedback,
+        connections: eventFeedback.connections,
+        atmosphereScore: eventFeedback.atmosphereScore,
+        atmosphereNote: eventFeedback.atmosphereNote,
+        attendeeTraits: eventFeedback.attendeeTraits,
+        connectionRadar: eventFeedback.connectionRadar,
+        hasNewConnections: eventFeedback.hasNewConnections,
+        connectionStatus: eventFeedback.connectionStatus,
+        improvementAreas: eventFeedback.improvementAreas,
+        improvementOther: eventFeedback.improvementOther,
+        completedAt: eventFeedback.completedAt,
+        rewardsClaimed: eventFeedback.rewardsClaimed,
+        rewardPoints: eventFeedback.rewardPoints,
+        hasDeepFeedback: eventFeedback.hasDeepFeedback,
+        matchPointValidation: eventFeedback.matchPointValidation,
+        additionalMatchPoints: eventFeedback.additionalMatchPoints,
+        conversationBalance: eventFeedback.conversationBalance,
+        conversationComfort: eventFeedback.conversationComfort,
+        conversationNotes: eventFeedback.conversationNotes,
+        futurePreferences: eventFeedback.futurePreferences,
+        futurePreferencesOther: eventFeedback.futurePreferencesOther,
+        deepFeedbackCompletedAt: eventFeedback.deepFeedbackCompletedAt,
+        createdAt: eventFeedback.createdAt,
+        user: {
+          displayName: users.displayName,
+          phoneNumber: users.phoneNumber,
+        },
+        event: {
+          title: events.title,
+          dateTime: events.dateTime,
+          status: events.status,
+        },
+      })
+      .from(eventFeedback)
+      .leftJoin(users, eq(eventFeedback.userId, users.id))
+      .leftJoin(events, eq(eventFeedback.eventId, events.id));
+
+    const results = conditions.length > 0
+      ? await baseQuery.where(and(...conditions)).orderBy(desc(eventFeedback.createdAt))
+      : await baseQuery.orderBy(desc(eventFeedback.createdAt));
+
+    return results as any;
+  }
+
+  async getFeedbackById(id: string): Promise<(EventFeedback & { user: User; event: Event }) | undefined> {
+    const [result] = await db
+      .select({
+        id: eventFeedback.id,
+        eventId: eventFeedback.eventId,
+        userId: eventFeedback.userId,
+        rating: eventFeedback.rating,
+        vibeMatch: eventFeedback.vibeMatch,
+        energyMatch: eventFeedback.energyMatch,
+        wouldAttendAgain: eventFeedback.wouldAttendAgain,
+        feedback: eventFeedback.feedback,
+        connections: eventFeedback.connections,
+        atmosphereScore: eventFeedback.atmosphereScore,
+        atmosphereNote: eventFeedback.atmosphereNote,
+        attendeeTraits: eventFeedback.attendeeTraits,
+        connectionRadar: eventFeedback.connectionRadar,
+        hasNewConnections: eventFeedback.hasNewConnections,
+        connectionStatus: eventFeedback.connectionStatus,
+        improvementAreas: eventFeedback.improvementAreas,
+        improvementOther: eventFeedback.improvementOther,
+        completedAt: eventFeedback.completedAt,
+        rewardsClaimed: eventFeedback.rewardsClaimed,
+        rewardPoints: eventFeedback.rewardPoints,
+        hasDeepFeedback: eventFeedback.hasDeepFeedback,
+        matchPointValidation: eventFeedback.matchPointValidation,
+        additionalMatchPoints: eventFeedback.additionalMatchPoints,
+        conversationBalance: eventFeedback.conversationBalance,
+        conversationComfort: eventFeedback.conversationComfort,
+        conversationNotes: eventFeedback.conversationNotes,
+        futurePreferences: eventFeedback.futurePreferences,
+        futurePreferencesOther: eventFeedback.futurePreferencesOther,
+        deepFeedbackCompletedAt: eventFeedback.deepFeedbackCompletedAt,
+        createdAt: eventFeedback.createdAt,
+        user: users,
+        event: events,
+      })
+      .from(eventFeedback)
+      .leftJoin(users, eq(eventFeedback.userId, users.id))
+      .leftJoin(events, eq(eventFeedback.eventId, events.id))
+      .where(eq(eventFeedback.id, id));
+
+    return result as any;
+  }
+
+  async getFeedbackStats(): Promise<{
+    totalFeedbacks: number;
+    avgAtmosphereScore: number;
+    lowRatedCount: number;
+    deepFeedbackRate: number;
+    topImprovementAreas: Array<{ area: string; count: number }>;
+    connectionStatusBreakdown: Record<string, number>;
+  }> {
+    // Get total count and average atmosphere score
+    const statsResult = await db.execute(sql`
+      SELECT 
+        COUNT(*)::int as total_feedbacks,
+        AVG(atmosphere_score)::float as avg_atmosphere_score,
+        COUNT(CASE WHEN atmosphere_score < 3 THEN 1 END)::int as low_rated_count,
+        COUNT(CASE WHEN has_deep_feedback = true THEN 1 END)::int as deep_feedback_count
+      FROM event_feedback
+    `);
+    
+    const stats = statsResult.rows[0] as any;
+    const totalFeedbacks = stats.total_feedbacks || 0;
+    const avgAtmosphereScore = stats.avg_atmosphere_score || 0;
+    const lowRatedCount = stats.low_rated_count || 0;
+    const deepFeedbackCount = stats.deep_feedback_count || 0;
+    const deepFeedbackRate = totalFeedbacks > 0 ? (deepFeedbackCount / totalFeedbacks) * 100 : 0;
+
+    // Get top improvement areas
+    const improvementAreasResult = await db.execute(sql`
+      SELECT area, COUNT(*)::int as count
+      FROM event_feedback, unnest(improvement_areas) as area
+      WHERE improvement_areas IS NOT NULL
+      GROUP BY area
+      ORDER BY count DESC
+      LIMIT 5
+    `);
+    
+    const topImprovementAreas = improvementAreasResult.rows.map((row: any) => ({
+      area: row.area,
+      count: row.count,
+    }));
+
+    // Get connection status breakdown
+    const connectionStatusResult = await db.execute(sql`
+      SELECT 
+        connection_status,
+        COUNT(*)::int as count
+      FROM event_feedback
+      WHERE connection_status IS NOT NULL
+      GROUP BY connection_status
+    `);
+
+    const connectionStatusBreakdown: Record<string, number> = {};
+    connectionStatusResult.rows.forEach((row: any) => {
+      connectionStatusBreakdown[row.connection_status] = row.count;
+    });
+
+    return {
+      totalFeedbacks,
+      avgAtmosphereScore: Math.round(avgAtmosphereScore * 10) / 10,
+      lowRatedCount,
+      deepFeedbackRate: Math.round(deepFeedbackRate * 10) / 10,
+      topImprovementAreas,
+      connectionStatusBreakdown,
+    };
   }
 
   // ============ CHAT REPORT OPERATIONS ============

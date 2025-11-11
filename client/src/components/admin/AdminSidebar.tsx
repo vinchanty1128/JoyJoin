@@ -13,6 +13,7 @@ import {
   Flag,
   FlaskConical,
   MessageSquareWarning,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,6 +76,11 @@ const analyticsItems = [
     title: "数据洞察",
     url: "/admin/insights",
     icon: BarChart3,
+  },
+  {
+    title: "反馈管理",
+    url: "/admin/feedback",
+    icon: MessageSquare,
   },
   {
     title: "内容管理",

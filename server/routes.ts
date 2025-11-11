@@ -2583,6 +2583,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ ADMIN FEEDBACK MANAGEMENT ============
+
+  // Get all feedbacks with filters
+  app.get("/api/admin/feedback", requireAdmin, async (req, res) => {
+    try {
+      const { eventId, minRating, maxRating, startDate, endDate, hasDeepFeedback } = req.query;
+      
+      const filters: any = {};
+      if (eventId) filters.eventId = eventId as string;
+      if (minRating) filters.minRating = parseInt(minRating as string);
+      if (maxRating) filters.maxRating = parseInt(maxRating as string);
+      if (startDate) filters.startDate = new Date(startDate as string);
+      if (endDate) filters.endDate = new Date(endDate as string);
+      if (hasDeepFeedback !== undefined) filters.hasDeepFeedback = hasDeepFeedback === 'true';
+      
+      const feedbacks = await storage.getAllFeedbacks(filters);
+      res.json(feedbacks);
+    } catch (error) {
+      console.error("Error fetching feedbacks:", error);
+      res.status(500).json({ message: "Failed to fetch feedbacks" });
+    }
+  });
+
+  // Get feedback stats
+  app.get("/api/admin/feedback/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getFeedbackStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching feedback stats:", error);
+      res.status(500).json({ message: "Failed to fetch feedback stats" });
+    }
+  });
+
+  // Get single feedback by ID
+  app.get("/api/admin/feedback/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const feedback = await storage.getFeedbackById(id);
+      
+      if (!feedback) {
+        return res.status(404).json({ message: "Feedback not found" });
+      }
+      
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ message: "Failed to fetch feedback" });
+    }
+  });
+
   // ============ CONTENT MANAGEMENT ============
 
   // Get all contents (with optional type filter)
@@ -3205,7 +3256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertChatReportSchema.parse(req.body);
       
-      const report = await storage.createChatReport(userId, validatedData);
+      const report = await storage.createChatReport(validatedData);
       
       res.json(report);
     } catch (error: any) {
@@ -3235,7 +3286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = req.session as any;
       const adminUserId = session.userId;
       
-      const report = await storage.getChatReportById(id);
+      const report = await storage.getChatReport(id);
       
       if (!report) {
         return res.status(404).json({ message: "Report not found" });
@@ -3270,8 +3321,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid status" });
       }
       
-      const report = await storage.updateChatReport(id, adminUserId, {
+      const report = await storage.updateChatReport(id, {
         status,
+        reviewedBy: adminUserId,
         reviewNotes,
         actionTaken,
       });
