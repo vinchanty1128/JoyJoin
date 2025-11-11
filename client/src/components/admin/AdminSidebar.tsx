@@ -9,6 +9,7 @@ import {
   DollarSign,
   BarChart3,
   FileText,
+  Bell,
   Flag,
   FlaskConical,
 } from "lucide-react";
@@ -78,6 +79,11 @@ const analyticsItems = [
     title: "内容管理",
     url: "/admin/content",
     icon: FileText,
+  },
+  {
+    title: "通知推送",
+    url: "/admin/notifications",
+    icon: Bell,
   },
   {
     title: "举报审核",

@@ -14,6 +14,7 @@ import AdminDataInsightsPage from "@/pages/admin/AdminDataInsightsPage";
 import AdminContentPage from "@/pages/admin/AdminContentPage";
 import AdminModerationPage from "@/pages/admin/AdminModerationPage";
 import AdminMatchingLabPage from "@/pages/admin/AdminMatchingLabPage";
+import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
 
 export default function AdminLayout() {
   const sidebarStyle = {
@@ -49,6 +50,7 @@ export default function AdminLayout() {
               <Route path="/admin/finance" component={AdminFinancePage} />
               <Route path="/admin/insights" component={AdminDataInsightsPage} />
               <Route path="/admin/content" component={AdminContentPage} />
+              <Route path="/admin/notifications" component={AdminNotificationsPage} />
               <Route path="/admin/moderation" component={AdminModerationPage} />
               <Route path="/admin/matching" component={AdminMatchingLabPage} />
             </Switch>
