@@ -727,6 +727,29 @@ export const moderationLogs = pgTable("moderation_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Content Management table - Unified table for all platform content
+export const contents = pgTable("contents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Content type: announcement, help_article, faq, community_guideline
+  type: varchar("type").notNull(),
+  
+  // Content details
+  title: varchar("title").notNull(),
+  content: text("content").notNull(), // Rich text / Markdown
+  category: varchar("category"), // Optional categorization (e.g., "安全", "支付", "活动")
+  
+  // Publishing
+  status: varchar("status").default("draft"), // draft, published, archived
+  priority: integer("priority").default(0), // Higher = shown first
+  publishedAt: timestamp("published_at"),
+  
+  // Metadata
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas for admin tables
 export const insertVenueSchema = createInsertSchema(venues).omit({
   id: true,
@@ -765,6 +788,12 @@ export const insertReportSchema = createInsertSchema(reports).omit({
 export const insertModerationLogSchema = createInsertSchema(moderationLogs).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertContentSchema = createInsertSchema(contents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Types
@@ -806,6 +835,7 @@ export type CouponUsage = typeof couponUsage.$inferSelect;
 export type VenueBooking = typeof venueBookings.$inferSelect;
 export type Report = typeof reports.$inferSelect;
 export type ModerationLog = typeof moderationLogs.$inferSelect;
+export type Content = typeof contents.$inferSelect;
 
 export type InsertVenue = z.infer<typeof insertVenueSchema>;
 export type InsertEventTemplate = z.infer<typeof insertEventTemplateSchema>;
@@ -814,6 +844,7 @@ export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type InsertCoupon = z.infer<typeof insertCouponSchema>;
 export type InsertReport = z.infer<typeof insertReportSchema>;
 export type InsertModerationLog = z.infer<typeof insertModerationLogSchema>;
+export type InsertContent = z.infer<typeof insertContentSchema>;
 
 // ============ MATCHING ALGORITHM TABLES ============
 

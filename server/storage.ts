@@ -5,8 +5,9 @@ import {
   type RegisterUser, type InsertTestResponse, type InsertRoleResult, type RoleResult, type InterestsTopics,
   type Notification, type InsertNotification, type NotificationCounts,
   type DirectMessageThread, type DirectMessage, type InsertDirectMessageThread, type InsertDirectMessage,
+  type Content, type InsertContent,
   users, events, eventAttendance, chatMessages, eventFeedback, blindBoxEvents, testResponses, roleResults, notifications,
-  directMessageThreads, directMessages, payments, coupons, couponUsage, subscriptions
+  directMessageThreads, directMessages, payments, coupons, couponUsage, subscriptions, contents
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -160,6 +161,14 @@ export interface IStorage {
 
   // Admin Insights operations
   getInsightsData(): Promise<any>;
+
+  // Admin Content Management operations
+  getAllContents(type?: string): Promise<any[]>;
+  getContent(id: string): Promise<any | undefined>;
+  createContent(data: any): Promise<any>;
+  updateContent(id: string, updates: any): Promise<any>;
+  deleteContent(id: string): Promise<void>;
+  getPublishedContents(type: string): Promise<any[]>;
 
   // Matching Algorithm operations
   getUserById(id: string): Promise<User | undefined>;
@@ -1815,6 +1824,49 @@ export class DatabaseStorage implements IStorage {
       eventTrends: eventTrends.rows,
       personalityDistribution: personalityDistribution.rows,
     };
+  }
+
+  // ============ CONTENT MANAGEMENT OPERATIONS ============
+
+  async getAllContents(type?: string): Promise<any[]> {
+    if (type) {
+      return await db.select().from(contents).where(eq(contents.type, type)).orderBy(desc(contents.priority), desc(contents.createdAt));
+    }
+    return await db.select().from(contents).orderBy(desc(contents.createdAt));
+  }
+
+  async getContent(id: string): Promise<any | undefined> {
+    const [content] = await db.select().from(contents).where(eq(contents.id, id));
+    return content;
+  }
+
+  async createContent(data: InsertContent): Promise<Content> {
+    const [content] = await db.insert(contents).values(data).returning();
+    return content;
+  }
+
+  async updateContent(id: string, updates: Partial<Content>): Promise<Content> {
+    const [content] = await db
+      .update(contents)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(contents.id, id))
+      .returning();
+    return content;
+  }
+
+  async deleteContent(id: string): Promise<void> {
+    await db.delete(contents).where(eq(contents.id, id));
+  }
+
+  async getPublishedContents(type: string): Promise<any[]> {
+    return await db
+      .select()
+      .from(contents)
+      .where(and(
+        eq(contents.type, type),
+        eq(contents.status, 'published')
+      ))
+      .orderBy(desc(contents.priority), desc(contents.publishedAt));
   }
 
   // ============ MATCHING ALGORITHM OPERATIONS ============

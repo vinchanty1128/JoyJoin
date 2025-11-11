@@ -2550,6 +2550,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ CONTENT MANAGEMENT ============
+
+  // Get all contents (with optional type filter)
+  app.get("/api/admin/contents", requireAdmin, async (req, res) => {
+    try {
+      const { type } = req.query;
+      const contents = await storage.getAllContents(type as string | undefined);
+      res.json(contents);
+    } catch (error) {
+      console.error("Error fetching contents:", error);
+      res.status(500).json({ message: "Failed to fetch contents" });
+    }
+  });
+
+  // Get single content
+  app.get("/api/admin/contents/:id", requireAdmin, async (req, res) => {
+    try {
+      const content = await storage.getContent(req.params.id);
+      if (!content) {
+        return res.status(404).json({ message: "Content not found" });
+      }
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching content:", error);
+      res.status(500).json({ message: "Failed to fetch content" });
+    }
+  });
+
+  // Create content
+  app.post("/api/admin/contents", requireAdmin, async (req, res) => {
+    try {
+      const session = req.session as any;
+      const content = await storage.createContent({
+        ...req.body,
+        createdBy: session.userId,
+      });
+      res.json(content);
+    } catch (error) {
+      console.error("Error creating content:", error);
+      res.status(500).json({ message: "Failed to create content" });
+    }
+  });
+
+  // Update content
+  app.patch("/api/admin/contents/:id", requireAdmin, async (req, res) => {
+    try {
+      const content = await storage.updateContent(req.params.id, req.body);
+      res.json(content);
+    } catch (error) {
+      console.error("Error updating content:", error);
+      res.status(500).json({ message: "Failed to update content" });
+    }
+  });
+
+  // Delete content
+  app.delete("/api/admin/contents/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteContent(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting content:", error);
+      res.status(500).json({ message: "Failed to delete content" });
+    }
+  });
+
+  // Publish content (update status to published and set published_at)
+  app.post("/api/admin/contents/:id/publish", requireAdmin, async (req, res) => {
+    try {
+      const content = await storage.updateContent(req.params.id, {
+        status: 'published',
+        publishedAt: new Date(),
+      });
+      res.json(content);
+    } catch (error) {
+      console.error("Error publishing content:", error);
+      res.status(500).json({ message: "Failed to publish content" });
+    }
+  });
+
+  // Get published contents (public endpoint for users)
+  app.get("/api/contents/:type", async (req, res) => {
+    try {
+      const contents = await storage.getPublishedContents(req.params.type);
+      res.json(contents);
+    } catch (error) {
+      console.error("Error fetching published contents:", error);
+      res.status(500).json({ message: "Failed to fetch contents" });
+    }
+  });
+
   // ============ SUBSCRIPTION MANAGEMENT ============
   
   // Get current user's subscription status
