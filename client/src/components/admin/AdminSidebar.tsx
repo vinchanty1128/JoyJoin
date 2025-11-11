@@ -12,6 +12,7 @@ import {
   Bell,
   Flag,
   FlaskConical,
+  MessageSquareWarning,
 } from "lucide-react";
 import {
   Sidebar,
@@ -89,6 +90,16 @@ const analyticsItems = [
     title: "举报审核",
     url: "/admin/moderation",
     icon: Flag,
+  },
+  {
+    title: "举报管理",
+    url: "/admin/reports",
+    icon: MessageSquareWarning,
+  },
+  {
+    title: "聊天日志",
+    url: "/admin/chat-logs",
+    icon: FileText,
   },
   {
     title: "匹配实验室",

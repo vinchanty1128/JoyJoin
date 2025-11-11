@@ -15,6 +15,8 @@ import AdminContentPage from "@/pages/admin/AdminContentPage";
 import AdminModerationPage from "@/pages/admin/AdminModerationPage";
 import AdminMatchingLabPage from "@/pages/admin/AdminMatchingLabPage";
 import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
+import AdminReportsPage from "@/pages/admin/AdminReportsPage";
+import AdminChatLogsPage from "@/pages/admin/AdminChatLogsPage";
 
 export default function AdminLayout() {
   const sidebarStyle = {
@@ -52,6 +54,8 @@ export default function AdminLayout() {
               <Route path="/admin/content" component={AdminContentPage} />
               <Route path="/admin/notifications" component={AdminNotificationsPage} />
               <Route path="/admin/moderation" component={AdminModerationPage} />
+              <Route path="/admin/reports" component={AdminReportsPage} />
+              <Route path="/admin/chat-logs" component={AdminChatLogsPage} />
               <Route path="/admin/matching" component={AdminMatchingLabPage} />
             </Switch>
           </main>

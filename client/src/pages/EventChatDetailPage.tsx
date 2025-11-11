@@ -6,9 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowLeft, Send, Clock, ArrowDown, CheckCheck } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ArrowLeft, Send, Clock, ArrowDown, CheckCheck, MoreVertical, Flag } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, ChatMessage } from "@shared/schema";
@@ -117,6 +121,10 @@ export default function EventChatDetailPage() {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<User | null>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportingMessage, setReportingMessage] = useState<ChatMessage & { user: User } | null>(null);
+  const [reportType, setReportType] = useState<string>("harassment");
+  const [reportDescription, setReportDescription] = useState("");
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -157,14 +165,75 @@ export default function EventChatDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/events", eventId, "/messages"] });
       setMessage("");
     },
-    onError: (error) => {
+    onError: async (error) => {
       toast({
         title: "发送失败",
         description: error.message,
         variant: "destructive",
       });
+      
+      // Log message send failure
+      try {
+        await apiRequest("POST", "/api/chat-logs", {
+          eventType: "message_failed",
+          eventId: eventId,
+          userId: currentUser?.id,
+          severity: "error",
+          message: "Message send failed",
+          metadata: { error: error.message, attemptedMessage: message },
+        });
+      } catch (logError) {
+        console.error("Failed to log message error:", logError);
+      }
     },
   });
+
+  const reportMessageMutation = useMutation({
+    mutationFn: async () => {
+      if (!reportingMessage) throw new Error("No message selected");
+      
+      return await apiRequest("POST", "/api/chat-reports", {
+        messageId: reportingMessage.id,
+        eventId: eventId,
+        reportedUserId: reportingMessage.userId,
+        reportType,
+        description: reportDescription || undefined,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "举报已提交",
+        description: "感谢您的反馈，我们会尽快处理",
+      });
+      setReportDialogOpen(false);
+      setReportingMessage(null);
+      setReportType("harassment");
+      setReportDescription("");
+    },
+    onError: (error) => {
+      toast({
+        title: "举报失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleReportMessage = (msg: ChatMessage & { user: User }) => {
+    setReportingMessage(msg);
+    setReportDialogOpen(true);
+  };
+
+  const handleSubmitReport = () => {
+    if (!reportType) {
+      toast({
+        title: "请选择举报类型",
+        variant: "destructive",
+      });
+      return;
+    }
+    reportMessageMutation.mutate();
+  };
 
   // Auto-scroll to bottom with animation
   useEffect(() => {
@@ -377,33 +446,61 @@ export default function EventChatDetailPage() {
                                 )}
 
                                 {/* Message content */}
-                                <div 
-                                  className={`
-                                    group relative px-4 py-2.5 rounded-[18px] shadow-sm
-                                    transition-all duration-200 hover:shadow-md hover:scale-[1.02]
-                                    ${isOwnMessage 
-                                      ? "bg-primary text-primary-foreground rounded-br-[4px]" 
-                                      : "bg-muted text-foreground rounded-bl-[4px]"
-                                    }
-                                  `}
-                                >
-                                  {isOwnMessage && (
-                                    <div className="text-xs opacity-90 mb-1">我</div>
-                                  )}
-                                  <p className="text-sm break-words leading-relaxed">{msg.message}</p>
-                                  
-                                  {/* Time */}
-                                  <div className={`text-[10px] mt-1 flex items-center gap-1 ${
-                                    isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
-                                  }`}>
-                                    <span>
-                                      {new Date(msg.createdAt!).toLocaleTimeString("zh-CN", { 
-                                        hour: "2-digit", 
-                                        minute: "2-digit" 
-                                      })}
-                                    </span>
+                                <div className="relative">
+                                  <div 
+                                    className={`
+                                      group relative px-4 py-2.5 rounded-[18px] shadow-sm
+                                      transition-all duration-200 hover:shadow-md hover:scale-[1.02]
+                                      ${isOwnMessage 
+                                        ? "bg-primary text-primary-foreground rounded-br-[4px]" 
+                                        : "bg-muted text-foreground rounded-bl-[4px]"
+                                      }
+                                    `}
+                                  >
                                     {isOwnMessage && (
-                                      <CheckCheck className="h-3 w-3" />
+                                      <div className="text-xs opacity-90 mb-1">我</div>
+                                    )}
+                                    <p className="text-sm break-words leading-relaxed">{msg.message}</p>
+                                    
+                                    {/* Time */}
+                                    <div className={`text-[10px] mt-1 flex items-center gap-1 ${
+                                      isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
+                                    }`}>
+                                      <span>
+                                        {new Date(msg.createdAt!).toLocaleTimeString("zh-CN", { 
+                                          hour: "2-digit", 
+                                          minute: "2-digit" 
+                                        })}
+                                      </span>
+                                      {isOwnMessage && (
+                                        <CheckCheck className="h-3 w-3" />
+                                      )}
+                                    </div>
+                                    
+                                    {/* Report button - only for messages from others */}
+                                    {!isOwnMessage && (
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            data-testid={`button-report-menu-${msg.id}`}
+                                          >
+                                            <MoreVertical className="h-3 w-3" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          <DropdownMenuItem
+                                            onClick={() => handleReportMessage(msg)}
+                                            className="text-destructive focus:text-destructive"
+                                            data-testid={`menu-item-report-${msg.id}`}
+                                          >
+                                            <Flag className="h-4 w-4 mr-2" />
+                                            举报此消息
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
                                     )}
                                   </div>
                                 </div>
@@ -542,6 +639,90 @@ export default function EventChatDetailPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Report Message Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>举报此消息</DialogTitle>
+            <DialogDescription>
+              请选择举报类型并提供详细说明，我们会尽快处理
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Message preview */}
+            {reportingMessage && (
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1">举报消息：</p>
+                <p className="text-sm">{reportingMessage.message}</p>
+              </div>
+            )}
+            
+            {/* Report type selection */}
+            <div className="space-y-2">
+              <Label>举报类型</Label>
+              <RadioGroup value={reportType} onValueChange={setReportType}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="harassment" id="harassment" data-testid="radio-report-type-harassment" />
+                  <Label htmlFor="harassment" className="cursor-pointer">骚扰或威胁</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="spam" id="spam" data-testid="radio-report-type-spam" />
+                  <Label htmlFor="spam" className="cursor-pointer">垃圾信息</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="inappropriate" id="inappropriate" data-testid="radio-report-type-inappropriate" />
+                  <Label htmlFor="inappropriate" className="cursor-pointer">不当内容</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="hate_speech" id="hate_speech" data-testid="radio-report-type-hate-speech" />
+                  <Label htmlFor="hate_speech" className="cursor-pointer">仇恨言论</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="other" id="other" data-testid="radio-report-type-other" />
+                  <Label htmlFor="other" className="cursor-pointer">其他</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            {/* Optional description */}
+            <div className="space-y-2">
+              <Label htmlFor="report-description">详细说明（可选）</Label>
+              <Textarea
+                id="report-description"
+                placeholder="请提供更多信息..."
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                data-testid="textarea-report-description"
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReportDialogOpen(false);
+                setReportingMessage(null);
+                setReportType("harassment");
+                setReportDescription("");
+              }}
+              data-testid="button-report-cancel"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleSubmitReport}
+              disabled={reportMessageMutation.isPending}
+              data-testid="button-report-submit"
+            >
+              {reportMessageMutation.isPending ? "提交中..." : "提交举报"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

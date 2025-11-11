@@ -9,7 +9,7 @@ import { calculateUserMatchScore, matchUsersToGroups, validateWeights, DEFAULT_W
 import { broadcastEventStatusChanged, broadcastAdminAction } from "./eventBroadcast";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, type User } from "@shared/schema";
+import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, type User } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and } from "drizzle-orm";
 
@@ -3192,6 +3192,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error testing matching scenario:", error);
       res.status(500).json({ message: error.message || "Failed to test matching scenario" });
+    }
+  });
+
+  // ============ CHAT REPORTS & MODERATION ROUTES ============
+  
+  // POST /api/chat-reports - User creates a report
+  app.post("/api/chat-reports", isPhoneAuthenticated, async (req, res) => {
+    try {
+      const session = req.session as any;
+      const userId = session.userId;
+      
+      const validatedData = insertChatReportSchema.parse(req.body);
+      
+      const report = await storage.createChatReport(userId, validatedData);
+      
+      res.json(report);
+    } catch (error: any) {
+      console.error("Error creating chat report:", error);
+      res.status(400).json({ message: error.message || "Failed to create report" });
+    }
+  });
+
+  // GET /api/admin/chat-reports - Admin gets all reports with optional status filter
+  app.get("/api/admin/chat-reports", requireAdmin, async (req, res) => {
+    try {
+      const { status } = req.query;
+      
+      const reports = await storage.getChatReports(status as string | undefined);
+      
+      res.json(reports);
+    } catch (error: any) {
+      console.error("Error fetching chat reports:", error);
+      res.status(500).json({ message: "Failed to fetch reports" });
+    }
+  });
+
+  // GET /api/admin/chat-reports/:id - Admin gets single report with context
+  app.get("/api/admin/chat-reports/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const session = req.session as any;
+      const adminUserId = session.userId;
+      
+      const report = await storage.getChatReportById(id);
+      
+      if (!report) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+      
+      // Record moderation log for viewing the report
+      await storage.createModerationLog({
+        adminUserId,
+        action: "view_report",
+        targetType: "chat_report",
+        targetId: id,
+        details: { reportId: id, reportType: report.reportType },
+      });
+      
+      res.json(report);
+    } catch (error: any) {
+      console.error("Error fetching chat report:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  // PATCH /api/admin/chat-reports/:id - Admin reviews/processes a report
+  app.patch("/api/admin/chat-reports/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const session = req.session as any;
+      const adminUserId = session.userId;
+      
+      const { status, reviewNotes, actionTaken } = req.body;
+      
+      if (!status || !["reviewed", "dismissed", "action_taken"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const report = await storage.updateChatReport(id, adminUserId, {
+        status,
+        reviewNotes,
+        actionTaken,
+      });
+      
+      // Record moderation log
+      await storage.createModerationLog({
+        adminUserId,
+        action: "review_report",
+        targetType: "chat_report",
+        targetId: id,
+        details: { 
+          reportId: id, 
+          status, 
+          actionTaken,
+          reviewNotes: reviewNotes || null,
+        },
+      });
+      
+      res.json(report);
+    } catch (error: any) {
+      console.error("Error updating chat report:", error);
+      res.status(400).json({ message: error.message || "Failed to update report" });
+    }
+  });
+
+  // ============ CHAT LOGS ROUTES ============
+  
+  // POST /api/chat-logs - Internal logging endpoint
+  app.post("/api/chat-logs", async (req, res) => {
+    try {
+      const validatedData = insertChatLogSchema.parse(req.body);
+      
+      const log = await storage.createChatLog(validatedData);
+      
+      res.json(log);
+    } catch (error: any) {
+      console.error("Error creating chat log:", error);
+      res.status(400).json({ message: error.message || "Failed to create log" });
+    }
+  });
+
+  // GET /api/admin/chat-logs - Admin queries logs with filters
+  app.get("/api/admin/chat-logs", requireAdmin, async (req, res) => {
+    try {
+      const { eventId, userId, severity, startDate, endDate } = req.query;
+      
+      const filters: any = {};
+      if (eventId) filters.eventId = eventId as string;
+      if (userId) filters.userId = userId as string;
+      if (severity) filters.severity = severity as string;
+      if (startDate) filters.startDate = new Date(startDate as string);
+      if (endDate) filters.endDate = new Date(endDate as string);
+      
+      const logs = await storage.getChatLogs(filters);
+      
+      res.json(logs);
+    } catch (error: any) {
+      console.error("Error fetching chat logs:", error);
+      res.status(500).json({ message: "Failed to fetch logs" });
+    }
+  });
+
+  // GET /api/admin/chat-logs/stats - Admin gets log statistics
+  app.get("/api/admin/chat-logs/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getChatLogStats();
+      
+      res.json(stats);
+    } catch (error: any) {
+      console.error("Error fetching chat log stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
     }
   });
 
