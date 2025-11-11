@@ -2640,6 +2640,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ ADMIN NOTIFICATION MANAGEMENT ============
+
+  // Get admin notification history
+  app.get("/api/admin/notifications", requireAdmin, async (req, res) => {
+    try {
+      const session = req.session as any;
+      const adminId = session.userId;
+      
+      const notifications = await storage.getAdminNotifications(adminId);
+      res.json({ notifications });
+    } catch (error) {
+      console.error("Error fetching admin notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  // Broadcast notification to multiple users
+  app.post("/api/admin/notifications/broadcast", requireAdmin, async (req, res) => {
+    try {
+      const session = req.session as any;
+      const adminId = session.userId;
+      
+      const { category, type, title, message, userIds } = req.body;
+      
+      if (!category || !type || !title || !userIds || !Array.isArray(userIds)) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const result = await storage.createBroadcastNotification({
+        sentBy: adminId,
+        category,
+        type,
+        title,
+        message,
+        userIds,
+      });
+      
+      res.json({ success: true, sent: result.sent });
+    } catch (error) {
+      console.error("Error broadcasting notification:", error);
+      res.status(500).json({ message: "Failed to broadcast notification" });
+    }
+  });
+
+  // Send notification to a single user
+  app.post("/api/admin/notifications/send", requireAdmin, async (req, res) => {
+    try {
+      const session = req.session as any;
+      const adminId = session.userId;
+      
+      const { userId, category, type, title, message } = req.body;
+      
+      if (!userId || !category || !type || !title) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const result = await storage.createBroadcastNotification({
+        sentBy: adminId,
+        category,
+        type,
+        title,
+        message,
+        userIds: [userId],
+      });
+      
+      res.json({ success: true, sent: result.sent });
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      res.status(500).json({ message: "Failed to send notification" });
+    }
+  });
+
+  // Get notification stats
+  app.get("/api/admin/notifications/:id/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getNotificationStats(req.params.id);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching notification stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
   // ============ SUBSCRIPTION MANAGEMENT ============
   
   // Get current user's subscription status
