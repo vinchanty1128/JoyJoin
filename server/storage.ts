@@ -1039,24 +1039,26 @@ export class DatabaseStorage implements IStorage {
   // Admin Notification operations
   async getAdminNotifications(adminId: string): Promise<Array<Notification & { recipientCount: number; readCount: number }>> {
     const result = await db.execute(sql`
-      SELECT 
-        DISTINCT ON (n.title, n.message, n.created_at, n.sent_by) 
-        n.id,
-        n.user_id,
-        n.category,
-        n.type,
-        n.title,
-        n.message,
-        n.related_resource_id,
-        n.is_read,
-        n.sent_by,
-        n.is_broadcast,
-        n.created_at,
-        COUNT(*) OVER (PARTITION BY n.title, n.message, n.created_at, n.sent_by) as recipient_count,
-        SUM(CASE WHEN n.is_read THEN 1 ELSE 0 END) OVER (PARTITION BY n.title, n.message, n.created_at, n.sent_by) as read_count
-      FROM notifications n
-      WHERE n.sent_by = ${adminId}
-      ORDER BY n.title, n.message, n.created_at DESC, n.sent_by, n.created_at DESC
+      WITH grouped_notifications AS (
+        SELECT 
+          MIN(n.id) as id,
+          MIN(n.user_id) as user_id,
+          n.category,
+          n.type,
+          n.title,
+          n.message,
+          n.related_resource_id,
+          n.sent_by,
+          n.is_broadcast,
+          n.created_at,
+          COUNT(*) as recipient_count,
+          SUM(CASE WHEN n.is_read THEN 1 ELSE 0 END) as read_count
+        FROM notifications n
+        WHERE n.sent_by = ${adminId}
+        GROUP BY n.title, n.message, n.category, n.type, n.related_resource_id, n.sent_by, n.is_broadcast, n.created_at
+        ORDER BY n.created_at DESC
+      )
+      SELECT * FROM grouped_notifications
     `);
     
     return result.rows.map((row: any) => ({
@@ -1067,7 +1069,7 @@ export class DatabaseStorage implements IStorage {
       title: row.title,
       message: row.message,
       relatedResourceId: row.related_resource_id,
-      isRead: row.is_read,
+      isRead: false, // For grouped notifications, isRead doesn't make sense
       sentBy: row.sent_by,
       isBroadcast: row.is_broadcast,
       createdAt: row.created_at,

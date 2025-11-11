@@ -42,13 +42,23 @@ export default function AdminNotificationsPage() {
   const [recipientFilter, setRecipientFilter] = useState<"all" | "selected">("all");
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ["/api/admin/users", { limit: 500 }],
-    select: (data: any) => data?.users || []
+    queryKey: ["/api/admin/users"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/users?limit=500");
+      if (!res.ok) throw new Error("Failed to fetch users");
+      const data = await res.json();
+      return data?.users || [];
+    },
   });
 
   const { data: notificationsData, isLoading: notificationsLoading } = useQuery({
     queryKey: ["/api/admin/notifications"],
-    select: (data: any) => data?.notifications || []
+    queryFn: async () => {
+      const res = await fetch("/api/admin/notifications");
+      if (!res.ok) throw new Error("Failed to fetch notifications");
+      const data = await res.json();
+      return data?.notifications || [];
+    },
   });
 
   const sendNotificationMutation = useMutation({
