@@ -149,6 +149,100 @@ export const eventAttendance = pgTable("event_attendance", {
   intent: text("intent").array(), // Event-specific intent: networking, friends, discussion, fun, romance, flexible
 });
 
+// ============ 两阶段匹配模型 - Event Pools ============
+
+// Event Pools table - Admin创建的活动池（硬约束框架）
+export const eventPools = pgTable("event_pools", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 基本信息
+  title: varchar("title").notNull(), // 活动标题，如："周五夜聊酒局"
+  description: text("description"), // 活动描述
+  eventType: varchar("event_type").notNull(), // 饭局/酒局/其他
+  
+  // 时间地点（硬约束）
+  city: varchar("city").notNull(), // 深圳/香港
+  district: varchar("district"), // 南山区/湾仔等
+  dateTime: timestamp("date_time").notNull(), // 活动日期时间
+  registrationDeadline: timestamp("registration_deadline").notNull(), // 报名截止时间
+  
+  // 活动限制（硬约束 - 关联用户表字段）
+  genderRestriction: varchar("gender_restriction"), // null=不限 | Woman | Man | Nonbinary
+  industryRestrictions: text("industry_restrictions").array(), // 行业限制列表（空=不限）
+  seniorityRestrictions: text("seniority_restrictions").array(), // 职级限制
+  educationLevelRestrictions: text("education_level_restrictions").array(), // 学历限制
+  ageRangeMin: integer("age_range_min"), // 最小年龄
+  ageRangeMax: integer("age_range_max"), // 最大年龄
+  
+  // 组局配置
+  minGroupSize: integer("min_group_size").default(4), // 最小成局人数
+  maxGroupSize: integer("max_group_size").default(6), // 最大成局人数
+  targetGroups: integer("target_groups").default(1), // 目标组局数量
+  
+  // 状态管理
+  status: varchar("status").default("recruiting"), // recruiting | matching | matched | completed | cancelled
+  totalRegistrations: integer("total_registrations").default(0), // 总报名人数
+  successfulMatches: integer("successful_matches").default(0), // 成功匹配人数
+  
+  // 元数据
+  createdBy: varchar("created_by").notNull().references(() => users.id), // Admin用户ID
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  matchedAt: timestamp("matched_at"), // 匹配完成时间
+});
+
+// Event Pool Registrations table - 用户报名记录 + 个性化偏好（软约束）
+export const eventPoolRegistrations = pgTable("event_pool_registrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 关联
+  poolId: varchar("pool_id").notNull().references(() => eventPools.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  
+  // 用户临时偏好（软约束 - 仅用于本次活动）
+  budgetRange: text("budget_range").array(), // 预算范围，多选：["100元以下", "100-200", "200-300", "300-500", "500+"]
+  preferredLanguages: text("preferred_languages").array(), // 首选语言：["普通话", "粤语", "英语"]
+  socialGoals: text("social_goals").array(), // 社交目的：["交朋友", "扩展人脉", "放松心情", "行业交流", "flexible"]
+  cuisinePreferences: text("cuisine_preferences").array(), // 饮食偏好：["中餐", "川菜", "粤菜", "日料", "西餐"]
+  dietaryRestrictions: text("dietary_restrictions").array(), // 忌口：["素食", "不吃辣", "清真"]
+  tasteIntensity: text("taste_intensity").array(), // 口味强度：["爱吃辣", "不辣/清淡为主"]
+  
+  // 匹配结果
+  matchStatus: varchar("match_status").default("pending"), // pending | matched | unmatched
+  assignedGroupId: varchar("assigned_group_id"), // 分配到的组ID（如果匹配成功）
+  matchScore: integer("match_score"), // 匹配分数
+  
+  // 元数据
+  registeredAt: timestamp("registered_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Event Pool Groups table - 匹配成功的小组
+export const eventPoolGroups = pgTable("event_pool_groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  poolId: varchar("pool_id").notNull().references(() => eventPools.id),
+  groupNumber: integer("group_number").notNull(), // 组号（同一活动池内）
+  
+  // 组信息
+  memberCount: integer("member_count").default(0),
+  avgChemistryScore: integer("avg_chemistry_score"), // 平均化学反应分数
+  diversityScore: integer("diversity_score"), // 多样性分数
+  overallScore: integer("overall_score"), // 综合分数
+  matchExplanation: text("match_explanation"), // AI生成的匹配解释
+  
+  // 活动详情（匹配后生成）
+  venueName: varchar("venue_name"),
+  venueAddress: text("venue_address"),
+  finalDateTime: timestamp("final_date_time"),
+  
+  // 状态
+  status: varchar("status").default("confirmed"), // confirmed | completed | cancelled
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Match history table - tracks who has been matched together before (anti-repetition)
 export const matchHistory = pgTable("match_history", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -296,6 +390,49 @@ export const updatePersonalitySchema = createInsertSchema(users).pick({
 export const insertEventAttendanceSchema = createInsertSchema(eventAttendance).pick({
   eventId: true,
   userId: true,
+});
+
+// Event Pool Schemas
+export const insertEventPoolSchema = createInsertSchema(eventPools).omit({
+  id: true,
+  totalRegistrations: true,
+  successfulMatches: true,
+  createdAt: true,
+  updatedAt: true,
+  matchedAt: true,
+}).extend({
+  title: z.string().min(1, "活动标题不能为空"),
+  eventType: z.enum(["饭局", "酒局", "其他"]),
+  city: z.enum(["深圳", "香港"]),
+  dateTime: z.date(),
+  registrationDeadline: z.date(),
+  minGroupSize: z.number().min(2).max(10).default(4),
+  maxGroupSize: z.number().min(2).max(10).default(6),
+  targetGroups: z.number().min(1).default(1),
+});
+
+export const insertEventPoolRegistrationSchema = createInsertSchema(eventPoolRegistrations).omit({
+  id: true,
+  matchStatus: true,
+  assignedGroupId: true,
+  matchScore: true,
+  registeredAt: true,
+  updatedAt: true,
+}).extend({
+  poolId: z.string().min(1),
+  userId: z.string().min(1),
+  budgetRange: z.array(z.string()).optional(),
+  preferredLanguages: z.array(z.string()).optional(),
+  socialGoals: z.array(z.string()).optional(),
+  cuisinePreferences: z.array(z.string()).optional(),
+  dietaryRestrictions: z.array(z.string()).optional(),
+  tasteIntensity: z.array(z.string()).optional(),
+});
+
+export const insertEventPoolGroupSchema = createInsertSchema(eventPoolGroups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
@@ -807,6 +944,9 @@ export type InterestsTopics = z.infer<typeof interestsTopicsSchema>;
 
 export type Event = typeof events.$inferSelect;
 export type EventAttendance = typeof eventAttendance.$inferSelect;
+export type EventPool = typeof eventPools.$inferSelect;
+export type EventPoolRegistration = typeof eventPoolRegistrations.$inferSelect;
+export type EventPoolGroup = typeof eventPoolGroups.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type DirectMessageThread = typeof directMessageThreads.$inferSelect;
 export type DirectMessage = typeof directMessages.$inferSelect;
@@ -817,6 +957,9 @@ export type TestResponse = typeof testResponses.$inferSelect;
 export type RoleResult = typeof roleResults.$inferSelect;
 
 export type InsertEventAttendance = z.infer<typeof insertEventAttendanceSchema>;
+export type InsertEventPool = z.infer<typeof insertEventPoolSchema>;
+export type InsertEventPoolRegistration = z.infer<typeof insertEventPoolRegistrationSchema>;
+export type InsertEventPoolGroup = z.infer<typeof insertEventPoolGroupSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertDirectMessageThread = z.infer<typeof insertDirectMessageThreadSchema>;
 export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
