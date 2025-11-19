@@ -2825,6 +2825,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "You have already registered for this event pool" });
       }
 
+      // Check if user has active subscription
+      const subscription = await storage.getUserSubscription(userId);
+      if (!subscription) {
+        return res.status(403).json({ 
+          message: "Subscription required",
+          requiresSubscription: true,
+          code: "NO_ACTIVE_SUBSCRIPTION"
+        });
+      }
+
       // Validate preferences
       const validatedData = insertEventPoolRegistrationSchema.parse({
         poolId,
