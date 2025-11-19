@@ -2860,8 +2860,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { city } = req.query;
       
-      let whereClause = (pools: any, { eq, and }: any) => {
-        const conditions = [eq(pools.status, 'recruiting')];
+      let whereClause = (pools: any, { eq, and, or, inArray }: any) => {
+        const conditions = [
+          or(
+            eq(pools.status, 'recruiting'),
+            eq(pools.status, 'published')
+          )
+        ];
         if (city) {
           conditions.push(eq(pools.city, city));
         }
