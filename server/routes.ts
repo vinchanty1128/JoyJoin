@@ -12,7 +12,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, type User } from "@shared/schema";
 import { db } from "./db";
-import { eq, or, and } from "drizzle-orm";
+import { eq, or, and, desc } from "drizzle-orm";
 
 // Role mapping based on question responses
 const roleMapping: Record<string, Record<string, string>> = {
@@ -2724,6 +2724,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to match event pool",
         error: error.message 
       });
+    }
+  });
+
+  // ============ USER EVENT POOLS (用户端活动池) ============
+  
+  // Get all recruiting event pools (for DiscoverPage)
+  app.get("/api/event-pools", async (req, res) => {
+    try {
+      const { city } = req.query;
+      
+      let whereClause = (pools: any, { eq, and }: any) => {
+        const conditions = [eq(pools.status, 'recruiting')];
+        if (city) {
+          conditions.push(eq(pools.city, city));
+        }
+        return and(...conditions);
+      };
+
+      const pools = await db.query.eventPools.findMany({
+        where: whereClause,
+        orderBy: (eventPools, { asc }) => [asc(eventPools.dateTime)],
+      });
+
+      // Add registration counts
+      const poolsWithStats = await Promise.all(pools.map(async (pool: any) => {
+        const registrations = await db.query.eventPoolRegistrations.findMany({
+          where: (regs: any, { eq }: any) => eq(regs.poolId, pool.id)
+        });
+
+        return {
+          ...pool,
+          registrationCount: registrations.length,
+          spotsLeft: (pool.minGroupSize * pool.targetGroups) - registrations.length,
+        };
+      }));
+
+      res.json(poolsWithStats);
+    } catch (error) {
+      console.error("Error fetching event pools:", error);
+      res.status(500).json({ message: "Failed to fetch event pools" });
+    }
+  });
+
+  // Get single event pool details
+  app.get("/api/event-pools/:id", async (req, res) => {
+    try {
+      const pool = await db.query.eventPools.findFirst({
+        where: (pools, { eq }) => eq(pools.id, req.params.id),
+      });
+
+      if (!pool) {
+        return res.status(404).json({ message: "Event pool not found" });
+      }
+
+      // Get registration count
+      const registrations = await db.query.eventPoolRegistrations.findMany({
+        where: (regs, { eq }) => eq(regs.poolId, req.params.id)
+      });
+
+      res.json({
+        ...pool,
+        registrationCount: registrations.length,
+        spotsLeft: ((pool.minGroupSize || 4) * (pool.targetGroups || 1)) - registrations.length,
+      });
+    } catch (error) {
+      console.error("Error fetching event pool:", error);
+      res.status(500).json({ message: "Failed to fetch event pool" });
+    }
+  });
+
+  // User register for event pool with preferences
+  app.post("/api/event-pools/:id/register", requireAuth, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const userId = (req.user as User).id;
+
+      // Check if pool exists and is recruiting
+      const pool = await db.query.eventPools.findFirst({
+        where: (pools, { eq }) => eq(pools.id, poolId)
+      });
+
+      if (!pool) {
+        return res.status(404).json({ message: "Event pool not found" });
+      }
+
+      if (pool.status !== 'recruiting') {
+        return res.status(400).json({ message: "This event pool is no longer accepting registrations" });
+      }
+
+      // Check if user already registered
+      const existingReg = await db.query.eventPoolRegistrations.findFirst({
+        where: (regs, { eq, and }) => and(
+          eq(regs.poolId, poolId),
+          eq(regs.userId, userId)
+        )
+      });
+
+      if (existingReg) {
+        return res.status(400).json({ message: "You have already registered for this event pool" });
+      }
+
+      // Validate preferences
+      const validatedData = insertEventPoolRegistrationSchema.parse({
+        poolId,
+        userId,
+        budgetRange: req.body.budgetRange || [],
+        preferredLanguages: req.body.preferredLanguages || [],
+        socialGoals: req.body.socialGoals || [],
+        cuisinePreferences: req.body.cuisinePreferences || [],
+        dietaryRestrictions: req.body.dietaryRestrictions || [],
+        tasteIntensity: req.body.tasteIntensity || 'medium',
+        matchStatus: 'pending',
+      });
+
+      // Create registration
+      const [registration] = await db
+        .insert(eventPoolRegistrations)
+        .values(validatedData)
+        .returning();
+
+      res.json(registration);
+    } catch (error: any) {
+      console.error("Error registering for event pool:", error);
+      res.status(500).json({ 
+        message: "Failed to register for event pool",
+        error: error.message 
+      });
+    }
+  });
+
+  // Get user's pool registrations
+  app.get("/api/my-pool-registrations", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.user as User).id;
+
+      const registrations = await db
+        .select({
+          id: eventPoolRegistrations.id,
+          poolId: eventPoolRegistrations.poolId,
+          budgetRange: eventPoolRegistrations.budgetRange,
+          preferredLanguages: eventPoolRegistrations.preferredLanguages,
+          socialGoals: eventPoolRegistrations.socialGoals,
+          matchStatus: eventPoolRegistrations.matchStatus,
+          assignedGroupId: eventPoolRegistrations.assignedGroupId,
+          matchScore: eventPoolRegistrations.matchScore,
+          registeredAt: eventPoolRegistrations.registeredAt,
+          // Pool details
+          poolTitle: eventPools.title,
+          poolEventType: eventPools.eventType,
+          poolCity: eventPools.city,
+          poolDistrict: eventPools.district,
+          poolDateTime: eventPools.dateTime,
+          poolStatus: eventPools.status,
+        })
+        .from(eventPoolRegistrations)
+        .innerJoin(eventPools, eq(eventPoolRegistrations.poolId, eventPools.id))
+        .where(eq(eventPoolRegistrations.userId, userId))
+        .orderBy(desc(eventPoolRegistrations.registeredAt));
+
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching user pool registrations:", error);
+      res.status(500).json({ message: "Failed to fetch registrations" });
     }
   });
 
