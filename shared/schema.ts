@@ -925,8 +925,8 @@ export const invitationUses = pgTable("invitation_uses", {
   // 被邀请人信息
   inviteeId: varchar("invitee_id").notNull().references(() => users.id),
   
-  // 关联事件报名
-  eventRegistrationId: varchar("event_registration_id").references(() => blindBoxEventRegistrations.id),
+  // 关联盲盒活动（被邀请人报名的活动）
+  inviteeEventId: varchar("invitee_event_id").references(() => blindBoxEvents.id),
   
   // 匹配结果
   matchedTogether: boolean("matched_together").default(false), // 是否最终匹配到同一局

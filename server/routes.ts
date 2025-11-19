@@ -10,7 +10,7 @@ import { broadcastEventStatusChanged, broadcastAdminAction } from "./eventBroadc
 import { matchEventPool, saveMatchResults } from "./poolMatchingService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, type User } from "@shared/schema";
+import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, type User } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and, desc } from "drizzle-orm";
 
@@ -1451,6 +1451,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking notifications as read:", error);
       res.status(500).json({ message: "Failed to mark notifications as read" });
+    }
+  });
+
+  // ============ INVITATION SYSTEM ROUTES ============
+
+  // Helper function to generate unique invitation code
+  function generateInviteCode(): string {
+    return Math.random().toString(36).substring(2, 9);
+  }
+
+  // POST /api/events/:id/create-invitation - Generate invitation link
+  app.post('/api/events/:id/create-invitation', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const eventId = req.params.id;
+
+      // Verify user owns this event
+      const event = await storage.getBlindBoxEventByIdAndUser(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found or access denied" });
+      }
+
+      // Check if invitation already exists for this user and event
+      const existingInvite = await db.query.invitations.findFirst({
+        where: (invites, { and, eq }) => and(
+          eq(invites.inviterId, userId),
+          eq(invites.eventId, eventId)
+        )
+      });
+
+      if (existingInvite) {
+        return res.json({
+          code: existingInvite.code,
+          inviteLink: `${req.protocol}://${req.get('host')}/invite/${existingInvite.code}`
+        });
+      }
+
+      // Generate unique code
+      let code = generateInviteCode();
+      let attempts = 0;
+      while (attempts < 5) {
+        const existing = await db.query.invitations.findFirst({
+          where: (invites, { eq }) => eq(invites.code, code)
+        });
+        if (!existing) break;
+        code = generateInviteCode();
+        attempts++;
+      }
+
+      // Create invitation record
+      const [invitation] = await db.insert(invitations).values({
+        code,
+        inviterId: userId,
+        eventId,
+        invitationType: event.status === 'matched' ? 'post_match' : 'pre_match',
+        expiresAt: event.dateTime, // Expires when event starts
+      }).returning();
+
+      res.json({
+        code: invitation.code,
+        inviteLink: `${req.protocol}://${req.get('host')}/invite/${invitation.code}`
+      });
+    } catch (error: any) {
+      console.error("Error creating invitation:", error);
+      res.status(500).json({ message: "Failed to create invitation" });
+    }
+  });
+
+  // GET /api/invitations/:code - Get invitation details (public, for landing page)
+  app.get('/api/invitations/:code', async (req, res) => {
+    try {
+      const { code } = req.params;
+
+      const [invitation] = await db
+        .select({
+          id: invitations.id,
+          code: invitations.code,
+          inviterId: invitations.inviterId,
+          eventId: invitations.eventId,
+          invitationType: invitations.invitationType,
+          totalClicks: invitations.totalClicks,
+          expiresAt: invitations.expiresAt,
+          createdAt: invitations.createdAt,
+        })
+        .from(invitations)
+        .where(eq(invitations.code, code))
+        .limit(1);
+
+      if (!invitation) {
+        return res.status(404).json({ message: "Invitation not found or expired" });
+      }
+
+      // Check if expired
+      if (invitation.expiresAt && new Date(invitation.expiresAt) < new Date()) {
+        return res.status(410).json({ message: "Invitation has expired" });
+      }
+
+      // Fetch inviter info
+      const [inviter] = await db
+        .select({
+          id: users.id,
+          displayName: users.displayName,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        })
+        .from(users)
+        .where(eq(users.id, invitation.inviterId))
+        .limit(1);
+
+      // Fetch event info
+      const event = await storage.getBlindBoxEventById(invitation.eventId);
+
+      // Increment click count
+      await db.update(invitations)
+        .set({ totalClicks: invitation.totalClicks + 1 })
+        .where(eq(invitations.id, invitation.id));
+
+      res.json({
+        inviter,
+        event,
+        invitationType: invitation.invitationType,
+        code: invitation.code,
+      });
+    } catch (error: any) {
+      console.error("Error fetching invitation:", error);
+      res.status(500).json({ message: "Failed to fetch invitation" });
     }
   });
 
