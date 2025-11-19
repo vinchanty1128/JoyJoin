@@ -2925,6 +2925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const poolId = req.params.id;
       const userId = (req.user as User).id;
+      const invitationCode = req.body.invitationCode;
 
       // Check if pool exists and is recruiting
       const pool = await db.query.eventPools.findFirst({
@@ -2961,6 +2962,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Validate invitation if provided
+      let inviterId: string | undefined;
+      if (invitationCode) {
+        const [invitation] = await db
+          .select()
+          .from(invitations)
+          .where(eq(invitations.code, invitationCode))
+          .limit(1);
+
+        if (!invitation) {
+          return res.status(400).json({ message: "Invalid invitation code" });
+        }
+
+        // Check if invitation expired
+        if (invitation.expiresAt && new Date(invitation.expiresAt) < new Date()) {
+          return res.status(410).json({ message: "Invitation has expired" });
+        }
+
+        // Verify invitation is for a pool, not a specific event
+        if (invitation.invitationType !== 'pre_match') {
+          return res.status(400).json({ message: "This invitation is not valid for pool registration" });
+        }
+
+        inviterId = invitation.inviterId;
+      }
+
       // Validate preferences
       const validatedData = insertEventPoolRegistrationSchema.parse({
         poolId,
@@ -2979,6 +3006,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .insert(eventPoolRegistrations)
         .values(validatedData)
         .returning();
+
+      // Record invitation use if invitation was provided
+      if (invitationCode && inviterId) {
+        await db.insert(invitationUses).values({
+          invitationId: invitationCode,
+          inviteeId: userId,
+          poolRegistrationId: registration.id,
+        });
+
+        // Increment acceptance count on invitation
+        await db.update(invitations)
+          .set({ totalAcceptances: db.raw('total_acceptances + 1') })
+          .where(eq(invitations.code, invitationCode));
+      }
 
       res.json(registration);
     } catch (error: any) {
