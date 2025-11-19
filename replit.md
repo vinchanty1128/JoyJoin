@@ -5,6 +5,15 @@
 JoyJoin (悦聚·Joy) is a social networking platform connecting individuals locally through small, curated micro-events (5-10 attendees). It uses AI for user matching based on interests, personality, and social compatibility, with a focus on psychological safety and inclusivity. Targeted at the Hong Kong/Shenzhen market, the platform aims to foster meaningful local connections and community building. Key features include AI-powered matching for events and people, a comprehensive feedback system for algorithm refinement, streamlined event management, and a robust Admin Portal for platform oversight and analytics.
 
 ### Recent Changes (Nov 19, 2025)
+- **Real-time Dynamic Matching System Complete**: Fully automated continuous matching with adaptive thresholds
+  - **Database Infrastructure**: `matchingThresholds` table for configurable parameters, `poolMatchingLogs` table for decision tracking
+  - **Three-Tier Threshold System**: High compatibility (≥85) instant match, medium (70-84) wait for better options, low (55-69) wait until deadline, <55 reject
+  - **Time Decay Algorithm**: Thresholds gradually lower as event deadline approaches to ensure successful matching
+  - **Matching Triggers**: Instant scan on registration + hourly scheduled scans + 30-min scans in final 24 hours
+  - **Backend Service**: `poolRealtimeMatchingService.ts` with intelligent scanning, threshold evaluation, and logging
+  - **Admin UI**: `/admin/matching-config` for threshold tuning, `/admin/matching-logs` for decision history visualization
+  - **API Integration**: Registration endpoint triggers instant matching check, admin can manually trigger scans
+  - **Production Ready**: All parameters database-driven, no code changes needed for tuning based on real user feedback
 - **Invitation System Complete**: Full viral growth mechanism implemented
   - Auto-issue ¥50 INVITE_REWARD coupon to inviters when invited users match together
   - Frontend displays invitation badges: "已邀请 [name]" (purple) for inviters, "[name] 邀请的" (blue) for invitees
@@ -58,7 +67,8 @@ Preferred communication style: Simple, everyday language.
   - Stage 1: Admin creates event pools with hard constraints (time, location, gender/industry/seniority restrictions)
   - Stage 2: Users register with soft preferences (budget, cuisine, social goals), AI matches within pool using 5-dimensional algorithm
   - Pool-based matching service (`poolMatchingService.ts`) combines permanent user profiles with temporary event preferences
-  - Database tables: `eventPools` (admin-created pools), `eventPoolRegistrations` (user signups + preferences), `eventPoolGroups` (matched groups)
+  - Real-time dynamic matching service (`poolRealtimeMatchingService.ts`) continuously scans pools with adaptive thresholds
+  - Database tables: `eventPools` (admin-created pools), `eventPoolRegistrations` (user signups + preferences), `eventPoolGroups` (matched groups), `matchingThresholds` (configurable parameters), `poolMatchingLogs` (decision tracking)
 - **AI-Driven Matchmaking:** AI for event and people matching, considering personality, interests, and group dynamics, with explainability and a deep feedback system.
 - **Two-Tier Feedback Architecture:** Basic and optional anonymous deep feedback for algorithm refinement.
 - **Gamified Personality Assessment:** 10-question test for social role archetypes, visualized with PersonalityRadarChart.
