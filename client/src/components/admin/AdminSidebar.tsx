@@ -6,6 +6,7 @@ import {
   MapPin,
   LayoutTemplate,
   Calendar,
+  Layers,
   DollarSign,
   BarChart3,
   FileText,
@@ -63,6 +64,11 @@ const menuItems = [
     title: "活动管理",
     url: "/admin/events",
     icon: Calendar,
+  },
+  {
+    title: "活动池管理",
+    url: "/admin/event-pools",
+    icon: Layers,
   },
   {
     title: "财务管理",

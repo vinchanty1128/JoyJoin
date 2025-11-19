@@ -9,6 +9,7 @@ import AdminCouponsPage from "@/pages/admin/AdminCouponsPage";
 import AdminVenuesPage from "@/pages/admin/AdminVenuesPage";
 import AdminEventTemplatesPage from "@/pages/admin/AdminEventTemplatesPage";
 import AdminEventsPage from "@/pages/admin/AdminEventsPage";
+import AdminEventPoolsPage from "@/pages/admin/AdminEventPoolsPage";
 import AdminFinancePage from "@/pages/admin/AdminFinancePage";
 import AdminDataInsightsPage from "@/pages/admin/AdminDataInsightsPage";
 import AdminContentPage from "@/pages/admin/AdminContentPage";
@@ -50,6 +51,7 @@ export default function AdminLayout() {
               <Route path="/admin/venues" component={AdminVenuesPage} />
               <Route path="/admin/templates" component={AdminEventTemplatesPage} />
               <Route path="/admin/events" component={AdminEventsPage} />
+              <Route path="/admin/event-pools" component={AdminEventPoolsPage} />
               <Route path="/admin/finance" component={AdminFinancePage} />
               <Route path="/admin/insights" component={AdminDataInsightsPage} />
               <Route path="/admin/feedback" component={AdminFeedbackPage} />

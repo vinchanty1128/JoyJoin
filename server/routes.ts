@@ -7,9 +7,10 @@ import { subscriptionService } from "./subscriptionService";
 import { venueMatchingService } from "./venueMatchingService";
 import { calculateUserMatchScore, matchUsersToGroups, validateWeights, DEFAULT_WEIGHTS, type MatchingWeights } from "./userMatchingService";
 import { broadcastEventStatusChanged, broadcastAdminAction } from "./eventBroadcast";
+import { matchEventPool, saveMatchResults } from "./poolMatchingService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, type User } from "@shared/schema";
+import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, type User } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and } from "drizzle-orm";
 
@@ -2467,6 +2468,262 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating event:", error);
       res.status(500).json({ message: "Failed to update event" });
+    }
+  });
+
+  // ============ EVENT POOLS (两阶段匹配模型) ============
+  
+  // Event Pools - Get all event pools (admin view)
+  app.get("/api/admin/event-pools", requireAdmin, async (req, res) => {
+    try {
+      const pools = await db.query.eventPools.findMany({
+        orderBy: (eventPools, { desc }) => [desc(eventPools.createdAt)],
+        with: {
+          creator: {
+            columns: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            }
+          }
+        }
+      });
+      
+      // Add registration counts
+      const poolsWithStats = await Promise.all(pools.map(async (pool: any) => {
+        const registrations = await db.query.eventPoolRegistrations.findMany({
+          where: (regs: any, { eq }: any) => eq(regs.poolId, pool.id)
+        });
+        
+        return {
+          ...pool,
+          registrationCount: registrations.length,
+          matchedCount: registrations.filter((r: any) => r.matchStatus === 'matched').length,
+          pendingCount: registrations.filter((r: any) => r.matchStatus === 'pending').length,
+        };
+      }));
+      
+      res.json(poolsWithStats);
+    } catch (error) {
+      console.error("Error fetching event pools:", error);
+      res.status(500).json({ message: "Failed to fetch event pools" });
+    }
+  });
+
+  // Event Pools - Create new event pool
+  app.post("/api/admin/event-pools", requireAdmin, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Validate input
+      const validatedData = insertEventPoolSchema.parse({
+        ...req.body,
+        createdBy: user.id,
+        dateTime: new Date(req.body.dateTime),
+        registrationDeadline: new Date(req.body.registrationDeadline),
+      });
+      
+      const [pool] = await db.insert(eventPools).values(validatedData).returning();
+      
+      res.json(pool);
+    } catch (error: any) {
+      console.error("Error creating event pool:", error);
+      res.status(400).json({ 
+        message: "Failed to create event pool", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Event Pools - Get single event pool with details
+  app.get("/api/admin/event-pools/:id", requireAdmin, async (req, res) => {
+    try {
+      const pool = await db.query.eventPools.findFirst({
+        where: (pools, { eq }) => eq(pools.id, req.params.id),
+        with: {
+          creator: {
+            columns: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            }
+          }
+        }
+      });
+      
+      if (!pool) {
+        return res.status(404).json({ message: "Event pool not found" });
+      }
+      
+      res.json(pool);
+    } catch (error) {
+      console.error("Error fetching event pool:", error);
+      res.status(500).json({ message: "Failed to fetch event pool" });
+    }
+  });
+
+  // Event Pools - Update event pool
+  app.patch("/api/admin/event-pools/:id", requireAdmin, async (req, res) => {
+    try {
+      const updates: any = { ...req.body };
+      
+      // Convert date strings to Date objects
+      if (updates.dateTime) {
+        updates.dateTime = new Date(updates.dateTime);
+      }
+      if (updates.registrationDeadline) {
+        updates.registrationDeadline = new Date(updates.registrationDeadline);
+      }
+      
+      updates.updatedAt = new Date();
+      
+      const [pool] = await db
+        .update(eventPools)
+        .set(updates)
+        .where(eq(eventPools.id, req.params.id))
+        .returning();
+      
+      if (!pool) {
+        return res.status(404).json({ message: "Event pool not found" });
+      }
+      
+      res.json(pool);
+    } catch (error) {
+      console.error("Error updating event pool:", error);
+      res.status(500).json({ message: "Failed to update event pool" });
+    }
+  });
+
+  // Event Pools - Get registrations for a pool
+  app.get("/api/admin/event-pools/:id/registrations", requireAdmin, async (req, res) => {
+    try {
+      const registrations = await db
+        .select({
+          id: eventPoolRegistrations.id,
+          poolId: eventPoolRegistrations.poolId,
+          userId: eventPoolRegistrations.userId,
+          budgetRange: eventPoolRegistrations.budgetRange,
+          preferredLanguages: eventPoolRegistrations.preferredLanguages,
+          socialGoals: eventPoolRegistrations.socialGoals,
+          cuisinePreferences: eventPoolRegistrations.cuisinePreferences,
+          dietaryRestrictions: eventPoolRegistrations.dietaryRestrictions,
+          tasteIntensity: eventPoolRegistrations.tasteIntensity,
+          matchStatus: eventPoolRegistrations.matchStatus,
+          assignedGroupId: eventPoolRegistrations.assignedGroupId,
+          matchScore: eventPoolRegistrations.matchScore,
+          registeredAt: eventPoolRegistrations.registeredAt,
+          // User info
+          userName: users.displayName,
+          userFirstName: users.firstName,
+          userLastName: users.lastName,
+          userEmail: users.email,
+          userGender: users.gender,
+          userAge: users.age,
+          userIndustry: users.industry,
+          userSeniority: users.seniority,
+          userArchetype: users.archetype,
+        })
+        .from(eventPoolRegistrations)
+        .innerJoin(users, eq(eventPoolRegistrations.userId, users.id))
+        .where(eq(eventPoolRegistrations.poolId, req.params.id));
+      
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching registrations:", error);
+      res.status(500).json({ message: "Failed to fetch registrations" });
+    }
+  });
+
+  // Event Pools - Get groups for a pool
+  app.get("/api/admin/event-pools/:id/groups", requireAdmin, async (req, res) => {
+    try {
+      const groups = await db.query.eventPoolGroups.findMany({
+        where: (groups, { eq }) => eq(groups.poolId, req.params.id),
+        orderBy: (groups, { asc }) => [asc(groups.groupNumber)],
+      });
+      
+      // Get members for each group
+      const groupsWithMembers = await Promise.all(groups.map(async (group: any) => {
+        const members = await db
+          .select({
+            registrationId: eventPoolRegistrations.id,
+            userId: eventPoolRegistrations.userId,
+            userName: users.displayName,
+            userFirstName: users.firstName,
+            userLastName: users.lastName,
+            userGender: users.gender,
+            userArchetype: users.archetype,
+            userIndustry: users.industry,
+            matchScore: eventPoolRegistrations.matchScore,
+          })
+          .from(eventPoolRegistrations)
+          .innerJoin(users, eq(eventPoolRegistrations.userId, users.id))
+          .where(eq(eventPoolRegistrations.assignedGroupId, group.id));
+        
+        return {
+          ...group,
+          members,
+        };
+      }));
+      
+      res.json(groupsWithMembers);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+      res.status(500).json({ message: "Failed to fetch groups" });
+    }
+  });
+
+  // Event Pools - Trigger matching algorithm
+  app.post("/api/admin/event-pools/:id/match", requireAdmin, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      
+      // Check if pool exists and is in recruiting status
+      const pool = await db.query.eventPools.findFirst({
+        where: (pools, { eq }) => eq(pools.id, poolId)
+      });
+      
+      if (!pool) {
+        return res.status(404).json({ message: "Event pool not found" });
+      }
+      
+      if (pool.status !== 'recruiting') {
+        return res.status(400).json({ message: "Pool is not in recruiting status" });
+      }
+      
+      // Run matching algorithm
+      const groups = await matchEventPool(poolId);
+      
+      // Save results
+      await saveMatchResults(poolId, groups);
+      
+      // Broadcast to admins and users
+      await broadcastAdminAction(
+        poolId,
+        'pool_matched',
+        (req.user as User).id,
+        { groupCount: groups.length, totalMatched: groups.reduce((sum, g) => sum + g.members.length, 0) }
+      );
+      
+      res.json({ 
+        message: "Matching completed successfully",
+        groupCount: groups.length,
+        totalMatched: groups.reduce((sum, g) => sum + g.members.length, 0),
+        groups: groups.map(g => ({
+          memberCount: g.members.length,
+          avgChemistryScore: g.avgChemistryScore,
+          diversityScore: g.diversityScore,
+          overallScore: g.overallScore,
+        }))
+      });
+    } catch (error: any) {
+      console.error("Error matching event pool:", error);
+      res.status(500).json({ 
+        message: "Failed to match event pool",
+        error: error.message 
+      });
     }
   });
 
