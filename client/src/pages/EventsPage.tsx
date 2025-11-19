@@ -60,6 +60,22 @@ export default function EventsPage() {
       setActiveTab("matched");
     });
 
+    const unsubscribePoolMatched = subscribe('POOL_MATCHED', async (message) => {
+      console.log('[User] Pool matched:', message);
+      
+      // 刷新活动池报名记录缓存
+      await queryClient.invalidateQueries({ queryKey: ["/api/my-pool-registrations"] });
+      
+      const poolData = message.data as any;
+      toast({
+        title: "活动池匹配成功！",
+        description: `你已成功匹配到 ${poolData.poolTitle} 的第${poolData.groupNumber}组，共${poolData.memberCount}人`,
+      });
+      
+      // 自动切换到"已匹配"标签
+      setActiveTab("matched");
+    });
+
     const unsubscribeStatus = subscribe('EVENT_STATUS_CHANGED', async (message) => {
       console.log('[User] Event status changed:', message);
       await invalidateCacheForEvent(message);
@@ -87,10 +103,11 @@ export default function EventsPage() {
 
     return () => {
       unsubscribeMatched();
+      unsubscribePoolMatched();
       unsubscribeStatus();
       unsubscribeCompleted();
     };
-  }, [subscribe, toast]);
+  }, [subscribe, toast, queryClient]);
 
   const { data: events, isLoading } = useQuery<Array<BlindBoxEvent>>({
     queryKey: ["/api/my-events"],

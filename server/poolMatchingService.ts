@@ -22,6 +22,8 @@ import {
   matchingConfig 
 } from "@shared/schema";
 import { eq, and, inArray } from "drizzle-orm";
+import { wsService } from "./wsService";
+import type { PoolMatchedData } from "../shared/wsEvents";
 
 // 14种人格原型化学反应矩阵 (0-100分)
 const CHEMISTRY_MATRIX: Record<string, Record<string, number>> = {
@@ -446,7 +448,10 @@ export async function matchEventPool(poolId: string): Promise<MatchGroup[]> {
  * 保存匹配结果到数据库
  */
 export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Promise<void> {
-  // 1. 创建小组记录
+  // 获取活动池信息用于通知
+  const [pool] = await db.select().from(eventPools).where(eq(eventPools.id, poolId));
+  
+  // 1. 创建小组记录并发送WebSocket通知
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];
     
@@ -471,9 +476,30 @@ export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Pr
         updatedAt: new Date()
       })
       .where(inArray(eventPoolRegistrations.id, memberRegistrationIds));
+    
+    // 3. 发送WebSocket通知给每个匹配到的用户
+    const memberUserIds = group.members.map(m => m.userId);
+    const notificationData: PoolMatchedData = {
+      poolId,
+      poolTitle: pool?.title || "活动池",
+      groupId: groupRecord.id,
+      groupNumber: i + 1,
+      matchScore: group.overallScore,
+      memberCount: group.members.length
+    };
+    
+    memberUserIds.forEach(userId => {
+      wsService.broadcastToUser(userId, {
+        type: "POOL_MATCHED",
+        data: notificationData,
+        timestamp: new Date().toISOString()
+      });
+    });
+    
+    console.log(`[Pool Matching] Sent POOL_MATCHED notification to ${memberUserIds.length} users for group ${i + 1}`);
   }
   
-  // 3. 更新活动池状态
+  // 4. 更新活动池状态
   await db.update(eventPools)
     .set({
       status: "matched",
@@ -483,7 +509,7 @@ export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Pr
     })
     .where(eq(eventPools.id, poolId));
   
-  // 4. 标记未匹配用户
+  // 5. 标记未匹配用户
   await db.update(eventPoolRegistrations)
     .set({
       matchStatus: "unmatched",

@@ -7,6 +7,7 @@ export type WSEventType =
   | "EVENT_STATUS_CHANGED"
   | "EVENT_COMPLETED"
   | "EVENT_CANCELED"
+  | "POOL_MATCHED"
   | "USER_JOINED"
   | "USER_CONFIRMED"
   | "USER_LEFT"
@@ -77,4 +78,14 @@ export interface AdminActionData {
   action: string;
   adminId: string;
   details?: any;
+}
+
+// 活动池匹配完成
+export interface PoolMatchedData {
+  poolId: string;
+  poolTitle: string;
+  groupId: string;
+  groupNumber: number;
+  matchScore: number;
+  memberCount: number;
 }
