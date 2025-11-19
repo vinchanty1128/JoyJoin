@@ -4,6 +4,14 @@
 
 JoyJoin (悦聚·Joy) is a social networking platform connecting individuals locally through small, curated micro-events (5-10 attendees). It uses AI for user matching based on interests, personality, and social compatibility, with a focus on psychological safety and inclusivity. Targeted at the Hong Kong/Shenzhen market, the platform aims to foster meaningful local connections and community building. Key features include AI-powered matching for events and people, a comprehensive feedback system for algorithm refinement, streamlined event management, and a robust Admin Portal for platform oversight and analytics.
 
+### Recent Changes (Nov 19, 2025)
+- **Event Pool User Flow**: Completed user-facing integration of two-stage matching model
+  - DiscoverPage now fetches real event pools from database via `/api/event-pools`
+  - EventPoolRegistrationPage allows users to register with soft preferences (budget, languages, social goals, cuisine, dietary restrictions, taste intensity)
+  - BlindBoxEventCard updated to navigate to registration page when clicked
+  - EventsPage integrated to display pool registrations alongside traditional events, with status-based filtering (pending/matched/completed)
+  - New component: PoolRegistrationCard for displaying pool registration status and match scores
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
