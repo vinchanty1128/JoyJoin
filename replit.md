@@ -11,6 +11,11 @@ JoyJoin (悦聚·Joy) is a social networking platform connecting individuals loc
   - BlindBoxEventCard updated to navigate to registration page when clicked
   - EventsPage integrated to display pool registrations alongside traditional events, with status-based filtering (pending/matched/completed)
   - New component: PoolRegistrationCard for displaying pool registration status and match scores
+- **WebSocket Real-time Notifications**: Implemented POOL_MATCHED event for instant user notifications
+  - poolMatchingService.saveMatchResults() broadcasts POOL_MATCHED event to all matched users via wsService.broadcastToUser()
+  - Frontend EventsPage subscribes to POOL_MATCHED events, displays toast notification with pool/group details, invalidates cache, and auto-switches to "已匹配" tab
+  - Added PoolMatchedData interface to wsEvents.ts with poolId, poolTitle, groupId, groupNumber, matchScore, memberCount
+  - Complete bidirectional WebSocket sync: Admin completes matching → Backend broadcasts → Users receive instant notification
 
 ## User Preferences
 
