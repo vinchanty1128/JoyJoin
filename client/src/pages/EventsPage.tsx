@@ -3,6 +3,7 @@ import BottomNav from "@/components/BottomNav";
 import PendingMatchCard from "@/components/PendingMatchCard";
 import MatchedEventCard from "@/components/MatchedEventCard";
 import CompletedEventCard from "@/components/CompletedEventCard";
+import PoolRegistrationCard from "@/components/PoolRegistrationCard";
 import SlidingTabs from "@/components/SlidingTabs";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +13,24 @@ import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { invalidateCacheForEvent } from "@/lib/cacheInvalidation";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
+
+interface PoolRegistration {
+  id: string;
+  poolId: string;
+  matchStatus: "pending" | "matched" | "completed";
+  assignedGroupId: string | null;
+  matchScore: number | null;
+  registeredAt: string;
+  poolTitle: string;
+  poolEventType: string;
+  poolCity: string;
+  poolDistrict: string;
+  poolDateTime: string;
+  poolStatus: string;
+  budgetRange: string[];
+  preferredLanguages: string[];
+  socialGoals: string[];
+}
 
 export default function EventsPage() {
   const [activeTab, setActiveTab] = useState<"pending" | "matched" | "completed">("pending");
@@ -77,6 +96,11 @@ export default function EventsPage() {
     queryKey: ["/api/my-events"],
   });
 
+  // Fetch pool registrations
+  const { data: poolRegistrations, isLoading: isLoadingPoolRegistrations } = useQuery<Array<PoolRegistration>>({
+    queryKey: ["/api/my-pool-registrations"],
+  });
+
   // Fetch feedback data for completed events
   const { data: feedbacks } = useQuery<Array<EventFeedback>>({
     queryKey: ["/api/my-feedbacks"],
@@ -106,7 +130,15 @@ export default function EventsPage() {
   const matchedEvents = events?.filter(e => e.status === "matched") || [];
   const completedEvents = events?.filter(e => e.status === "completed") || [];
 
-  if (isLoading) {
+  const pendingPoolRegistrations = poolRegistrations?.filter(r => r.matchStatus === "pending") || [];
+  const matchedPoolRegistrations = poolRegistrations?.filter(r => r.matchStatus === "matched") || [];
+  const completedPoolRegistrations = poolRegistrations?.filter(r => r.matchStatus === "completed") || [];
+
+  const totalPending = pendingEvents.length + pendingPoolRegistrations.length;
+  const totalMatched = matchedEvents.length + matchedPoolRegistrations.length;
+  const totalCompleted = completedEvents.length + completedPoolRegistrations.length;
+
+  if (isLoading || isLoadingPoolRegistrations) {
     return (
       <div className="min-h-screen bg-background pb-16">
         <MobileHeader title="活动" />
@@ -122,9 +154,9 @@ export default function EventsPage() {
   }
 
   const tabs = [
-    { value: "pending", label: "匹配中", count: pendingEvents.length },
-    { value: "matched", label: "已匹配", count: matchedEvents.length },
-    { value: "completed", label: "已完成", count: completedEvents.length },
+    { value: "pending", label: "匹配中", count: totalPending },
+    { value: "matched", label: "已匹配", count: totalMatched },
+    { value: "completed", label: "已完成", count: totalCompleted },
   ];
 
   return (
@@ -145,7 +177,7 @@ export default function EventsPage() {
         <div className="px-4">
           {activeTab === "pending" && (
             <div className="space-y-3">
-              {pendingEvents.length === 0 ? (
+              {totalPending === 0 ? (
                 <div className="text-center py-12">
                   <div className="mb-4">
                     <div className="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center">
@@ -158,20 +190,28 @@ export default function EventsPage() {
                   <p className="text-sm text-muted-foreground">去发现页报名新活动吧</p>
                 </div>
               ) : (
-                pendingEvents.map(event => (
-                  <PendingMatchCard 
-                    key={event.id} 
-                    event={event} 
-                    onCancel={(eventId) => cancelMutation.mutate(eventId)}
-                  />
-                ))
+                <>
+                  {pendingPoolRegistrations.map(registration => (
+                    <PoolRegistrationCard 
+                      key={registration.id} 
+                      registration={registration} 
+                    />
+                  ))}
+                  {pendingEvents.map(event => (
+                    <PendingMatchCard 
+                      key={event.id} 
+                      event={event} 
+                      onCancel={(eventId) => cancelMutation.mutate(eventId)}
+                    />
+                  ))}
+                </>
               )}
             </div>
           )}
 
           {activeTab === "matched" && (
             <div className="space-y-3">
-              {matchedEvents.length === 0 ? (
+              {totalMatched === 0 ? (
                 <div className="text-center py-12">
                   <div className="mb-4">
                     <div className="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center">
@@ -184,16 +224,24 @@ export default function EventsPage() {
                   <p className="text-sm text-muted-foreground">匹配成功后会显示在这里</p>
                 </div>
               ) : (
-                matchedEvents.map(event => (
-                  <MatchedEventCard key={event.id} event={event} />
-                ))
+                <>
+                  {matchedPoolRegistrations.map(registration => (
+                    <PoolRegistrationCard 
+                      key={registration.id} 
+                      registration={registration} 
+                    />
+                  ))}
+                  {matchedEvents.map(event => (
+                    <MatchedEventCard key={event.id} event={event} />
+                  ))}
+                </>
               )}
             </div>
           )}
 
           {activeTab === "completed" && (
             <div className="space-y-3">
-              {completedEvents.length === 0 ? (
+              {totalCompleted === 0 ? (
                 <div className="text-center py-12">
                   <div className="mb-4">
                     <div className="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center">
@@ -206,16 +254,24 @@ export default function EventsPage() {
                   <p className="text-sm text-muted-foreground">参加过的活动会显示在这里</p>
                 </div>
               ) : (
-                completedEvents.map(event => {
-                  const feedback = feedbacks?.find(f => f.eventId === event.id);
-                  return (
-                    <CompletedEventCard 
-                      key={event.id} 
-                      event={event} 
-                      feedback={feedback}
+                <>
+                  {completedPoolRegistrations.map(registration => (
+                    <PoolRegistrationCard 
+                      key={registration.id} 
+                      registration={registration} 
                     />
-                  );
-                })
+                  ))}
+                  {completedEvents.map(event => {
+                    const feedback = feedbacks?.find(f => f.eventId === event.id);
+                    return (
+                      <CompletedEventCard 
+                        key={event.id} 
+                        event={event} 
+                        feedback={feedback}
+                      />
+                    );
+                  })}
+                </>
               )}
             </div>
           )}
