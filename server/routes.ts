@@ -2900,6 +2900,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pool group details (members + activity info)
+  app.get("/api/pool-groups/:groupId", requireAuth, async (req, res) => {
+    try {
+      const groupId = req.params.groupId;
+      const userId = (req.user as User).id;
+
+      // Get group info
+      const group = await db.query.eventPoolGroups.findFirst({
+        where: (groups, { eq }) => eq(groups.id, groupId),
+      });
+
+      if (!group) {
+        return res.status(404).json({ message: "Group not found" });
+      }
+
+      // Get pool info
+      const pool = await db.query.eventPools.findFirst({
+        where: (pools, { eq }) => eq(pools.id, group.poolId),
+      });
+
+      if (!pool) {
+        return res.status(404).json({ message: "Event pool not found" });
+      }
+
+      // Check if user is in this group
+      const userRegistration = await db.query.eventPoolRegistrations.findFirst({
+        where: (regs, { eq, and }) => and(
+          eq(regs.assignedGroupId, groupId),
+          eq(regs.userId, userId)
+        ),
+      });
+
+      if (!userRegistration) {
+        return res.status(403).json({ message: "You are not a member of this group" });
+      }
+
+      // Get all group members with their profile info
+      const members = await db
+        .select({
+          userId: users.id,
+          displayName: users.displayName,
+          archetype: users.archetype,
+          topInterests: users.interestsRankedTop3,
+          age: users.birthdate,
+          industry: users.industry,
+          ageVisible: users.ageVisible,
+          industryVisible: users.industryVisible,
+          gender: users.gender,
+          educationLevel: users.educationLevel,
+          hometownCountry: users.hometownCountry,
+          hometownRegionCity: users.hometownRegionCity,
+          hometownAffinityOptin: users.hometownAffinityOptin,
+          educationVisible: users.educationVisible,
+          relationshipStatus: users.relationshipStatus,
+          children: users.children,
+          studyLocale: users.studyLocale,
+          overseasRegions: users.overseasRegions,
+          seniority: users.seniority,
+          fieldOfStudy: users.fieldOfStudy,
+          languagesComfort: users.languagesComfort,
+          // Event-specific preferences from registration
+          intent: eventPoolRegistrations.socialGoals,
+        })
+        .from(eventPoolRegistrations)
+        .innerJoin(users, eq(eventPoolRegistrations.userId, users.id))
+        .where(eq(eventPoolRegistrations.assignedGroupId, groupId));
+
+      res.json({
+        group: {
+          id: group.id,
+          groupNumber: group.groupNumber,
+          memberCount: group.memberCount,
+          matchScore: group.overallScore,
+          matchExplanation: group.matchExplanation,
+          venueName: group.venueName,
+          venueAddress: group.venueAddress,
+          finalDateTime: group.finalDateTime,
+          status: group.status,
+        },
+        pool: {
+          id: pool.id,
+          title: pool.title,
+          description: pool.description,
+          eventType: pool.eventType,
+          city: pool.city,
+          district: pool.district,
+          dateTime: pool.dateTime,
+        },
+        members,
+      });
+    } catch (error) {
+      console.error("Error fetching pool group details:", error);
+      res.status(500).json({ message: "Failed to fetch group details" });
+    }
+  });
+
   // Finance - Get statistics
   app.get("/api/admin/finance/stats", requireAdmin, async (req, res) => {
     try {
