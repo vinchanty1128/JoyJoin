@@ -30,6 +30,8 @@ interface PoolRegistration {
   budgetRange: string[];
   preferredLanguages: string[];
   socialGoals: string[];
+  invitationRole?: "inviter" | "invitee" | null;
+  relatedUserName?: string | null;
 }
 
 export default function EventsPage() {

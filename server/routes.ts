@@ -12,7 +12,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, type User } from "@shared/schema";
 import { db } from "./db";
-import { eq, or, and, desc } from "drizzle-orm";
+import { eq, or, and, desc, inArray } from "drizzle-orm";
 
 // Role mapping based on question responses
 const roleMapping: Record<string, Record<string, string>> = {
@@ -3060,7 +3060,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(eq(eventPoolRegistrations.userId, userId))
         .orderBy(desc(eventPoolRegistrations.registeredAt));
 
-      res.json(registrations);
+      // Enrich with invitation relationship info
+      const enrichedRegistrations = await Promise.all(
+        registrations.map(async (reg) => {
+          // Check if user was invited (is invitee)
+          const [inviteUse] = await db
+            .select()
+            .from(invitationUses)
+            .where(eq(invitationUses.poolRegistrationId, reg.id))
+            .limit(1);
+          
+          let invitationRole: "inviter" | "invitee" | null = null;
+          let relatedUserName: string | null = null;
+          
+          if (inviteUse && inviteUse.invitationId) {
+            // User is invitee, get inviter info
+            const [invitation] = await db
+              .select()
+              .from(invitations)
+              .where(eq(invitations.code, inviteUse.invitationId))
+              .limit(1);
+            
+            if (invitation) {
+              const [inviter] = await db
+                .select({ firstName: users.firstName, lastName: users.lastName })
+                .from(users)
+                .where(eq(users.id, invitation.inviterId))
+                .limit(1);
+              
+              if (inviter) {
+                invitationRole = "invitee";
+                relatedUserName = `${inviter.firstName || ''} ${inviter.lastName || ''}`.trim() || "好友";
+              }
+            }
+          } else {
+            // Check if user is inviter (someone used their invitation for this pool)
+            const userInvitations = await db
+              .select({ code: invitations.code })
+              .from(invitations)
+              .where(eq(invitations.inviterId, userId))
+              .limit(10);
+            
+            if (userInvitations.length > 0) {
+              const codes = userInvitations.map(inv => inv.code);
+              const [relatedInviteUse] = await db
+                .select({
+                  inviteeId: invitationUses.inviteeId
+                })
+                .from(invitationUses)
+                .innerJoin(
+                  eventPoolRegistrations,
+                  eq(invitationUses.poolRegistrationId, eventPoolRegistrations.id)
+                )
+                .where(
+                  and(
+                    inArray(invitationUses.invitationId, codes),
+                    eq(eventPoolRegistrations.poolId, reg.poolId)
+                  )
+                )
+                .limit(1);
+              
+              if (relatedInviteUse) {
+                const [invitee] = await db
+                  .select({ firstName: users.firstName, lastName: users.lastName })
+                  .from(users)
+                  .where(eq(users.id, relatedInviteUse.inviteeId))
+                  .limit(1);
+                
+                if (invitee) {
+                  invitationRole = "inviter";
+                  relatedUserName = `${invitee.firstName || ''} ${invitee.lastName || ''}`.trim() || "好友";
+                }
+              }
+            }
+          }
+          
+          return {
+            ...reg,
+            invitationRole,
+            relatedUserName
+          };
+        })
+      );
+
+      res.json(enrichedRegistrations);
     } catch (error) {
       console.error("Error fetching user pool registrations:", error);
       res.status(500).json({ message: "Failed to fetch registrations" });

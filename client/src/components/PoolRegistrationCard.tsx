@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Clock, Sparkles, XCircle } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Sparkles, XCircle, UserPlus, UserCheck } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { useLocation } from "wouter";
@@ -36,6 +36,8 @@ interface PoolRegistration {
   budgetRange: string[];
   preferredLanguages: string[];
   socialGoals: string[];
+  invitationRole?: "inviter" | "invitee" | null;
+  relatedUserName?: string | null;
 }
 
 interface PoolRegistrationCardProps {
@@ -97,6 +99,25 @@ export default function PoolRegistrationCard({ registration }: PoolRegistrationC
     return null;
   };
 
+  const getInvitationBadge = () => {
+    if (registration.invitationRole === "inviter" && registration.relatedUserName) {
+      return (
+        <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950 border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300">
+          <UserPlus className="h-3 w-3 mr-1" />
+          已邀请 {registration.relatedUserName}
+        </Badge>
+      );
+    } else if (registration.invitationRole === "invitee" && registration.relatedUserName) {
+      return (
+        <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300">
+          <UserCheck className="h-3 w-3 mr-1" />
+          {registration.relatedUserName} 邀请的
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card data-testid={`card-pool-registration-${registration.id}`}>
       <CardHeader>
@@ -106,6 +127,7 @@ export default function PoolRegistrationCard({ registration }: PoolRegistrationC
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <Badge variant="secondary">{registration.poolEventType}</Badge>
               {getStatusBadge()}
+              {getInvitationBadge()}
             </div>
           </div>
         </div>
