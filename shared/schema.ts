@@ -887,6 +887,56 @@ export const contents = pgTable("contents", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// ============ 邀请系统 - Invitation System ============
+
+// Invitations table - 邀请链接追踪
+export const invitations = pgTable("invitations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 邀请码（唯一短码，用于生成链接）
+  code: varchar("code").notNull().unique(), // e.g., "a3b9c5"
+  
+  // 邀请人信息
+  inviterId: varchar("inviter_id").notNull().references(() => users.id),
+  
+  // 关联活动
+  eventId: varchar("event_id").notNull().references(() => blindBoxEvents.id),
+  
+  // 邀请类型
+  invitationType: varchar("invitation_type").default("pre_match"), // pre_match (匹配前壮胆邀请) | post_match (匹配后补位邀请)
+  
+  // 状态统计
+  totalClicks: integer("total_clicks").default(0), // 链接点击次数
+  totalRegistrations: integer("total_registrations").default(0), // 成功注册人数
+  successfulMatches: integer("successful_matches").default(0), // 成功匹配到同局的人数
+  
+  // 元数据
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"), // 邀请链接过期时间（默认为活动开始时间）
+});
+
+// Invitation Uses table - 邀请使用记录
+export const invitationUses = pgTable("invitation_uses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 关联邀请
+  invitationId: varchar("invitation_id").notNull().references(() => invitations.id),
+  
+  // 被邀请人信息
+  inviteeId: varchar("invitee_id").notNull().references(() => users.id),
+  
+  // 关联事件报名
+  eventRegistrationId: varchar("event_registration_id").references(() => blindBoxEventRegistrations.id),
+  
+  // 匹配结果
+  matchedTogether: boolean("matched_together").default(false), // 是否最终匹配到同一局
+  rewardIssued: boolean("reward_issued").default(false), // 是否已发放奖励
+  
+  // 元数据
+  createdAt: timestamp("created_at").defaultNow(),
+  matchedAt: timestamp("matched_at"), // 匹配成功时间
+});
+
 // Insert schemas for admin tables
 export const insertVenueSchema = createInsertSchema(venues).omit({
   id: true,
@@ -1170,3 +1220,26 @@ export type ChatReport = typeof chatReports.$inferSelect;
 export type ChatLog = typeof chatLogs.$inferSelect;
 export type InsertChatReport = z.infer<typeof insertChatReportSchema>;
 export type InsertChatLog = z.infer<typeof insertChatLogSchema>;
+
+// ============ Invitation System Schemas ============
+
+export const insertInvitationSchema = createInsertSchema(invitations).omit({
+  id: true,
+  createdAt: true,
+  totalClicks: true,
+  totalRegistrations: true,
+  successfulMatches: true,
+});
+
+export const insertInvitationUseSchema = createInsertSchema(invitationUses).omit({
+  id: true,
+  createdAt: true,
+  matchedAt: true,
+  matchedTogether: true,
+  rewardIssued: true,
+});
+
+export type Invitation = typeof invitations.$inferSelect;
+export type InvitationUse = typeof invitationUses.$inferSelect;
+export type InsertInvitation = z.infer<typeof insertInvitationSchema>;
+export type InsertInvitationUse = z.infer<typeof insertInvitationUseSchema>;
