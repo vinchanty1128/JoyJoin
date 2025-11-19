@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +34,14 @@ export default function BlindBoxEventCard({
   city,
   isGirlsNight
 }: BlindBoxEventCardProps) {
+  const [, navigate] = useLocation();
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
   const [joinSheetOpen, setJoinSheetOpen] = useState(false);
+
+  const handleJoinClick = () => {
+    // Navigate to event pool registration page
+    navigate(`/event-pool/${id}/register`);
+  };
 
   return (
     <>
@@ -90,7 +97,7 @@ export default function BlindBoxEventCard({
             <Button 
               className="flex-1" 
               size="default"
-              onClick={() => setJoinSheetOpen(true)}
+              onClick={handleJoinClick}
               data-testid={`button-join-${id}`}
             >
               <Sparkles className="h-4 w-4 mr-1.5" />
