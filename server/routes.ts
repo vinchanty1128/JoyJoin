@@ -3021,6 +3021,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(invitations.code, invitationCode));
       }
 
+      // Trigger realtime matching scan after registration
+      // Import at top: import { scanPoolAndMatch } from "./poolRealtimeMatchingService";
+      const { scanPoolAndMatch } = await import("./poolRealtimeMatchingService");
+      
+      // Async trigger (don't block response)
+      scanPoolAndMatch(poolId, "realtime", "user_registration").catch(err => {
+        console.error(`[Realtime Matching] Scan failed after registration:`, err);
+      });
+
       res.json(registration);
     } catch (error: any) {
       console.error("Error registering for event pool:", error);
