@@ -9,85 +9,24 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarkNotificationsAsRead } from "@/hooks/useNotificationCounts";
+import { useQuery } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
+import { zhCN } from "date-fns/locale";
 
-const blindBoxEvents = [
-  {
-    id: "bb1",
-    date: "周三",
-    time: "19:00",
-    eventType: "饭局" as const,
-    area: "深圳•南山区",
-    city: "深圳" as const,
-    mysteryTitle: "神秘饭局｜等你揭晓",
-    priceTier: "100元以下" as const,
-    isAA: true
-  },
-  {
-    id: "bb2",
-    date: "周四",
-    time: "19:00",
-    eventType: "饭局" as const,
-    area: "深圳•福田区",
-    city: "深圳" as const,
-    mysteryTitle: "盲盒聚会｜未知相遇",
-    priceTier: "300-500" as const,
-    isAA: true
-  },
-  {
-    id: "bb3",
-    date: "周五",
-    time: "19:00",
-    eventType: "饭局" as const,
-    area: "深圳•华侨城",
-    city: "深圳" as const,
-    mysteryTitle: "周末饭局｜神秘嘉宾",
-    priceTier: "200-300" as const,
-    isAA: true
-  },
-  {
-    id: "bb4",
-    date: "周六",
-    time: "19:00",
-    eventType: "饭局" as const,
-    area: "深圳•罗湖区",
-    city: "深圳" as const,
-    mysteryTitle: "周末聚餐｜盲盒体验",
-    priceTier: "100-200" as const,
-    isAA: true
-  },
-  {
-    id: "bb5",
-    date: "周五",
-    time: "21:00",
-    eventType: "酒局" as const,
-    area: "香港•中西区",
-    city: "香港" as const,
-    mysteryTitle: "神秘酒局｜夜间聚会",
-    priceTier: "100元以下" as const
-  },
-  {
-    id: "bb6",
-    date: "周六",
-    time: "21:00",
-    eventType: "酒局" as const,
-    area: "香港•湾仔区",
-    city: "香港" as const,
-    mysteryTitle: "盲盒酒局｜等你加入",
-    priceTier: "500+" as const
-  },
-  {
-    id: "bb7",
-    date: "周五",
-    time: "21:00",
-    eventType: "酒局" as const,
-    area: "深圳•福田区",
-    city: "深圳" as const,
-    mysteryTitle: "Girls Night｜闺蜜之夜",
-    priceTier: "200-300" as const,
-    isAA: true,
-    isGirlsNight: true
-  }
-];
+interface EventPool {
+  id: string;
+  title: string;
+  description: string;
+  eventType: "饭局" | "酒局" | "其他";
+  city: "香港" | "深圳";
+  district: string;
+  dateTime: string;
+  registrationDeadline: string;
+  status: string;
+  registrationCount: number;
+  spotsLeft: number;
+  genderRestriction?: string;
+}
 
 export default function DiscoverPage() {
   const { user } = useAuth();
@@ -95,6 +34,12 @@ export default function DiscoverPage() {
   const [selectedArea, setSelectedArea] = useState<string>("南山区");
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const markAsRead = useMarkNotificationsAsRead();
+
+  // Fetch event pools from API
+  const { data: eventPools = [], isLoading } = useQuery<EventPool[]>({
+    queryKey: ["/api/event-pools", selectedCity],
+    enabled: true,
+  });
 
   // Auto-clear discover notifications when entering the page
   useEffect(() => {
@@ -106,15 +51,49 @@ export default function DiscoverPage() {
     setSelectedArea(area);
   };
 
-  // 盲盒活动筛选：先按城市筛选，再按区域筛选
-  const filteredBlindBoxEvents = blindBoxEvents.filter(event => {
-    if (event.city !== selectedCity) return false;
-    // 如果选择了具体区域，只显示该区域的活动
-    if (selectedArea) {
-      return event.area.includes(selectedArea);
+  // Transform event pools to blind box event card props
+  const transformEventPool = (pool: EventPool) => {
+    try {
+      const dateTime = parseISO(pool.dateTime);
+      const dayOfWeek = format(dateTime, 'EEEE', { locale: zhCN });
+      const time = format(dateTime, 'HH:mm');
+      const area = `${pool.city}•${pool.district}`;
+      
+      // Use pool title as mystery title, or generate one
+      const mysteryTitle = pool.title || `神秘${pool.eventType}｜等你揭晓`;
+      
+      // Check if it's girls night based on gender restriction or title
+      const isGirlsNight = pool.genderRestriction === '仅限女性' || 
+                          pool.title?.toLowerCase().includes('girls') ||
+                          pool.title?.includes('女性') ||
+                          pool.title?.includes('闺蜜');
+
+      return {
+        id: pool.id,
+        date: dayOfWeek,
+        time,
+        eventType: (pool.eventType === "其他" ? "饭局" : pool.eventType) as "饭局" | "酒局",
+        area,
+        city: pool.city,
+        mysteryTitle,
+        isAA: true, // Event pools default to AA
+        isGirlsNight,
+      };
+    } catch (error) {
+      console.error("Error transforming event pool:", pool, error);
+      return null;
     }
-    return true;
-  });
+  };
+
+  // Filter and transform event pools
+  const filteredBlindBoxEvents = eventPools
+    .filter(pool => {
+      if (pool.city !== selectedCity) return false;
+      if (selectedArea && !pool.district.includes(selectedArea)) return false;
+      return true;
+    })
+    .map(transformEventPool)
+    .filter((event): event is NonNullable<typeof event> => event !== null);
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -145,13 +124,19 @@ export default function DiscoverPage() {
           </div>
 
           <div className="space-y-5">
-            {filteredBlindBoxEvents.length > 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-sm text-muted-foreground mt-4">加载中...</p>
+              </div>
+            ) : filteredBlindBoxEvents.length > 0 ? (
               filteredBlindBoxEvents.map((event) => (
                 <BlindBoxEventCard key={event.id} {...event} />
               ))
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                <p>暂无{selectedCity}的盲盒活动</p>
+                <p>暂无{selectedCity}{selectedArea ? `·${selectedArea}` : ''}的盲盒活动</p>
+                <p className="text-sm mt-2">Admin还没创建活动池，或当前筛选条件下没有可用活动</p>
               </div>
             )}
           </div>
