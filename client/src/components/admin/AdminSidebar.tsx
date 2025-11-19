@@ -15,6 +15,8 @@ import {
   FlaskConical,
   MessageSquareWarning,
   MessageSquare,
+  Settings,
+  ScrollText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -117,6 +119,16 @@ const analyticsItems = [
     title: "匹配实验室",
     url: "/admin/matching",
     icon: FlaskConical,
+  },
+  {
+    title: "匹配配置",
+    url: "/admin/matching-config",
+    icon: Settings,
+  },
+  {
+    title: "匹配日志",
+    url: "/admin/matching-logs",
+    icon: ScrollText,
   },
 ];
 
