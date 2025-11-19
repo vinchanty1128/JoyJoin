@@ -33,6 +33,11 @@ Preferred communication style: Simple, everyday language.
 - **Admin Authorization:** `isAdmin` flag.
 
 ### System Features & Design Decisions
+- **Two-Stage Event Pool Matching Model (两阶段匹配模型):** 
+  - Stage 1: Admin creates event pools with hard constraints (time, location, gender/industry/seniority restrictions)
+  - Stage 2: Users register with soft preferences (budget, cuisine, social goals), AI matches within pool using 5-dimensional algorithm
+  - Pool-based matching service (`poolMatchingService.ts`) combines permanent user profiles with temporary event preferences
+  - Database tables: `eventPools` (admin-created pools), `eventPoolRegistrations` (user signups + preferences), `eventPoolGroups` (matched groups)
 - **AI-Driven Matchmaking:** AI for event and people matching, considering personality, interests, and group dynamics, with explainability and a deep feedback system.
 - **Two-Tier Feedback Architecture:** Basic and optional anonymous deep feedback for algorithm refinement.
 - **Gamified Personality Assessment:** 10-question test for social role archetypes, visualized with PersonalityRadarChart.
