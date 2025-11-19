@@ -10,7 +10,7 @@ import { broadcastEventStatusChanged, broadcastAdminAction } from "./eventBroadc
 import { matchEventPool, saveMatchResults } from "./poolMatchingService";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, type User } from "@shared/schema";
+import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, matchingThresholds, poolMatchingLogs, type User } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and, desc, inArray } from "drizzle-orm";
 
@@ -4220,6 +4220,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error fetching chat log stats:", error);
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // ============ REALTIME MATCHING CONFIGURATION ROUTES ============
+  
+  // GET /api/admin/matching-thresholds - Get current matching threshold config
+  app.get("/api/admin/matching-thresholds", requireAdmin, async (req, res) => {
+    try {
+      const [activeConfig] = await db
+        .select()
+        .from(matchingThresholds)
+        .where(eq(matchingThresholds.isActive, true))
+        .limit(1);
+      
+      if (!activeConfig) {
+        // Return default config if none exists
+        return res.json({
+          highCompatibilityThreshold: 85,
+          mediumCompatibilityThreshold: 70,
+          lowCompatibilityThreshold: 55,
+          timeDecayEnabled: true,
+          timeDecayRate: 5,
+          minThresholdAfterDecay: 50,
+          minGroupSizeForMatch: 4,
+          optimalGroupSize: 6,
+          scanIntervalMinutes: 60,
+        });
+      }
+      
+      res.json(activeConfig);
+    } catch (error: any) {
+      console.error("Error fetching matching thresholds:", error);
+      res.status(500).json({ message: "Failed to fetch thresholds" });
+    }
+  });
+  
+  // PUT /api/admin/matching-thresholds - Update matching threshold config
+  app.put("/api/admin/matching-thresholds", requireAdmin, async (req, res) => {
+    try {
+      const userId = (req.user as User).id;
+      
+      // Deactivate current config
+      await db
+        .update(matchingThresholds)
+        .set({ isActive: false })
+        .where(eq(matchingThresholds.isActive, true));
+      
+      // Create new config
+      const [newConfig] = await db
+        .insert(matchingThresholds)
+        .values({
+          highCompatibilityThreshold: req.body.highCompatibilityThreshold || 85,
+          mediumCompatibilityThreshold: req.body.mediumCompatibilityThreshold || 70,
+          lowCompatibilityThreshold: req.body.lowCompatibilityThreshold || 55,
+          timeDecayEnabled: req.body.timeDecayEnabled ?? true,
+          timeDecayRate: req.body.timeDecayRate || 5,
+          minThresholdAfterDecay: req.body.minThresholdAfterDecay || 50,
+          minGroupSizeForMatch: req.body.minGroupSizeForMatch || 4,
+          optimalGroupSize: req.body.optimalGroupSize || 6,
+          scanIntervalMinutes: req.body.scanIntervalMinutes || 60,
+          isActive: true,
+          createdBy: userId,
+          notes: req.body.notes || null,
+        })
+        .returning();
+      
+      res.json(newConfig);
+    } catch (error: any) {
+      console.error("Error updating matching thresholds:", error);
+      res.status(500).json({ message: "Failed to update thresholds" });
+    }
+  });
+  
+  // GET /api/admin/matching-logs - Get matching scan logs with filters
+  app.get("/api/admin/matching-logs", requireAdmin, async (req, res) => {
+    try {
+      const { poolId, scanType, decision, limit = 50 } = req.query;
+      
+      let query = db.select().from(poolMatchingLogs);
+      
+      const conditions: any[] = [];
+      if (poolId) conditions.push(eq(poolMatchingLogs.poolId, poolId as string));
+      if (scanType) conditions.push(eq(poolMatchingLogs.scanType, scanType as string));
+      if (decision) conditions.push(eq(poolMatchingLogs.decision, decision as string));
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as any;
+      }
+      
+      const logs = await query
+        .orderBy(desc(poolMatchingLogs.createdAt))
+        .limit(parseInt(limit as string));
+      
+      // Enrich with pool titles
+      const enrichedLogs = await Promise.all(
+        logs.map(async (log: any) => {
+          const [pool] = await db
+            .select({ title: eventPools.title })
+            .from(eventPools)
+            .where(eq(eventPools.id, log.poolId))
+            .limit(1);
+          
+          return {
+            ...log,
+            poolTitle: pool?.title || "未知活动池",
+          };
+        })
+      );
+      
+      res.json(enrichedLogs);
+    } catch (error: any) {
+      console.error("Error fetching matching logs:", error);
+      res.status(500).json({ message: "Failed to fetch logs" });
+    }
+  });
+  
+  // POST /api/admin/pools/:id/scan - Manually trigger pool scan
+  app.post("/api/admin/pools/:id/scan", requireAdmin, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const { scanPoolAndMatch } = await import("./poolRealtimeMatchingService");
+      
+      const result = await scanPoolAndMatch(poolId, "manual", "admin_manual");
+      
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error triggering pool scan:", error);
+      res.status(500).json({ message: "Failed to trigger scan", error: error.message });
     }
   });
 
