@@ -81,7 +81,7 @@ interface EventPool {
 }
 
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  recruiting: { label: "招募中", variant: "secondary" },
+  active: { label: "招募中", variant: "secondary" },
   matching: { label: "匹配中", variant: "default" },
   matched: { label: "已匹配", variant: "default" },
   completed: { label: "已完成", variant: "outline" },
@@ -123,7 +123,7 @@ const EDUCATION_OPTIONS = [
 ];
 
 export default function AdminEventPoolsPage() {
-  const [filterStatus, setFilterStatus] = useState<"all" | "recruiting" | "matched" | "completed">("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "matched" | "completed">("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedPool, setSelectedPool] = useState<EventPool | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -224,7 +224,7 @@ export default function AdminEventPoolsPage() {
     : pools.filter(p => p.status === filterStatus);
 
   const totalPools = pools.length;
-  const recruitingCount = pools.filter(p => p.status === "recruiting").length;
+  const activeCount = pools.filter(p => p.status === "active").length;
   const matchedCount = pools.filter(p => p.status === "matched").length;
   const completedCount = pools.filter(p => p.status === "completed").length;
 
@@ -565,13 +565,13 @@ export default function AdminEventPoolsPage() {
           </CardContent>
         </Card>
 
-        <Card data-testid="metric-recruiting">
+        <Card data-testid="metric-active">
           <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">招募中</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recruitingCount}</div>
+            <div className="text-2xl font-bold">{activeCount}</div>
           </CardContent>
         </Card>
 
@@ -600,7 +600,7 @@ export default function AdminEventPoolsPage() {
       <Tabs value={filterStatus} onValueChange={(v: any) => setFilterStatus(v)}>
         <TabsList>
           <TabsTrigger value="all" data-testid="filter-all">全部</TabsTrigger>
-          <TabsTrigger value="recruiting" data-testid="filter-recruiting">招募中</TabsTrigger>
+          <TabsTrigger value="active" data-testid="filter-active">招募中</TabsTrigger>
           <TabsTrigger value="matched" data-testid="filter-matched">已匹配</TabsTrigger>
           <TabsTrigger value="completed" data-testid="filter-completed">已完成</TabsTrigger>
         </TabsList>
@@ -680,7 +680,7 @@ export default function AdminEventPoolsPage() {
                     <Eye className="h-4 w-4 mr-1" />
                     查看详情
                   </Button>
-                  {pool.status === "recruiting" && (pool.pendingCount || 0) >= (pool.minGroupSize || 4) && (
+                  {pool.status === "active" && (pool.pendingCount || 0) >= (pool.minGroupSize || 4) && (
                     <Button
                       size="sm"
                       onClick={() => handleTriggerMatching(pool.id)}

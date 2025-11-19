@@ -180,7 +180,7 @@ export const eventPools = pgTable("event_pools", {
   targetGroups: integer("target_groups").default(1), // 目标组局数量
   
   // 状态管理
-  status: varchar("status").default("recruiting"), // recruiting | matching | matched | completed | cancelled
+  status: varchar("status").default("active"), // active (招募中) | matching | matched | completed | cancelled
   totalRegistrations: integer("total_registrations").default(0), // 总报名人数
   successfulMatches: integer("successful_matches").default(0), // 成功匹配人数
   

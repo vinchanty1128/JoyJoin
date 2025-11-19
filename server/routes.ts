@@ -2806,7 +2806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const poolId = req.params.id;
       
-      // Check if pool exists and is in recruiting status
+      // Check if pool exists and is in active status
       const pool = await db.query.eventPools.findFirst({
         where: (pools, { eq }) => eq(pools.id, poolId)
       });
@@ -2815,8 +2815,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Event pool not found" });
       }
       
-      if (pool.status !== 'recruiting') {
-        return res.status(400).json({ message: "Pool is not in recruiting status" });
+      if (pool.status !== 'active') {
+        return res.status(400).json({ message: "Pool is not in active status" });
       }
       
       // Run matching algorithm
@@ -2855,18 +2855,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ USER EVENT POOLS (用户端活动池) ============
   
-  // Get all recruiting event pools (for DiscoverPage)
+  // Get all active event pools (for DiscoverPage)
   app.get("/api/event-pools", async (req, res) => {
     try {
       const { city } = req.query;
       
-      let whereClause = (pools: any, { eq, and, or, inArray }: any) => {
-        const conditions = [
-          or(
-            eq(pools.status, 'recruiting'),
-            eq(pools.status, 'published')
-          )
-        ];
+      let whereClause = (pools: any, { eq, and }: any) => {
+        const conditions = [eq(pools.status, 'active')];
         if (city) {
           conditions.push(eq(pools.city, city));
         }
@@ -2932,7 +2927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as User).id;
       const invitationCode = req.body.invitationCode;
 
-      // Check if pool exists and is recruiting
+      // Check if pool exists and is active
       const pool = await db.query.eventPools.findFirst({
         where: (pools, { eq }) => eq(pools.id, poolId)
       });
@@ -2941,7 +2936,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Event pool not found" });
       }
 
-      if (pool.status !== 'recruiting') {
+      if (pool.status !== 'active') {
         return res.status(400).json({ message: "This event pool is no longer accepting registrations" });
       }
 

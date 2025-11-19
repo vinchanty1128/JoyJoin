@@ -10,7 +10,7 @@ JoyJoin (悦聚·Joy) is a social networking platform connecting individuals loc
   - Frontend displays invitation badges: "已邀请 [name]" (purple) for inviters, "[name] 邀请的" (blue) for invitees
   - Database: `user_coupons` tracks coupon assignments, `invitation_uses` tracks invitation rewards
 - **Event Pool Discovery Fixed**: `/api/event-pools` now correctly displays admin-created blind box events
-  - API query supports both `published` and `recruiting` status (unified semantics)
+  - Status unified to `active` (replaces previous `published` and `recruiting`)
   - Database schema synchronized with all required columns (description, eventType, educationLevelRestrictions, etc.)
   - DiscoverPage successfully fetches and displays event pools created in Admin Portal
 - **Event Pool User Flow**: Completed user-facing integration of two-stage matching model
