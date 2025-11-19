@@ -49,9 +49,7 @@ export default function PoolRegistrationCard({ registration }: PoolRegistrationC
   
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest(`/api/pool-registrations/${registration.id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest("DELETE", `/api/pool-registrations/${registration.id}`);
     },
     onSuccess: () => {
       toast({

@@ -82,21 +82,30 @@ export default function EventPoolRegistrationPage() {
   // Registration mutation
   const registerMutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
-      return await apiRequest(`/api/event-pools/${poolId}/register`, "POST", data);
+      return await apiRequest("POST", `/api/event-pools/${poolId}/register`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/my-pool-registrations"] });
       setPaymentStep("success");
       setTimeout(() => {
-        navigate("/activities");
+        navigate("/events");
       }, 2000);
     },
     onError: (error: any) => {
-      toast({
-        title: "报名失败",
-        description: error.message || "无法完成报名，请重试",
-        variant: "destructive",
-      });
+      // Check if error is subscription related
+      if (error.code === "NO_ACTIVE_SUBSCRIPTION" || error.message?.includes("Subscription required")) {
+        toast({
+          title: "需要订阅会员",
+          description: "活动池报名仅限JoyJoin会员。订阅后可免费参加所有活动池！",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "报名失败",
+          description: error.message || "无法完成报名，请重试",
+          variant: "destructive",
+        });
+      }
       setPaymentStep("form");
     },
   });
