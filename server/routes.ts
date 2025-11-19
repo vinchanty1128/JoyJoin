@@ -2900,6 +2900,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cancel pool registration (only pending registrations)
+  app.delete("/api/pool-registrations/:id", requireAuth, async (req, res) => {
+    try {
+      const registrationId = req.params.id;
+      const userId = (req.user as User).id;
+
+      // Get registration to verify ownership and status
+      const registration = await db.query.eventPoolRegistrations.findFirst({
+        where: (regs, { eq }) => eq(regs.id, registrationId),
+      });
+
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+
+      // Verify user owns this registration
+      if (registration.userId !== userId) {
+        return res.status(403).json({ message: "You can only cancel your own registrations" });
+      }
+
+      // Only allow cancellation of pending registrations
+      if (registration.matchStatus !== "pending") {
+        return res.status(400).json({ 
+          message: "Cannot cancel registration after matching",
+          code: "ALREADY_MATCHED"
+        });
+      }
+
+      // Delete the registration
+      await db
+        .delete(eventPoolRegistrations)
+        .where(eq(eventPoolRegistrations.id, registrationId));
+
+      res.json({ message: "Registration cancelled successfully" });
+    } catch (error) {
+      console.error("Error cancelling pool registration:", error);
+      res.status(500).json({ message: "Failed to cancel registration" });
+    }
+  });
+
   // Get pool group details (members + activity info)
   app.get("/api/pool-groups/:groupId", requireAuth, async (req, res) => {
     try {
