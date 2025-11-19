@@ -243,6 +243,63 @@ export const eventPoolGroups = pgTable("event_pool_groups", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// ============ 实时匹配系统配置 ============
+
+// Matching Thresholds table - 动态匹配阈值配置（管理员可调整）
+export const matchingThresholds = pgTable("matching_thresholds", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 阈值配置
+  highCompatibilityThreshold: integer("high_compatibility_threshold").default(85), // 高兼容性立即匹配阈值
+  mediumCompatibilityThreshold: integer("medium_compatibility_threshold").default(70), // 中等兼容性等待阈值
+  lowCompatibilityThreshold: integer("low_compatibility_threshold").default(55), // 最低可接受阈值
+  
+  // 时间衰减配置
+  timeDecayEnabled: boolean("time_decay_enabled").default(true), // 是否启用时间衰减
+  timeDecayRate: integer("time_decay_rate").default(5), // 每24小时降低的阈值点数
+  minThresholdAfterDecay: integer("min_threshold_after_decay").default(50), // 衰减后的最低阈值
+  
+  // 组局配置
+  minGroupSizeForMatch: integer("min_group_size_for_match").default(4), // 最小成局人数
+  optimalGroupSize: integer("optimal_group_size").default(6), // 最优组局人数
+  
+  // 扫描频率
+  scanIntervalMinutes: integer("scan_interval_minutes").default(60), // 定时扫描间隔（分钟）
+  
+  // 元数据
+  isActive: boolean("is_active").default(true), // 是否为当前使用的配置
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  notes: text("notes"), // 管理员备注
+});
+
+// Pool Matching Logs table - 记录每次扫描和匹配决策
+export const poolMatchingLogs = pgTable("pool_matching_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  poolId: varchar("pool_id").notNull().references(() => eventPools.id),
+  scanType: varchar("scan_type").notNull(), // "realtime" | "scheduled" | "manual"
+  
+  // 扫描快照
+  pendingUsersCount: integer("pending_users_count").default(0),
+  currentThreshold: integer("current_threshold"), // 本次扫描使用的阈值
+  timeUntilEvent: integer("time_until_event"), // 距离活动开始的小时数
+  
+  // 匹配结果
+  groupsFormed: integer("groups_formed").default(0),
+  usersMatched: integer("users_matched").default(0),
+  avgGroupScore: integer("avg_group_score"),
+  
+  // 决策信息
+  decision: varchar("decision").notNull(), // "matched" | "waiting" | "insufficient"
+  reason: text("reason"), // 决策原因说明
+  
+  // 元数据
+  triggeredBy: varchar("triggered_by"), // "user_registration" | "cron_job" | "admin_manual"
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Match history table - tracks who has been matched together before (anti-repetition)
 export const matchHistory = pgTable("match_history", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
