@@ -1,10 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Clock, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Sparkles, XCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface PoolRegistration {
   id: string;
@@ -30,7 +44,30 @@ interface PoolRegistrationCardProps {
 
 export default function PoolRegistrationCard({ registration }: PoolRegistrationCardProps) {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const poolDateTime = parseISO(registration.poolDateTime);
+  
+  const cancelMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest(`/api/pool-registrations/${registration.id}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "已取消报名",
+        description: "你已成功取消此活动池报名",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-pool-registrations"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "取消失败",
+        description: error.message || "无法取消报名，请稍后再试",
+        variant: "destructive",
+      });
+    },
+  });
   
   const handleViewGroup = () => {
     if (registration.assignedGroupId) {
@@ -89,13 +126,45 @@ export default function PoolRegistrationCard({ registration }: PoolRegistrationC
         {getMatchInfo()}
 
         {registration.matchStatus === "pending" && (
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t space-y-3">
             <div className="text-sm text-muted-foreground space-y-1">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 <span>AI正在为你寻找最佳匹配...</span>
               </div>
             </div>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full"
+                  data-testid={`button-cancel-registration-${registration.id}`}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  取消报名
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>确认取消报名？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    你确定要取消报名吗？取消后需要重新报名才能参加此活动池。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel data-testid="button-cancel-dialog-cancel">取消</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => cancelMutation.mutate()}
+                    disabled={cancelMutation.isPending}
+                    data-testid="button-cancel-dialog-confirm"
+                  >
+                    {cancelMutation.isPending ? "取消中..." : "确认取消"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
 
