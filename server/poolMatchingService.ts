@@ -47,7 +47,7 @@ const CHEMISTRY_MATRIX: Record<string, Record<string, number>> = {
   "独立思考者": { "社交蝴蝶": 45, "活动策划家": 50, "故事大王": 55, "群聊发动机": 48, "温暖聆听者": 65, "深度交流家": 82, "神秘观察者": 90, "灵魂摆渡人": 80, "幽默调和者": 52, "氛围感知者": 70, "好奇探索者": 75, "理性分析师": 92, "价值观守护者": 82, "独立思考者": 85 }
 };
 
-interface UserWithProfile {
+export interface UserWithProfile {
   userId: string;
   registrationId: string;
   
@@ -70,7 +70,7 @@ interface UserWithProfile {
   tasteIntensity: string[] | null;
 }
 
-interface MatchGroup {
+export interface MatchGroup {
   members: UserWithProfile[];
   avgChemistryScore: number;
   diversityScore: number;
