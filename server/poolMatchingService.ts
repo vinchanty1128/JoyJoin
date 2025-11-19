@@ -21,7 +21,9 @@ import {
   users, 
   matchingConfig,
   invitationUses,
-  invitations
+  invitations,
+  coupons,
+  userCoupons
 } from "@shared/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { wsService } from "./wsService";
@@ -575,4 +577,96 @@ export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Pr
         eq(eventPoolRegistrations.matchStatus, "pending")
       )
     );
+  
+  // 6. 发放邀请奖励优惠券 (Invitation Reward Coupons)
+  await processInvitationRewards(poolId, groups);
+}
+
+/**
+ * 处理邀请奖励：为成功匹配的邀请关系发放优惠券
+ */
+async function processInvitationRewards(poolId: string, groups: MatchGroup[]): Promise<void> {
+  // 查找邀请奖励优惠券（管理员需要预先创建code为"INVITE_REWARD"的优惠券）
+  const [inviteRewardCoupon] = await db.select()
+    .from(coupons)
+    .where(eq(coupons.code, "INVITE_REWARD"))
+    .limit(1);
+  
+  if (!inviteRewardCoupon || !inviteRewardCoupon.isActive) {
+    console.log('[Invitation Reward] No active INVITE_REWARD coupon found, skipping rewards');
+    return;
+  }
+  
+  // 获取该pool的所有成功匹配的用户
+  const allMatchedUserIds = groups.flatMap(g => g.members.map(m => m.userId));
+  
+  // 查找所有涉及该pool的邀请使用记录
+  const poolRegistrations = await db.select()
+    .from(eventPoolRegistrations)
+    .where(eq(eventPoolRegistrations.poolId, poolId));
+  
+  const registrationIds = poolRegistrations.map(r => r.id);
+  
+  if (registrationIds.length === 0) return;
+  
+  const inviteUses = await db.select()
+    .from(invitationUses)
+    .where(inArray(invitationUses.poolRegistrationId, registrationIds));
+  
+  // 对于每个邀请使用记录，检查是否成功匹配到同一局
+  for (const inviteUse of inviteUses) {
+    if (inviteUse.rewardIssued || !inviteUse.invitationId) continue;
+    
+    // 获取邀请信息
+    const [invitation] = await db.select()
+      .from(invitations)
+      .where(eq(invitations.code, inviteUse.invitationId))
+      .limit(1);
+    
+    if (!invitation) continue;
+    
+    const inviterId = invitation.inviterId;
+    const inviteeId = inviteUse.inviteeId;
+    
+    // 检查inviter和invitee是否都在匹配用户列表中
+    if (!allMatchedUserIds.includes(inviterId) || !allMatchedUserIds.includes(inviteeId)) {
+      continue;
+    }
+    
+    // 检查他们是否在同一个group中
+    let matchedTogether = false;
+    for (const group of groups) {
+      const groupUserIds = group.members.map(m => m.userId);
+      if (groupUserIds.includes(inviterId) && groupUserIds.includes(inviteeId)) {
+        matchedTogether = true;
+        break;
+      }
+    }
+    
+    if (matchedTogether) {
+      // 发放优惠券给邀请人
+      try {
+        await db.insert(userCoupons).values({
+          userId: inviterId,
+          couponId: inviteRewardCoupon.id,
+          source: "invitation_reward",
+          sourceId: invitation.id,
+          isUsed: false
+        });
+        
+        // 标记奖励已发放
+        await db.update(invitationUses)
+          .set({
+            matchedTogether: true,
+            rewardIssued: true,
+            matchedAt: new Date()
+          })
+          .where(eq(invitationUses.id, inviteUse.id));
+        
+        console.log(`[Invitation Reward] Issued coupon to user ${inviterId} for inviting ${inviteeId}`);
+      } catch (error) {
+        console.error(`[Invitation Reward] Failed to issue coupon:`, error);
+      }
+    }
+  }
 }

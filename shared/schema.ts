@@ -806,6 +806,22 @@ export const couponUsage = pgTable("coupon_usage", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// User Coupons table - Track coupons assigned to users (e.g., rewards, promotions)
+export const userCoupons = pgTable("user_coupons", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  couponId: varchar("coupon_id").notNull().references(() => coupons.id),
+  
+  // How user obtained this coupon
+  source: varchar("source").notNull(), // "invitation_reward", "promotion", "admin_grant", etc.
+  sourceId: varchar("source_id"), // e.g., invitation_id for invitation rewards
+  
+  isUsed: boolean("is_used").default(false),
+  usedAt: timestamp("used_at"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Venue Bookings table - Track venue capacity per time slot
 export const venueBookings = pgTable("venue_bookings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -970,6 +986,11 @@ export const insertCouponSchema = createInsertSchema(coupons).omit({
   updatedAt: true,
 });
 
+export const insertUserCouponSchema = createInsertSchema(userCoupons).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertReportSchema = createInsertSchema(reports).omit({
   id: true,
   createdAt: true,
@@ -1028,6 +1049,7 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type Payment = typeof payments.$inferSelect;
 export type Coupon = typeof coupons.$inferSelect;
 export type CouponUsage = typeof couponUsage.$inferSelect;
+export type UserCoupon = typeof userCoupons.$inferSelect;
 export type VenueBooking = typeof venueBookings.$inferSelect;
 export type Report = typeof reports.$inferSelect;
 export type ModerationLog = typeof moderationLogs.$inferSelect;
@@ -1038,6 +1060,7 @@ export type InsertEventTemplate = z.infer<typeof insertEventTemplateSchema>;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type InsertCoupon = z.infer<typeof insertCouponSchema>;
+export type InsertUserCoupon = z.infer<typeof insertUserCouponSchema>;
 export type InsertReport = z.infer<typeof insertReportSchema>;
 export type InsertModerationLog = z.infer<typeof insertModerationLogSchema>;
 export type InsertContent = z.infer<typeof insertContentSchema>;
