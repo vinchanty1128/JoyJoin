@@ -29,6 +29,7 @@ import BlindBoxPaymentPage from "@/pages/BlindBoxPaymentPage";
 import BlindBoxConfirmationPage from "@/pages/BlindBoxConfirmationPage";
 import BlindBoxEventDetailPage from "@/pages/BlindBoxEventDetailPage";
 import EventPoolRegistrationPage from "@/pages/EventPoolRegistrationPage";
+import PoolGroupDetailPage from "@/pages/PoolGroupDetailPage";
 import EventFeedbackFlow from "@/pages/EventFeedbackFlow";
 import DeepFeedbackFlow from "@/pages/DeepFeedbackFlow";
 import AdminLayout from "@/pages/admin/AdminLayout";
@@ -118,6 +119,7 @@ function AuthenticatedRouter() {
       <Route path="/" component={DiscoverPage} />
       <Route path="/discover" component={DiscoverPage} />
       <Route path="/event-pool/:id/register" component={EventPoolRegistrationPage} />
+      <Route path="/pool-groups/:groupId" component={PoolGroupDetailPage} />
       <Route path="/blindbox/payment" component={BlindBoxPaymentPage} />
       <Route path="/blindbox/confirmation" component={BlindBoxConfirmationPage} />
       <Route path="/blind-box-events/:eventId" component={BlindBoxEventDetailPage} />
