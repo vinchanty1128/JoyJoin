@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Clock, Sparkles } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { zhCN } from "date-fns/locale";
+import { useLocation } from "wouter";
 
 interface PoolRegistration {
   id: string;
@@ -28,7 +29,14 @@ interface PoolRegistrationCardProps {
 }
 
 export default function PoolRegistrationCard({ registration }: PoolRegistrationCardProps) {
+  const [, setLocation] = useLocation();
   const poolDateTime = parseISO(registration.poolDateTime);
+  
+  const handleViewGroup = () => {
+    if (registration.assignedGroupId) {
+      setLocation(`/pool-groups/${registration.assignedGroupId}`);
+    }
+  };
   
   const getStatusBadge = () => {
     if (registration.matchStatus === "matched") {
@@ -96,6 +104,7 @@ export default function PoolRegistrationCard({ registration }: PoolRegistrationC
             <Button 
               className="w-full" 
               size="sm"
+              onClick={handleViewGroup}
               data-testid={`button-view-group-${registration.id}`}
             >
               <Users className="h-4 w-4 mr-2" />
