@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { warmupDatabase } from "./db";
 import { subscriptionService } from "./subscriptionService";
 import { wsService } from "./wsService";
+import { scanAllActivePools } from "./poolRealtimeMatchingService";
 
 const app = express();
 app.use(express.json());
@@ -80,6 +81,15 @@ app.use((req, res, next) => {
     // Start subscription expiry checker (runs every hour)
     subscriptionService.startExpiryChecker();
     
+    // Start realtime matching scheduler (runs every hour)
+    const MATCHING_SCAN_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
+    setInterval(() => {
+      scanAllActivePools().catch(err => {
+        console.error('[Matching Scheduler] Error scanning pools:', err);
+      });
+    }, MATCHING_SCAN_INTERVAL);
+    
+    log(`Realtime matching scheduler started (scanning every 60 minutes)`);
     log(`WebSocket server ready at ws://0.0.0.0:${port}/ws`);
   });
 })();
