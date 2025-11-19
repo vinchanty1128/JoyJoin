@@ -19,7 +19,9 @@ import {
   eventPoolRegistrations, 
   eventPoolGroups,
   users, 
-  matchingConfig 
+  matchingConfig,
+  invitationUses,
+  invitations
 } from "@shared/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { wsService } from "./wsService";
@@ -351,29 +353,81 @@ export async function matchEventPool(poolId: string): Promise<MatchGroup[]> {
     throw new Error(`报名人数不足，至少需要${pool.minGroupSize}人`);
   }
   
-  // 4. 贪婪分组算法
+  // 3.5 获取邀请关系 (invitation relationships)
+  // Query all invitation uses for registrations in this pool
+  const registrationIds = eligibleUsers.map(u => u.registrationId);
+  
+  // Build invitation map: inviteeUserId -> inviterUserId
+  // This will help us prioritize matching invited users with their inviters
+  const invitationPairs: Array<{inviterId: string, inviteeId: string}> = [];
+  
+  for (const user of eligibleUsers) {
+    // Check if this user was invited (is an invitee)
+    const [inviteUse] = await db
+      .select()
+      .from(invitationUses)
+      .where(eq(invitationUses.poolRegistrationId, user.registrationId))
+      .limit(1);
+    
+    if (inviteUse && inviteUse.invitationId) {
+      // Get the invitation to find who invited this user
+      const [invitation] = await db
+        .select()
+        .from(invitations)
+        .where(eq(invitations.code, inviteUse.invitationId))
+        .limit(1);
+      
+      if (invitation) {
+        // Check if inviter is also in this pool
+        const inviter = eligibleUsers.find(u => u.userId === invitation.inviterId);
+        if (inviter) {
+          invitationPairs.push({
+            inviterId: inviter.userId,
+            inviteeId: user.userId
+          });
+        }
+      }
+    }
+  }
+  
+  // 4. 贪婪分组算法（优先处理邀请关系）
   const groups: MatchGroup[] = [];
   const used = new Set<string>();
   const targetGroupSize = pool.maxGroupSize || 6;
   const minGroupSize = pool.minGroupSize || 4;
   
-  // 计算所有可能的配对分数
-  const pairScores: { user1: UserWithProfile; user2: UserWithProfile; score: number }[] = [];
+  // 计算所有可能的配对分数，并为邀请关系加权
+  const pairScores: { user1: UserWithProfile; user2: UserWithProfile; score: number; isInvited: boolean }[] = [];
   for (let i = 0; i < eligibleUsers.length; i++) {
     for (let j = i + 1; j < eligibleUsers.length; j++) {
-      const score = calculatePairScore(
+      let score = calculatePairScore(
         eligibleUsers[i] as UserWithProfile, 
         eligibleUsers[j] as UserWithProfile
       );
+      
+      // Check if this pair has an invitation relationship
+      const user1 = eligibleUsers[i] as UserWithProfile;
+      const user2 = eligibleUsers[j] as UserWithProfile;
+      const isInvited = invitationPairs.some(pair => 
+        (pair.inviterId === user1.userId && pair.inviteeId === user2.userId) ||
+        (pair.inviterId === user2.userId && pair.inviteeId === user1.userId)
+      );
+      
+      // Boost score for invited pairs (soft constraint)
+      if (isInvited) {
+        score = Math.min(100, score + 20); // Add 20 points bonus
+      }
+      
       pairScores.push({
-        user1: eligibleUsers[i] as UserWithProfile,
-        user2: eligibleUsers[j] as UserWithProfile,
-        score
+        user1,
+        user2,
+        score,
+        isInvited
       });
     }
   }
   
-  // 按分数降序排序
+  // 按分数降序排序（邀请关系会自动排在前面因为有加分）
   pairScores.sort((a, b) => b.score - a.score);
   
   // 贪婪组建小组
