@@ -5,8 +5,16 @@
 JoyJoin (悦聚·Joy) is a social networking platform connecting individuals locally through small, curated micro-events (5-10 attendees). It uses AI for user matching based on interests, personality, and social compatibility, with a focus on psychological safety and inclusivity. Targeted at the Hong Kong/Shenzhen market, the platform aims to foster meaningful local connections and community building. Key features include AI-powered matching for events and people, a comprehensive feedback system for algorithm refinement, streamlined event management, and a robust Admin Portal for platform oversight and analytics.
 
 ### Recent Changes (Nov 19, 2025)
+- **Invitation System Complete**: Full viral growth mechanism implemented
+  - Auto-issue ¥50 INVITE_REWARD coupon to inviters when invited users match together
+  - Frontend displays invitation badges: "已邀请 [name]" (purple) for inviters, "[name] 邀请的" (blue) for invitees
+  - Database: `user_coupons` tracks coupon assignments, `invitation_uses` tracks invitation rewards
+- **Event Pool Discovery Fixed**: `/api/event-pools` now correctly displays admin-created blind box events
+  - API query supports both `published` and `recruiting` status (unified semantics)
+  - Database schema synchronized with all required columns (description, eventType, educationLevelRestrictions, etc.)
+  - DiscoverPage successfully fetches and displays event pools created in Admin Portal
 - **Event Pool User Flow**: Completed user-facing integration of two-stage matching model
-  - DiscoverPage now fetches real event pools from database via `/api/event-pools`
+  - DiscoverPage fetches real event pools from database via `/api/event-pools`
   - EventPoolRegistrationPage allows users to register with soft preferences (budget, languages, social goals, cuisine, dietary restrictions, taste intensity)
   - BlindBoxEventCard updated to navigate to registration page when clicked
   - EventsPage integrated to display pool registrations alongside traditional events, with status-based filtering (pending/matched/completed)
