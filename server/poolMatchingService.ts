@@ -252,9 +252,10 @@ function calculatePairScore(user1: UserWithProfile, user2: UserWithProfile): num
 }
 
 /**
- * 计算小组内所有成员的平均化学反应分数
+ * 计算小组内所有成员的平均配对兼容性分数
+ * 包含：chemistry + interest + preference + language（不含diversity）
  */
-function calculateGroupChemistry(members: UserWithProfile[]): number {
+function calculateGroupPairScore(members: UserWithProfile[]): number {
   if (members.length < 2) return 0;
   
   let totalScore = 0;
@@ -471,13 +472,13 @@ export async function matchEventPool(poolId: string): Promise<MatchGroup[]> {
     
     // 只保留达到最小人数的小组
     if (groupMembers.length >= minGroupSize) {
-      const avgChemistry = calculateGroupChemistry(groupMembers);
+      const avgPairScore = calculateGroupPairScore(groupMembers);
       const diversity = calculateGroupDiversity(groupMembers);
-      const overall = Math.round((avgChemistry * 0.7) + (diversity * 0.3));
+      const overall = Math.round((avgPairScore * 0.7) + (diversity * 0.3));
       
       const group: MatchGroup = {
         members: groupMembers,
-        avgChemistryScore: avgChemistry,
+        avgPairScore: avgPairScore,
         diversityScore: diversity,
         overallScore: overall,
         explanation: ""
