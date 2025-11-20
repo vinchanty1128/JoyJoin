@@ -5,14 +5,26 @@
 JoyJoin (悦聚·Joy) is a social networking platform connecting individuals locally through small, curated micro-events (5-10 attendees). It uses AI for user matching based on interests, personality, and social compatibility, with a focus on psychological safety and inclusivity. Targeted at the Hong Kong/Shenzhen market, the platform aims to foster meaningful local connections and community building. Key features include AI-powered matching for events and people, a comprehensive feedback system for algorithm refinement, streamlined event management, and a robust Admin Portal for platform oversight and analytics.
 
 ### Recent Changes (Nov 20, 2025)
+- **Temperature Concept Implementation - Social Energy & Chemistry Visualization**: Added dual-temperature system for richer matching insights
+  - **Social Energy Temperature** (社交能量温度): 14 archetypes mapped to 0-100 energy scale (社交蝴蝶=95 high → 独立思考者=25 low)
+  - **Energy Balance Algorithm**: `calculateEnergyBalance()` evaluates group social dynamics (ideal avg: 50-70, low stdDev for harmony)
+  - **Chemistry Reaction Temperature** (化学反应温度): Visual emoji indicators based on overall match score
+    - 🔥 炽热 (Fire, ≥85): Exceptional compatibility
+    - 🌡️ 温暖 (Warm, 70-84): Strong compatibility
+    - 🌤️ 适宜 (Mild, 55-69): Moderate compatibility
+    - ❄️ 冷淡 (Cold, <55): Low compatibility
+  - **Updated Scoring Formula**: `overallScore = avgPairScore × 0.6 + groupDiversity × 0.25 + energyBalance × 0.15` (refined from 70/30 to 60/25/15)
+  - **UI Integration**: Temperature emoji displayed in WebSocket notifications, AdminMatchingLogsPage, and group explanations
+  - **Database Schema**: Added `energyBalance` (integer) and `temperatureLevel` (varchar) to `eventPoolGroups` table
+  - **Impact**: Provides intuitive visual feedback on match quality and prevents all-high or all-low energy groups
 - **Matching Algorithm Fix - Removed Diversity Double-Counting**: Fixed critical algorithm flaw where diversity was calculated twice
   - **Old Logic (Flawed)**: `calculatePairScore()` included diversity at 10% → `overallScore = avgPairScore × 0.7 + groupDiversity × 0.3` (diversity added again at 30%)
   - **New Logic (Corrected)**: 
     - **Pair Compatibility Score** (配对兼容性): chemistry 37.5% + interest 31.25% + preference 25% + language 18.75% = 100%
-    - **Overall Score** (综合分数): `avgPairScore × 0.7 + groupDiversity × 0.3` (diversity only at group level)
+    - **Overall Score** (综合分数): Now integrated with energy balance (see Temperature Concept above)
   - **Conceptual Clarity**: Pair compatibility measures similarity (共同兴趣、语言), group diversity measures richness (背景多样性)
   - **Variable Renaming**: `avgChemistry` → `avgPairScore`, `calculateGroupChemistry()` → `calculateGroupPairScore()` for accuracy
-  - **Impact**: Algorithm now properly balances finding compatible pairs (70%) with ensuring diverse groups (30%)
+  - **Impact**: Algorithm now properly balances finding compatible pairs (60%) with diverse groups (25%) and balanced energy (15%)
 - **Real-time Dynamic Matching System Complete**: Fully automated continuous matching with adaptive thresholds
   - **Database Infrastructure**: `matchingThresholds` table for configurable parameters, `poolMatchingLogs` table for decision tracking
   - **Three-Tier Threshold System**: High compatibility (≥85) instant match, medium (70-84) wait for better options, low (55-69) wait until deadline, <55 reject
