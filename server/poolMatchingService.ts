@@ -298,7 +298,7 @@ function generateGroupExplanation(group: MatchGroup): string {
   const archetypes = group.members.map(m => m.archetype || "未知").filter((v, i, a) => a.indexOf(v) === i);
   const industries = group.members.map(m => m.industry || "未知").filter((v, i, a) => a.indexOf(v) === i);
   
-  return `这个小组有${group.members.length}位成员，包含${archetypes.length}种人格类型（${archetypes.join("、")}），来自${industries.length}个行业。平均化学反应分数${group.avgChemistryScore}，多样性分数${group.diversityScore}，综合匹配度${group.overallScore}。`;
+  return `这个小组有${group.members.length}位成员，包含${archetypes.length}种人格类型（${archetypes.join("、")}），来自${industries.length}个行业。平均配对兼容性${group.avgPairScore}，多样性分数${group.diversityScore}，综合匹配度${group.overallScore}。`;
 }
 
 /**
@@ -515,7 +515,7 @@ export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Pr
       poolId,
       groupNumber: i + 1,
       memberCount: group.members.length,
-      avgChemistryScore: group.avgChemistryScore,
+      avgChemistryScore: group.avgPairScore,
       diversityScore: group.diversityScore,
       overallScore: group.overallScore,
       matchExplanation: group.explanation,
