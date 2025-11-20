@@ -96,7 +96,9 @@ export interface MatchGroup {
   members: UserWithProfile[];
   avgPairScore: number;  // 平均配对兼容性分数（chemistry + interest + preference + language）
   diversityScore: number;  // 小组多样性分数
-  overallScore: number;  // 综合分数 = avgPairScore × 0.7 + diversityScore × 0.3
+  energyBalance: number;  // 能量平衡分数（0-100，评估小组社交能量的平衡度）
+  overallScore: number;  // 综合分数 = avgPairScore × 0.6 + diversityScore × 0.25 + energyBalance × 0.15
+  temperatureLevel: string;  // 化学反应温度等级：fire(🔥炽热85+) | warm(🌡️温暖70-84) | mild(🌤️适宜55-69) | cold(❄️冷淡<55)
   explanation: string;
 }
 
@@ -314,13 +316,92 @@ function calculateGroupDiversity(members: UserWithProfile[]): number {
 }
 
 /**
+ * 计算小组的能量平衡分数 (0-100)
+ * 理想的小组应该有平衡的能量分布：
+ * - 平均能量在50-70之间（既不全是高能量，也不全是低能量）
+ * - 标准差越小越好（成员之间能量差异不能太大）
+ */
+function calculateEnergyBalance(members: UserWithProfile[]): number {
+  if (members.length === 0) return 0;
+  
+  // 1. 获取每个成员的能量值
+  const energyLevels = members.map(m => {
+    const archetype = m.archetype || "温暖聆听者"; // 默认中等能量
+    return ARCHETYPE_ENERGY[archetype] || 50;
+  });
+  
+  // 2. 计算平均能量
+  const avgEnergy = energyLevels.reduce((sum, e) => sum + e, 0) / energyLevels.length;
+  
+  // 3. 计算标准差
+  const variance = energyLevels.reduce((sum, e) => sum + Math.pow(e - avgEnergy, 2), 0) / energyLevels.length;
+  const stdDev = Math.sqrt(variance);
+  
+  // 4. 评分逻辑
+  // 4.1 平均能量得分：目标范围50-70，越接近越好
+  let avgEnergyScore = 0;
+  if (avgEnergy >= 50 && avgEnergy <= 70) {
+    avgEnergyScore = 100; // 理想范围
+  } else if (avgEnergy >= 40 && avgEnergy < 50) {
+    avgEnergyScore = 80 + (avgEnergy - 40) * 2; // 40-49: 80-100分
+  } else if (avgEnergy > 70 && avgEnergy <= 80) {
+    avgEnergyScore = 100 - (avgEnergy - 70); // 70-80: 100-90分
+  } else if (avgEnergy >= 30 && avgEnergy < 40) {
+    avgEnergyScore = 60 + (avgEnergy - 30) * 2; // 30-39: 60-80分
+  } else if (avgEnergy > 80 && avgEnergy <= 90) {
+    avgEnergyScore = 90 - (avgEnergy - 80) * 2; // 80-90: 90-70分
+  } else {
+    avgEnergyScore = Math.max(0, 100 - Math.abs(avgEnergy - 60) * 2); // 其他范围递减
+  }
+  
+  // 4.2 标准差得分：标准差越小越好（目标<15）
+  let stdDevScore = 0;
+  if (stdDev <= 15) {
+    stdDevScore = 100;
+  } else if (stdDev <= 25) {
+    stdDevScore = 100 - (stdDev - 15) * 4; // 15-25: 100-60分
+  } else {
+    stdDevScore = Math.max(0, 60 - (stdDev - 25) * 2); // >25: 递减
+  }
+  
+  // 5. 综合得分：平均能量60% + 标准差40%
+  const balanceScore = Math.round(avgEnergyScore * 0.6 + stdDevScore * 0.4);
+  
+  return balanceScore;
+}
+
+/**
+ * 根据综合分数获取化学反应温度等级
+ */
+function getTemperatureLevel(overallScore: number): string {
+  if (overallScore >= 85) return "fire";    // 🔥炽热
+  if (overallScore >= 70) return "warm";    // 🌡️温暖
+  if (overallScore >= 55) return "mild";    // 🌤️适宜
+  return "cold";                             // ❄️冷淡
+}
+
+/**
+ * 获取温度等级的emoji显示
+ */
+export function getTemperatureEmoji(temperatureLevel: string): string {
+  const emojiMap: Record<string, string> = {
+    "fire": "🔥",
+    "warm": "🌡️",
+    "mild": "🌤️",
+    "cold": "❄️"
+  };
+  return emojiMap[temperatureLevel] || "🌤️";
+}
+
+/**
  * 生成小组匹配解释文案
  */
 function generateGroupExplanation(group: MatchGroup): string {
   const archetypes = group.members.map(m => m.archetype || "未知").filter((v, i, a) => a.indexOf(v) === i);
   const industries = group.members.map(m => m.industry || "未知").filter((v, i, a) => a.indexOf(v) === i);
+  const tempEmoji = getTemperatureEmoji(group.temperatureLevel);
   
-  return `这个小组有${group.members.length}位成员，包含${archetypes.length}种人格类型（${archetypes.join("、")}），来自${industries.length}个行业。平均配对兼容性${group.avgPairScore}，多样性分数${group.diversityScore}，综合匹配度${group.overallScore}。`;
+  return `${tempEmoji} 这个小组有${group.members.length}位成员，包含${archetypes.length}种人格类型（${archetypes.join("、")}），来自${industries.length}个行业。配对兼容性${group.avgPairScore}分，多样性${group.diversityScore}分，能量平衡${group.energyBalance}分，综合匹配度${group.overallScore}分。`;
 }
 
 /**
