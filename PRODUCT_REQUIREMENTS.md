@@ -2880,6 +2880,14 @@ export function useWebSocket() {
 15. **chat_logs** - Technical chat audit logs
 16. **contents** - CMS content (announcements, FAQs)
 17. **notifications** - Push notification records
+18. **event_pools** - Admin-created blind box event pools
+19. **event_pool_registrations** - User registrations with soft preferences
+20. **event_pool_groups** - Matched groups (v1.1: added `energyBalance`, `temperatureLevel`)
+21. **matching_thresholds** - Configurable matching parameters (NEW v1.1)
+22. **pool_matching_logs** - Matching decision history (NEW v1.1)
+23. **invitations** - User invitation records
+24. **invitation_uses** - Invitation reward tracking (NEW v1.1)
+25. **user_coupons** - User coupon assignments (NEW v1.1)
 
 **Full schema:** See `shared/schema.ts` (3000+ lines)
 
@@ -2939,6 +2947,10 @@ export function useWebSocket() {
 - `GET /api/admin/data-insights` - Analytics data
 - `POST /api/admin/matching/test` - Test matching algorithm
 - `PATCH /api/admin/matching/weights` - Update weights
+- `GET /api/admin/matching-thresholds` - Get pool matching thresholds (NEW v1.1)
+- `PUT /api/admin/matching-thresholds/:poolId` - Update thresholds (NEW v1.1)
+- `POST /api/admin/trigger-matching/:poolId` - Manually trigger matching (NEW v1.1)
+- `GET /api/admin/matching-logs` - Get matching decision history (NEW v1.1)
 
 **Full API documentation:** See `server/routes.ts` (3400+ lines)
 
@@ -3368,6 +3380,10 @@ CREATE TABLE event_pool_groups (
 | **Data Insights** | ✅ Complete | `AdminDataInsightsPage.tsx` | 7 analytics modules |
 | **Feedback Management** | ✅ Complete | `AdminFeedbackPage.tsx` | Review interface |
 | **WebSocket Sync** | ✅ Complete | `wsService.ts`, `useWebSocket.ts` | Bidirectional |
+| **Temperature Concept** | ✅ Complete (v1.1) | `archetypeChemistry.ts`, `poolMatchingService.ts` | Dual-temperature system |
+| **Real-time Dynamic Matching** | ✅ Complete (v1.1) | `poolRealtimeMatchingService.ts`, `AdminMatchingConfigPage.tsx` | Three-tier threshold system |
+| **Invitation & Viral Growth** | ✅ Complete (v1.1) | `poolMatchingService.ts`, `user_coupons` table | Auto-coupon issuance |
+| **Event Pool User Flow** | ✅ Complete (v1.1) | `EventPoolRegistrationPage.tsx`, `PoolRegistrationCard.tsx` | Two-stage matching UI |
 
 ---
 
