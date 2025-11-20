@@ -224,30 +224,29 @@ function calculateDiversityScore(user1: UserWithProfile, user2: UserWithProfile)
 }
 
 /**
- * 计算两个用户的综合匹配分数 (0-100)
+ * 计算两个用户的配对兼容性分数 (0-100)
+ * 注意：diversity在小组层面单独计算，不在配对层面重复计算
  */
 function calculatePairScore(user1: UserWithProfile, user2: UserWithProfile): number {
   const chemistry = calculateChemistryScore(user1, user2);
   const interest = calculateInterestScore(user1, user2);
   const language = calculateLanguageScore(user1, user2);
   const preference = calculatePreferenceScore(user1, user2);
-  const diversity = calculateDiversityScore(user1, user2);
   
-  // 权重配置 (可从matchingConfig表读取)
+  // 权重配置：仅包含配对兼容性维度（总和100%）
+  // diversity在小组层面单独计算，避免重复计算
   const weights = {
-    chemistry: 0.30,  // 性格兼容性 30%
-    interest: 0.25,   // 兴趣重叠 25%
-    preference: 0.20, // 活动偏好 20%
-    language: 0.15,   // 语言沟通 15%
-    diversity: 0.10   // 背景多样性 10%
+    chemistry: 0.375,   // 性格兼容性 37.5%
+    interest: 0.3125,   // 兴趣重叠 31.25%
+    preference: 0.25,   // 活动偏好 25%
+    language: 0.1875    // 语言沟通 18.75%
   };
   
   const totalScore = 
     chemistry * weights.chemistry +
     interest * weights.interest +
     preference * weights.preference +
-    language * weights.language +
-    diversity * weights.diversity;
+    language * weights.language;
   
   return Math.round(totalScore);
 }
