@@ -1,7 +1,7 @@
 # JoyJoin (悦聚·Joy) - Product Requirements Document
 
-**Version:** 1.0  
-**Last Updated:** November 14, 2025  
+**Version:** 1.1  
+**Last Updated:** November 20, 2025  
 **Platform:** WeChat H5 Mini-App  
 **Target Market:** Hong Kong & Shenzhen  
 
@@ -17,6 +17,51 @@
 6. [Data Models](#data-models)
 7. [API Reference](#api-reference)
 8. [Implementation Status](#implementation-status)
+
+---
+
+## 🆕 Recent Updates (Nov 18-20, 2025)
+
+### Major Feature Releases
+
+**1. Temperature Concept System** 🌡️
+- Dual-temperature visualization: Social Energy (社交能量) + Chemistry Reaction (化学反应温度)
+- 14 archetypes mapped to 0-100 energy scale
+- Visual emoji indicators: 🔥 炽热 (≥85) | 🌡️ 温暖 (70-84) | 🌤️ 适宜 (55-69) | ❄️ 冷淡 (<55)
+- Prevents unbalanced groups (all high-energy or all low-energy)
+
+**2. Matching Algorithm Fix** 🔧
+- Corrected critical diversity double-counting bug
+- Updated scoring formula: **60% pair compatibility + 25% diversity + 15% energy balance**
+- Clarified pair score components: chemistry (37.5%) + interest (31.25%) + preference (25%) + language (18.75%)
+
+**3. Real-time Dynamic Matching System** ⚡
+- Three-tier threshold system with time decay algorithm
+- Automated continuous matching (instant + hourly + final 24h scans)
+- Admin configuration UI and decision history logs
+- Database-driven parameters (no code changes needed for tuning)
+
+**4. Invitation & Viral Growth System** 🎁
+- Auto-issue ¥50 INVITE_REWARD coupon when invited users match together
+- Invitation badges: Purple "已邀请" for inviters, Blue "[name] 邀请的" for invitees
+- Database tracking: `user_coupons` and `invitation_uses` tables
+
+**5. Event Pool User Flow** 🎭
+- Complete two-stage matching model UI
+- User registration with soft preferences (budget, cuisine, social goals, dietary restrictions)
+- Pool registration status display in EventsPage
+- New components: `EventPoolRegistrationPage`, `PoolRegistrationCard`
+
+**6. WebSocket Real-time Notifications** 🔔
+- POOL_MATCHED event with instant user notifications
+- Toast notifications with temperature emoji and match details
+- Auto-cache invalidation and tab switching on match
+- Complete bidirectional sync: Admin → Backend → Users
+
+**7. Event Pool Discovery Fix** 🔍
+- Fixed `/api/event-pools` endpoint to display admin-created blind box events
+- Unified status to `active` (replaced `published`/`recruiting`)
+- Schema synchronized across all required fields
 
 ---
 
