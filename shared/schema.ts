@@ -228,7 +228,9 @@ export const eventPoolGroups = pgTable("event_pool_groups", {
   memberCount: integer("member_count").default(0),
   avgChemistryScore: integer("avg_chemistry_score"), // 平均化学反应分数
   diversityScore: integer("diversity_score"), // 多样性分数
+  energyBalance: integer("energy_balance"), // 能量平衡分数
   overallScore: integer("overall_score"), // 综合分数
+  temperatureLevel: varchar("temperature_level"), // 化学反应温度等级: fire | warm | mild | cold
   matchExplanation: text("match_explanation"), // AI生成的匹配解释
   
   // 活动详情（匹配后生成）

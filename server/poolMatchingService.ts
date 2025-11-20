@@ -577,13 +577,17 @@ export async function matchEventPool(poolId: string): Promise<MatchGroup[]> {
     if (groupMembers.length >= minGroupSize) {
       const avgPairScore = calculateGroupPairScore(groupMembers);
       const diversity = calculateGroupDiversity(groupMembers);
-      const overall = Math.round((avgPairScore * 0.7) + (diversity * 0.3));
+      const energyBalance = calculateEnergyBalance(groupMembers);
+      const overall = Math.round((avgPairScore * 0.6) + (diversity * 0.25) + (energyBalance * 0.15));
+      const temperatureLevel = getTemperatureLevel(overall);
       
       const group: MatchGroup = {
         members: groupMembers,
         avgPairScore: avgPairScore,
         diversityScore: diversity,
+        energyBalance: energyBalance,
         overallScore: overall,
+        temperatureLevel: temperatureLevel,
         explanation: ""
       };
       
@@ -620,7 +624,9 @@ export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Pr
       memberCount: group.members.length,
       avgChemistryScore: group.avgPairScore,
       diversityScore: group.diversityScore,
+      energyBalance: group.energyBalance,
       overallScore: group.overallScore,
+      temperatureLevel: group.temperatureLevel,
       matchExplanation: group.explanation,
       status: "confirmed"
     }).returning();
@@ -644,7 +650,8 @@ export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Pr
       groupId: groupRecord.id,
       groupNumber: i + 1,
       matchScore: group.overallScore,
-      memberCount: group.members.length
+      memberCount: group.members.length,
+      temperatureLevel: group.temperatureLevel
     };
     
     memberUserIds.forEach(userId => {

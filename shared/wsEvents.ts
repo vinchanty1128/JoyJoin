@@ -88,4 +88,5 @@ export interface PoolMatchedData {
   groupNumber: number;
   matchScore: number;
   memberCount: number;
+  temperatureLevel: string; // fire | warm | mild | cold
 }
