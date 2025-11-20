@@ -3171,6 +3171,177 @@ if (matchHistory.length > 0) {
 
 ---
 
+### 3.5 Temperature Concept System 🌡️
+
+**NEW in v1.1** (Nov 20, 2025)
+
+**Files:** `server/archetypeChemistry.ts`, `shared/schema.ts`, `shared/wsEvents.ts`
+
+**Purpose:** Provide intuitive visual feedback on match quality using dual-temperature metaphor
+
+#### Dual-Temperature System
+
+**1. Social Energy Temperature (社交能量温度)**
+
+Maps 14 personality archetypes to energy levels (0-100 scale) to prevent unbalanced groups.
+
+```typescript
+const ARCHETYPE_ENERGY = {
+  // High Energy (80-95)
+  社交蝴蝶: 95,        // Social Butterfly - Highest energy
+  活动策划者: 90,      // Event Planner
+  幽默大师: 85,        // Humor Master
+  氛围营造者: 82,      // Atmosphere Creator
+  
+  // Medium-High Energy (60-75)
+  知识分享者: 60,      // Knowledge Sharer
+  创意思考者: 55,      // Creative Thinker
+  
+  // Medium Energy (45-55)
+  倾听者: 50,          // Listener
+  平衡协调者: 52,      // Balanced Coordinator
+  
+  // Low Energy (25-40)
+  深度对话者: 40,      // Deep Conversationalist
+  观察者: 30,          // Observer
+  独立思考者: 25,      // Independent Thinker - Lowest energy
+  
+  // ... all 14 archetypes mapped
+};
+```
+
+**Energy Balance Calculation:**
+
+```typescript
+function calculateEnergyBalance(group) {
+  const energyLevels = group.map(user => ARCHETYPE_ENERGY[user.primaryRole]);
+  const avgEnergy = mean(energyLevels);
+  const stdDev = standardDeviation(energyLevels);
+  
+  // Ideal: Average energy 50-70 (balanced, not too high or too low)
+  const avgScore = (avgEnergy >= 50 && avgEnergy <= 70) ? 100 : 
+                   Math.max(0, 100 - Math.abs(avgEnergy - 60) * 2);
+  
+  // Ideal: Low standard deviation (harmony, not too much variance)
+  const harmonyScore = Math.max(0, 100 - stdDev * 3);
+  
+  return (avgScore + harmonyScore) / 2;
+}
+```
+
+**Why This Matters:**
+- Prevents all-高能量 groups (exhausting, chaotic)
+- Prevents all-低能量 groups (awkward silences, low engagement)
+- Creates balanced social dynamics with natural conversation flow
+
+**2. Chemistry Reaction Temperature (化学反应温度)**
+
+Visual emoji indicators for overall match quality, displayed to users and admins.
+
+```typescript
+function getTemperatureLevel(score) {
+  if (score >= 85) return "🔥 炽热"; // Fire - Exceptional compatibility
+  if (score >= 70) return "🌡️ 温暖"; // Warm - Strong compatibility
+  if (score >= 55) return "🌤️ 适宜"; // Mild - Moderate compatibility
+  return "❄️ 冷淡";                  // Cold - Low compatibility
+}
+```
+
+| Emoji | Chinese | English | Score | Meaning |
+|-------|---------|---------|-------|---------|
+| 🔥 | 炽热 | Fire | ≥85 | Exceptional match - Instant chemistry |
+| 🌡️ | 温暖 | Warm | 70-84 | Strong match - Good compatibility |
+| 🌤️ | 适宜 | Mild | 55-69 | Moderate match - Acceptable fit |
+| ❄️ | 冷淡 | Cold | <55 | Low match - Poor compatibility |
+
+#### UI Integration
+
+**Admin Matching Logs Page:**
+```tsx
+// Display temperature emoji next to average score
+<div className="text-2xl font-bold text-green-600">
+  {getTemperatureEmoji(log.avgGroupScore)} {log.avgGroupScore}分
+</div>
+```
+
+**User WebSocket Notifications:**
+```typescript
+// POOL_MATCHED event includes temperatureLevel
+interface PoolMatchedData {
+  poolId: string;
+  poolTitle: string;
+  groupId: string;
+  groupNumber: number;
+  matchScore: number;
+  memberCount: number;
+  temperatureLevel: string; // "🔥 炽热", "🌡️ 温暖", etc.
+}
+
+// Toast notification displays temperature
+toast({
+  title: `🎉 匹配成功！`,
+  description: `${data.temperatureLevel} · 小组 ${data.groupNumber} · 匹配度 ${data.matchScore}分`,
+});
+```
+
+**Group Explanation Text:**
+```typescript
+function generateGroupExplanation(group, scores) {
+  const energyDesc = scores.energyBalance >= 70 ? 
+    "小组能量分布均衡，既有活跃的引导者，也有善于倾听的成员" :
+    "小组能量较为集中，建议适当调整互动节奏";
+    
+  const tempDesc = scores.temperatureLevel === "🔥 炽热" ?
+    "这是一个化学反应极强的小组！" :
+    scores.temperatureLevel === "🌡️ 温暖" ?
+    "这个小组有很好的匹配度" :
+    "这个小组有一定的匹配度";
+    
+  return `${tempDesc} ${energyDesc}`;
+}
+```
+
+#### Database Schema
+
+**eventPoolGroups table (updated):**
+```sql
+CREATE TABLE event_pool_groups (
+  id VARCHAR PRIMARY KEY,
+  pool_id VARCHAR REFERENCES event_pools(id),
+  group_number INTEGER,
+  
+  -- Existing scores
+  avg_pair_score INTEGER,      -- Average pairwise compatibility
+  diversity_score INTEGER,      -- Group background diversity
+  overall_score INTEGER,        -- Final weighted score
+  
+  -- NEW in v1.1
+  energy_balance INTEGER,       -- Social energy harmony score (0-100)
+  temperature_level VARCHAR,    -- Visual indicator: "🔥 炽热", "🌡️ 温暖", etc.
+  
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+#### Impact & Benefits
+
+**For Users:**
+- Intuitive understanding of match quality (emoji > number)
+- Transparent expectations before event
+- Reduces anxiety about "will I fit in?"
+
+**For Admins:**
+- Quick visual scan of matching quality in logs
+- Easier to spot problematic groups
+- Data-driven insights for algorithm tuning
+
+**For Algorithm:**
+- Prevents edge cases (all introverts or all extroverts)
+- Balances similarity (pair score) with diversity and energy
+- More nuanced group formation
+
+---
+
 ## 📊 Implementation Status
 
 ### Feature Completion Matrix
