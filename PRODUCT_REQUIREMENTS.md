@@ -2946,6 +2946,8 @@ export function useWebSocket() {
 
 ### 3.4 Matching Algorithm Deep Dive
 
+#### Traditional Event Matching (1-on-1 Compatibility)
+
 **File:** `server/userMatchingService.ts`
 
 **5-Dimensional Scoring System:**
@@ -3038,7 +3040,7 @@ function matchUsersToGroups(users, eventMaxAttendees, weights) {
 
 **Chemistry Matrix (14×14):**
 
-Stored in: `server/userMatchingService.ts`
+Stored in: `server/archetypeChemistry.ts`
 
 Sample values:
 ```typescript
@@ -3053,6 +3055,118 @@ const chemistryMatrix = {
   },
   // ... 14×14 = 196 unique compatibility scores
 };
+```
+
+---
+
+#### Event Pool Matching (Blind Box Group Formation)
+
+**Files:** `server/poolMatchingService.ts`, `server/archetypeChemistry.ts`
+
+**Two-Stage Matching Model:**
+
+**Stage 1:** Admin creates event pools with hard constraints
+- Time, location, gender/industry/seniority restrictions
+- Pool capacity (e.g., 50 users → 5 groups of 10)
+
+**Stage 2:** Users register with soft preferences, AI matches within pool
+- Combines permanent user profiles with temporary event preferences
+- Forms optimal groups balancing compatibility, diversity, and energy
+
+**Corrected Scoring Formula (Nov 20, 2025):**
+
+**CRITICAL FIX:** Removed diversity double-counting bug
+
+```typescript
+// Pair Compatibility Score (配对兼容性) - 100%
+function calculatePairScore(user1, user2, reg1, reg2) {
+  // 1. Chemistry (37.5%) - Personality archetype compatibility
+  const chemistry = CHEMISTRY_MATRIX[user1.primaryRole][user2.primaryRole];
+  
+  // 2. Interest Overlap (31.25%) - Shared topics
+  const sharedInterests = intersection(user1.interests, user2.interests);
+  const interest = (sharedInterests.length / 
+    union(user1.interests, user2.interests).length) * 100;
+  
+  // 3. Event Preferences (25%) - Budget, cuisine, goals alignment
+  const budgetMatch = budgetsOverlap(reg1.budgetRange, reg2.budgetRange) ? 90 : 50;
+  const cuisineMatch = overlap(reg1.cuisinePreferences, reg2.cuisinePreferences);
+  const goalMatch = overlap(reg1.socialGoals, reg2.socialGoals);
+  const preference = (budgetMatch + cuisineMatch + goalMatch) / 3;
+  
+  // 4. Language Compatibility (18.75%) - Communication ability
+  const language = overlap(reg1.languages, reg2.languages);
+  
+  // Pure compatibility score (NO diversity counted here)
+  return chemistry * 0.375 + interest * 0.3125 + preference * 0.25 + language * 0.1875;
+}
+
+// Group Diversity Score (群体多样性) - Separate calculation
+function calculateGroupDiversity(group) {
+  // Diversity metrics (only counted ONCE at group level)
+  const uniqueIndustries = new Set(group.map(u => u.industry)).size;
+  const uniqueEducation = new Set(group.map(u => u.educationLevel)).size;
+  const uniqueRoles = new Set(group.map(u => u.primaryRole)).size;
+  
+  const industryDiversity = (uniqueIndustries / group.length) * 100;
+  const educationDiversity = (uniqueEducation / group.length) * 100;
+  const roleDiversity = (uniqueRoles / group.length) * 100;
+  
+  return (industryDiversity + educationDiversity + roleDiversity) / 3;
+}
+
+// Energy Balance Score (能量平衡度) - NEW in v1.1
+function calculateEnergyBalance(group) {
+  // Map each archetype to energy level (0-100 scale)
+  const energyLevels = group.map(u => ARCHETYPE_ENERGY[u.primaryRole]);
+  const avgEnergy = mean(energyLevels);
+  const stdDev = standardDeviation(energyLevels);
+  
+  // Ideal: average energy 50-70, low standard deviation
+  const avgScore = avgEnergy >= 50 && avgEnergy <= 70 ? 100 : 
+                   Math.max(0, 100 - Math.abs(avgEnergy - 60) * 2);
+  const harmonyScore = Math.max(0, 100 - stdDev * 3);
+  
+  return (avgScore + harmonyScore) / 2;
+}
+
+// Overall Group Score (综合分数) - UPDATED FORMULA
+function formOptimalGroups(pool) {
+  // For each candidate group:
+  const avgPairScore = mean(allPairScores); // Average compatibility
+  const groupDiversity = calculateGroupDiversity(group); // Background richness
+  const energyBalance = calculateEnergyBalance(group); // Energy harmony
+  
+  // New weighted formula (changed from 70/30 to 60/25/15)
+  const overallScore = 
+    avgPairScore * 0.6 +      // Pair compatibility (similarity)
+    groupDiversity * 0.25 +   // Group diversity (richness)
+    energyBalance * 0.15;     // Energy balance (harmony)
+  
+  return overallScore;
+}
+```
+
+**Conceptual Clarity:**
+- **Pair Compatibility** (60%): Do members get along? (similarity)
+- **Group Diversity** (25%): Is the group interesting? (richness)
+- **Energy Balance** (15%): Is the energy level balanced? (harmony)
+
+**Anti-Repetition System:**
+
+```typescript
+// Prevent users from being matched together repeatedly
+const matchHistory = await db
+  .select()
+  .from(matchHistory)
+  .where(and(
+    eq(matchHistory.userId1, user1.id),
+    eq(matchHistory.userId2, user2.id)
+  ));
+
+if (matchHistory.length > 0) {
+  pairScore *= 0.7; // 30% penalty for repeat matching
+}
 ```
 
 ---
