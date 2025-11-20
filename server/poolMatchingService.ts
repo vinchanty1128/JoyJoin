@@ -72,9 +72,9 @@ export interface UserWithProfile {
 
 export interface MatchGroup {
   members: UserWithProfile[];
-  avgChemistryScore: number;
-  diversityScore: number;
-  overallScore: number;
+  avgPairScore: number;  // 平均配对兼容性分数（chemistry + interest + preference + language）
+  diversityScore: number;  // 小组多样性分数
+  overallScore: number;  // 综合分数 = avgPairScore × 0.7 + diversityScore × 0.3
   explanation: string;
 }
 
