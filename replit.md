@@ -4,7 +4,15 @@
 
 JoyJoin (悦聚·Joy) is a social networking platform connecting individuals locally through small, curated micro-events (5-10 attendees). It uses AI for user matching based on interests, personality, and social compatibility, with a focus on psychological safety and inclusivity. Targeted at the Hong Kong/Shenzhen market, the platform aims to foster meaningful local connections and community building. Key features include AI-powered matching for events and people, a comprehensive feedback system for algorithm refinement, streamlined event management, and a robust Admin Portal for platform oversight and analytics.
 
-### Recent Changes (Nov 19, 2025)
+### Recent Changes (Nov 20, 2025)
+- **Matching Algorithm Fix - Removed Diversity Double-Counting**: Fixed critical algorithm flaw where diversity was calculated twice
+  - **Old Logic (Flawed)**: `calculatePairScore()` included diversity at 10% → `overallScore = avgPairScore × 0.7 + groupDiversity × 0.3` (diversity added again at 30%)
+  - **New Logic (Corrected)**: 
+    - **Pair Compatibility Score** (配对兼容性): chemistry 37.5% + interest 31.25% + preference 25% + language 18.75% = 100%
+    - **Overall Score** (综合分数): `avgPairScore × 0.7 + groupDiversity × 0.3` (diversity only at group level)
+  - **Conceptual Clarity**: Pair compatibility measures similarity (共同兴趣、语言), group diversity measures richness (背景多样性)
+  - **Variable Renaming**: `avgChemistry` → `avgPairScore`, `calculateGroupChemistry()` → `calculateGroupPairScore()` for accuracy
+  - **Impact**: Algorithm now properly balances finding compatible pairs (70%) with ensuring diverse groups (30%)
 - **Real-time Dynamic Matching System Complete**: Fully automated continuous matching with adaptive thresholds
   - **Database Infrastructure**: `matchingThresholds` table for configurable parameters, `poolMatchingLogs` table for decision tracking
   - **Three-Tier Threshold System**: High compatibility (≥85) instant match, medium (70-84) wait for better options, low (55-69) wait until deadline, <55 reject
