@@ -14,6 +14,17 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { invalidateCacheForEvent } from "@/lib/cacheInvalidation";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 
+// 温度等级emoji辅助函数
+function getTemperatureEmoji(temperatureLevel: string): string {
+  const emojiMap: Record<string, string> = {
+    "fire": "🔥",
+    "warm": "🌡️",
+    "mild": "🌤️",
+    "cold": "❄️"
+  };
+  return emojiMap[temperatureLevel] || "🌤️";
+}
+
 interface PoolRegistration {
   id: string;
   poolId: string;
@@ -69,9 +80,10 @@ export default function EventsPage() {
       await queryClient.invalidateQueries({ queryKey: ["/api/my-pool-registrations"] });
       
       const poolData = message.data as any;
+      const tempEmoji = getTemperatureEmoji(poolData.temperatureLevel || 'mild');
       toast({
-        title: "活动池匹配成功！",
-        description: `你已成功匹配到 ${poolData.poolTitle} 的第${poolData.groupNumber}组，共${poolData.memberCount}人`,
+        title: `${tempEmoji} 活动池匹配成功！`,
+        description: `你已成功匹配到 ${poolData.poolTitle} 的第${poolData.groupNumber}组，共${poolData.memberCount}人，匹配度${poolData.matchScore}分`,
       });
       
       // 自动切换到"已匹配"标签

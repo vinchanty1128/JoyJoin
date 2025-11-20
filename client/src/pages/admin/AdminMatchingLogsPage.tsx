@@ -8,6 +8,14 @@ import { Loader2, Clock, Users, TrendingUp, AlertCircle, CheckCircle, HourglassI
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 
+// 温度等级emoji辅助函数
+function getTemperatureEmoji(score: number): string {
+  if (score >= 85) return "🔥"; // 炽热
+  if (score >= 70) return "🌡️"; // 温暖
+  if (score >= 55) return "🌤️"; // 适宜
+  return "❄️"; // 冷淡
+}
+
 interface MatchingLog {
   id: string;
   poolId: string;
@@ -158,7 +166,7 @@ export default function AdminMatchingLogsPage() {
                       <div className="space-y-1">
                         <div className="text-muted-foreground">平均分数</div>
                         <div className="text-2xl font-bold text-green-600">
-                          {log.avgGroupScore}分
+                          {getTemperatureEmoji(log.avgGroupScore || 0)} {log.avgGroupScore}分
                         </div>
                       </div>
                     )}
