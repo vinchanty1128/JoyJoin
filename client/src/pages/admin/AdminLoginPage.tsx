@@ -40,13 +40,18 @@ export default function AdminLoginPage() {
       return await apiRequest("POST", "/api/auth/admin-login", data);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      
       toast({
         title: "登录成功",
         description: "欢迎访问管理后台",
       });
-      window.location.href = "/admin";
+      
+      // 清除缓存后跳转到管理后台
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // 使用wouter路由跳转
+      setTimeout(() => {
+        setLocation("/admin");
+      }, 500);
     },
     onError: (error: Error) => {
       setError(error.message);
