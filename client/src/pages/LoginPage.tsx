@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,11 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const [loginSuccessful, setLoginSuccessful] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
@@ -69,13 +70,11 @@ export default function LoginPage() {
         description: "欢迎回来！",
       });
       
-      // 清除缓存后跳转到首页
+      // 清除缓存，让useAuth重新获取用户数据
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       
-      // 使用wouter路由跳转
-      setTimeout(() => {
-        setLocation("/");
-      }, 500);
+      // 标记登陆成功，触发useEffect重定向
+      setLoginSuccessful(true);
     },
     onError: (error: Error) => {
       toast({
@@ -85,6 +84,13 @@ export default function LoginPage() {
       });
     },
   });
+
+  // 当登陆成功且user数据已更新时，App.tsx的AuthenticatedRouter会自动处理重定向
+  useEffect(() => {
+    if (loginSuccessful && user) {
+      console.log("✅ Login successful, user data received, router will auto-redirect");
+    }
+  }, [loginSuccessful, user]);
 
   const handleSendCode = () => {
     if (!phoneNumber || phoneNumber.length !== 11) {
