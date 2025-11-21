@@ -4,6 +4,15 @@
 
 JoyJoin (悦聚·Joy) is a social networking platform connecting individuals locally through small, curated micro-events (5-10 attendees). It uses AI for user matching based on interests, personality, and social compatibility, with a focus on psychological safety and inclusivity. Targeted at the Hong Kong/Shenzhen market, the platform aims to foster meaningful local connections and community building. Key features include AI-powered matching for events and people, a comprehensive feedback system for algorithm refinement, streamlined event management, and a robust Admin Portal for platform oversight and analytics.
 
+### Recent Changes (Nov 21, 2025)
+- **Admin Login Enhancement - Verification Code Support**: Added dual login method for admin portal
+  - **UI Update**: AdminLoginPage now uses Tabs component with "验证码登录" (default) and "密码登录" options
+  - **Verification Code Login**: Admins can login using phone number + SMS code (test code: 666666)
+  - **Backend Fix**: Modified `/api/auth/phone-login` endpoint to return complete user object including `isAdmin` flag
+  - **Admin Validation**: Frontend checks `isAdmin` field after verification code login, shows error if non-admin account
+  - **User Experience**: Consistent login experience between user and admin portals, with 60-second countdown on send code button
+  - **Test Accounts**: Phone 13800138000 or 19896500978, both support verification code 666666 for testing
+
 ### Recent Changes (Nov 20, 2025)
 - **Temperature Concept Implementation - Social Energy & Chemistry Visualization**: Added dual-temperature system for richer matching insights
   - **Social Energy Temperature** (社交能量温度): 14 archetypes mapped to 0-100 energy scale (社交蝴蝶=95 high → 独立思考者=25 low)
