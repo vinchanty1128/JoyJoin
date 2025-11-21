@@ -100,22 +100,26 @@ export function setupPhoneAuth(app: Express) {
       }
 
       // 设置session
-      req.session.regenerate((err) => {
+      req.session.regenerate(async (err) => {
         if (err) {
           console.error("Session regeneration error:", err);
           return res.status(500).json({ message: "Login failed" });
         }
 
         req.session.userId = userId;
-        req.session.save((err) => {
+        req.session.save(async (err) => {
           if (err) {
             console.error("Session save error:", err);
             return res.status(500).json({ message: "Login failed" });
           }
 
+          // 获取完整的用户数据并返回（包括isAdmin字段）
+          const user = await storage.getUserById(userId);
+          
           res.json({ 
             message: "Login successful",
-            userId 
+            userId,
+            ...user
           });
         });
       });
