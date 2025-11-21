@@ -56,8 +56,6 @@ export default function LoginPage() {
       return await apiRequest("POST", "/api/auth/phone-login", data);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      
       // 🎯 DEMO: 自动生成演示活动数据
       try {
         await apiRequest("POST", "/api/demo/seed-events", {});
@@ -70,7 +68,14 @@ export default function LoginPage() {
         title: "登录成功",
         description: "欢迎回来！",
       });
-      window.location.href = "/";
+      
+      // 清除缓存后跳转到首页
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // 使用wouter路由跳转
+      setTimeout(() => {
+        setLocation("/");
+      }, 500);
     },
     onError: (error: Error) => {
       toast({
