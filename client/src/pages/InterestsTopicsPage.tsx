@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -11,8 +11,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Check, ChevronUp, ChevronDown, Info } from "lucide-react";
+import { Check, ChevronUp, ChevronDown, Info, Sparkles } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { motion, AnimatePresence } from "framer-motion";
+import RegistrationProgress from "@/components/RegistrationProgress";
 
 // Interest categories with emojis
 const INTERESTS_OPTIONS = [
@@ -63,11 +65,20 @@ export default function InterestsTopicsPage() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const totalSteps = 2;
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [rankedTop3, setRankedTop3] = useState<string[]>([]);
   const [selectedTopicsHappy, setSelectedTopicsHappy] = useState<string[]>([]);
   const [selectedTopicsAvoid, setSelectedTopicsAvoid] = useState<string[]>([]);
+
+  // Celebration effect when step 1 completes
+  useEffect(() => {
+    if (step === 2 && showCelebration) {
+      const timer = setTimeout(() => setShowCelebration(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, showCelebration]);
 
   const form = useForm<InterestsTopics>({
     resolver: zodResolver(interestsTopicsSchema),
@@ -196,7 +207,8 @@ export default function InterestsTopicsPage() {
         });
         return;
       }
-      setStep(2);
+      setShowCelebration(true);
+      setTimeout(() => setStep(2), 400);
     } else {
       // Validate topics step
       if (selectedTopicsHappy.length < 1) {
@@ -237,20 +249,51 @@ export default function InterestsTopicsPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header with progress */}
-      <div className="p-4 border-b bg-background sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-lg font-bold">兴趣 & 话题</h1>
-          <span className="text-sm text-muted-foreground">
-            {step}/{totalSteps}
-          </span>
-        </div>
-        <Progress value={progress} className="h-2" data-testid="progress-bar" />
-      </div>
+      <RegistrationProgress 
+        currentStage="interests" 
+        currentStep={step}
+        totalSteps={totalSteps}
+      />
+      
+      {/* Celebration overlay */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="text-6xl"
+              initial={{ scale: 0 }}
+              animate={{ scale: [0, 1.2, 1] }}
+              transition={{ duration: 0.6 }}
+            >
+              ✨
+            </motion.div>
+            <motion.div
+              className="absolute text-xl font-bold text-purple-600 dark:text-purple-400"
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: -40, opacity: 0 }}
+              transition={{ duration: 1.2 }}
+            >
+              完美
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Form content */}
       <div className="flex-1 p-4 overflow-y-auto">
         <div className="max-w-2xl mx-auto space-y-6 pb-20">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
           {/* Step 1: Interests Selection & Ranking */}
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in-50 duration-300">
@@ -264,9 +307,12 @@ export default function InterestsTopicsPage() {
               {/* Interest Selection */}
               <div>
                 <Label>选择兴趣（3-7个）</Label>
-                <p className="text-xs text-muted-foreground mb-3">
-                  已选择 {selectedInterests.length} 个
-                </p>
+                <motion.p 
+                  className="text-xs text-muted-foreground mb-3"
+                  animate={{ scale: selectedInterests.length > 0 ? [1, 1.05, 1] : 1 }}
+                >
+                  已选择 <span className="font-semibold text-purple-600 dark:text-purple-400">{selectedInterests.length}</span>/7 个
+                </motion.p>
                 <div className="grid grid-cols-2 gap-3">
                   {INTERESTS_OPTIONS.map((interest) => {
                     const isSelected = selectedInterests.includes(interest.id);
@@ -409,9 +455,12 @@ export default function InterestsTopicsPage() {
               {/* Topics Happy */}
               <div>
                 <Label>喜欢讨论的话题 *</Label>
-                <p className="text-xs text-muted-foreground mb-3">
-                  已选择 {selectedTopicsHappy.length} 个（至少选1个）
-                </p>
+                <motion.p 
+                  className="text-xs text-muted-foreground mb-3"
+                  animate={{ scale: selectedTopicsHappy.length > 0 ? [1, 1.05, 1] : 1 }}
+                >
+                  已选择 <span className="font-semibold text-green-600 dark:text-green-400">{selectedTopicsHappy.length}</span> 个（至少选1个）
+                </motion.p>
                 <div className="grid grid-cols-2 gap-3">
                   {TOPICS_OPTIONS.map((topic) => {
                     const isHappy = selectedTopicsHappy.includes(topic.id);
@@ -444,9 +493,12 @@ export default function InterestsTopicsPage() {
               {/* Topics Avoid */}
               <div>
                 <Label>想要回避的话题（可选）</Label>
-                <p className="text-xs text-muted-foreground mb-3">
-                  已选择 {selectedTopicsAvoid.length} 个
-                </p>
+                <motion.p 
+                  className="text-xs text-muted-foreground mb-3"
+                  animate={{ scale: selectedTopicsAvoid.length > 0 ? [1, 1.05, 1] : 1 }}
+                >
+                  已选择 <span className="font-semibold text-red-600 dark:text-red-400">{selectedTopicsAvoid.length}</span> 个
+                </motion.p>
                 <div className="grid grid-cols-2 gap-3">
                   {TOPICS_OPTIONS.map((topic) => {
                     const isHappy = selectedTopicsHappy.includes(topic.id);
@@ -475,6 +527,7 @@ export default function InterestsTopicsPage() {
               </div>
             </div>
           )}
+          </motion.div>
         </div>
       </div>
 

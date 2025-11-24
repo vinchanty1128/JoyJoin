@@ -24,6 +24,9 @@ import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { intentOptions } from "@/lib/userFieldMappings";
 import { Separator } from "@/components/ui/separator";
 import { DatePicker } from "@/components/ui/date-picker";
+import { motion, AnimatePresence } from "framer-motion";
+import RegistrationProgress from "@/components/RegistrationProgress";
+import FieldInfoTooltip from "@/components/FieldInfoTooltip";
 
 export default function RegistrationPage() {
   const [, setLocation] = useLocation();
@@ -124,6 +127,30 @@ export default function RegistrationPage() {
   };
 
   const progress = (step / totalSteps) * 100;
+
+  // Field info configurations for tooltips
+  const fieldInfos: Record<string, { title: string; description: string; visibility?: string }> = {
+    educationLevel: {
+      title: "为什么需要教育背景",
+      description: "帮助我们了解你的学习经历和专业背景，用于更好地匹配志同道合的朋友",
+      visibility: "👥 其他用户可见你的教育水平（除非你选择隐藏）"
+    },
+    industry: {
+      title: "为什么需要工作信息",
+      description: "了解你的职业方向，帮助寻找行业相关的有趣话题和志趣相投的人",
+      visibility: "👥 默认只显示行业，职位可隐藏"
+    },
+    seniority: {
+      title: "职级信息用途",
+      description: "帮助配对时考虑职业发展阶段的匹配度",
+      visibility: "🔒 仅用于匹配算法，不显示给其他用户"
+    },
+    languagesComfort: {
+      title: "语言偏好",
+      description: "确保你能舒适地与朋友沟通。支持多种语言选择",
+      visibility: "👥 用于匹配和活动沟通"
+    }
+  };
 
   // Language options
   const languageOptions = [

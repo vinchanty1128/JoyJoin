@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { motion } from "framer-motion";
+import { Clock } from "lucide-react";
 
 export default function ProfileSetupPage() {
   const [, setLocation] = useLocation();
@@ -53,13 +55,31 @@ export default function ProfileSetupPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="space-y-6">
+        <motion.div
+          className="space-y-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-display font-bold">完善资料</h1>
             <p className="text-sm text-muted-foreground">
               让大家更好地认识你
             </p>
           </div>
+
+          {/* 时长预期提示 */}
+          <motion.div
+            className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg px-4 py-3"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+            <p className="text-sm text-purple-700 dark:text-purple-300">
+              完整注册大约需要 <span className="font-semibold">3-5 分钟</span>
+            </p>
+          </motion.div>
 
           <Card className="border shadow-sm">
             <CardContent className="p-6 space-y-6">
@@ -79,16 +99,22 @@ export default function ProfileSetupPage() {
             </CardContent>
           </Card>
 
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={handleSubmit}
-            disabled={setupMutation.isPending}
-            data-testid="button-save-profile"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
           >
-            {setupMutation.isPending ? "保存中..." : "继续"}
-          </Button>
-        </div>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={handleSubmit}
+              disabled={setupMutation.isPending}
+              data-testid="button-save-profile"
+            >
+              {setupMutation.isPending ? "保存中..." : "继续"}
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
