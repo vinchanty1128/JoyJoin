@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MiniRadarChart from "@/components/MiniRadarChart";
-import { personalityQuestions as questions } from "@/data/personalityQuestions";
+import { personalityQuestions as baseQuestions, getSupplementaryQuestions } from "@/data/personalityQuestions";
 
 interface QuestionOption {
   value: string;
@@ -35,8 +35,62 @@ export default function PersonalityTestPage() {
   const [answers, setAnswers] = useState<Record<number, any>>({});
   const [showMilestone, setShowMilestone] = useState(false);
   const [showBlindBox, setShowBlindBox] = useState(false);
+  
+  // Supplementary test states
+  const [isSupplementaryMode, setIsSupplementaryMode] = useState(false);
+  const [supplementaryQuestions, setSupplementaryQuestions] = useState<Question[]>([]);
+  const [candidateArchetypes, setCandidateArchetypes] = useState<Array<{ name: string; score: number }>>([]);
+  const [showSupplementaryTransition, setShowSupplementaryTransition] = useState(false);
+  
+  // Combined questions: base + supplementary (if any)
+  const questions = isSupplementaryMode 
+    ? [...baseQuestions, ...supplementaryQuestions]
+    : baseQuestions;
 
   // Removed redirect logic - users can now retake the test anytime
+
+  // Preliminary scoring mutation (after base 10 questions)
+  const preliminaryScoreMutation = useMutation({
+    mutationFn: async (responses: Record<number, any>) => {
+      return await apiRequest("POST", "/api/personality-test/preliminary-score", {
+        responses,
+      });
+    },
+    onSuccess: (data: any) => {
+      if (data.needsSupplementary) {
+        // Need supplementary questions
+        setCandidateArchetypes(data.candidateArchetypes);
+        
+        // Get supplementary questions for these two archetypes
+        const suppQuestions = getSupplementaryQuestions(
+          data.candidateArchetypes[0].name,
+          data.candidateArchetypes[1].name,
+          3
+        );
+        
+        setSupplementaryQuestions(suppQuestions);
+        
+        // Show transition animation
+        setShowSupplementaryTransition(true);
+        setTimeout(() => {
+          setShowSupplementaryTransition(false);
+          setIsSupplementaryMode(true);
+          setCurrentQuestion(10); // Move to first supplementary question
+        }, 3000);
+      } else {
+        // Direct result - no supplementary needed
+        setShowBlindBox(true);
+        submitTestMutation.mutate(answers);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "评分失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const submitTestMutation = useMutation({
     mutationFn: async (responses: Record<number, any>) => {
@@ -93,11 +147,18 @@ export default function PersonalityTestPage() {
     if (!canProceed()) return;
 
     if (isLastQuestion) {
-      setShowBlindBox(true);
-      submitTestMutation.mutate(answers);
+      // If we're on the last question
+      if (!isSupplementaryMode && currentQuestion === 9) {
+        // Just finished base 10 questions - call preliminary score
+        preliminaryScoreMutation.mutate(answers);
+      } else {
+        // Finished all questions (including supplementary if any)
+        setShowBlindBox(true);
+        submitTestMutation.mutate(answers);
+      }
     } else {
       // Show milestone after question 5 (index 4)
-      if (currentQuestion === 4 && !showMilestone) {
+      if (currentQuestion === 4 && !showMilestone && !isSupplementaryMode) {
         setShowMilestone(true);
         setTimeout(() => {
           setShowMilestone(false);
@@ -175,6 +236,81 @@ export default function PersonalityTestPage() {
     </motion.div>
   );
 
+  // Supplementary Test Transition Animation
+  const SupplementaryTransition = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 bg-gradient-to-br from-purple-500/10 via-background to-amber-500/10 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div className="text-center space-y-6 max-w-md">
+        <motion.div
+          animate={{ 
+            rotate: [0, 360],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          className="text-6xl mx-auto w-20 h-20 flex items-center justify-center"
+        >
+          🎯
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-3"
+        >
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
+            检测到双重人格特质！
+          </h2>
+          <p className="text-muted-foreground">正在分析你的社交氛围...</p>
+        </motion.div>
+        
+        {candidateArchetypes.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6 }}
+            className="bg-card/50 border border-primary/20 rounded-lg p-4 space-y-3"
+          >
+            <div className="text-sm font-medium text-muted-foreground">候选原型</div>
+            <div className="flex justify-center gap-4">
+              {candidateArchetypes.map((archetype, index) => (
+                <motion.div
+                  key={archetype.name}
+                  initial={{ x: index === 0 ? -50 : 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 1 + index * 0.2 }}
+                  className="text-center"
+                >
+                  <div className="text-3xl mb-1">
+                    {index === 0 ? "🏆" : "🥈"}
+                  </div>
+                  <div className="font-bold text-lg">{archetype.name}</div>
+                  <div className="text-sm text-muted-foreground">{archetype.score}分</div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2 }}
+          className="text-sm text-muted-foreground"
+        >
+          进入精准模式，深入探索你的社交DNA...
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
   // Milestone Card Component
   const MilestoneCard = () => (
     <motion.div
@@ -214,6 +350,11 @@ export default function PersonalityTestPage() {
       {/* Blind Box Reveal Overlay */}
       <AnimatePresence>
         {showBlindBox && <BlindBoxReveal />}
+      </AnimatePresence>
+
+      {/* Supplementary Test Transition */}
+      <AnimatePresence>
+        {showSupplementaryTransition && <SupplementaryTransition />}
       </AnimatePresence>
 
       {/* Milestone Overlay */}
