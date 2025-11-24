@@ -1,19 +1,32 @@
 // 12-Archetype Animal Social Vibe System
-// Avatar image mapping system (placeholders for future high-res images)
+// Avatar image mapping system with high-res illustrations
+
+import corgiImg from '@assets/开心柯基_1763997660297.png';
+import chickenImg from '@assets/太阳鸡_1763997660294.png';
+import dolphinImg from '@assets/夸夸豚_1763997660288.png';
+import foxImg from '@assets/机智狐_1763997660293.png';
+import calmDolphinImg from '@assets/淡定海豚_1763997660293.png';
+import spiderImg from '@assets/织网蛛_1763997660291.png';
+import bearImg from '@assets/暖心熊_1763997660292.png';
+import octopusImg from '@assets/灵感章鱼_1763997660292.png';
+import owlImg from '@assets/沉思猫头鹰_1763997660294.png';
+import elephantImg from '@assets/定心大象_1763997660293.png';
+import turtleImg from '@assets/稳如龟_1763997660291.png';
+import catImg from '@assets/隐身猫_1763997660297.png';
 
 export const archetypeAvatars: Record<string, string> = {
-  '开心柯基': '/placeholder-avatar.png',
-  '太阳鸡': '/placeholder-avatar.png',
-  '夸夸豚': '/placeholder-avatar.png',
-  '机智狐': '/placeholder-avatar.png',
-  '淡定海豚': '/placeholder-avatar.png',
-  '织网蛛': '/placeholder-avatar.png',
-  '暖心熊': '/placeholder-avatar.png',
-  '灵感章鱼': '/placeholder-avatar.png',
-  '沉思猫头鹰': '/placeholder-avatar.png',
-  '定心大象': '/placeholder-avatar.png',
-  '稳如龟': '/placeholder-avatar.png',
-  '隐身猫': '/placeholder-avatar.png',
+  '开心柯基': corgiImg,
+  '太阳鸡': chickenImg,
+  '夸夸豚': dolphinImg,
+  '机智狐': foxImg,
+  '淡定海豚': calmDolphinImg,
+  '织网蛛': spiderImg,
+  '暖心熊': bearImg,
+  '灵感章鱼': octopusImg,
+  '沉思猫头鹰': owlImg,
+  '定心大象': elephantImg,
+  '稳如龟': turtleImg,
+  '隐身猫': catImg,
 };
 
 // Gradient backgrounds for each archetype (energy-based color mapping)

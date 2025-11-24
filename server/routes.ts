@@ -483,6 +483,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get archetype role distribution (percentage of users for each role)
+  app.get('/api/personality/role-distribution', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      // Get all users with personality results
+      const allUsers = await db.select({ primaryRole: users.primaryRole }).from(users).where(users.primaryRole != null);
+      
+      if (allUsers.length === 0) {
+        // Return default distribution if no users yet
+        const defaultDistribution: Record<string, number> = {
+          '开心柯基': 8,
+          '太阳鸡': 9,
+          '夸夸豚': 8,
+          '机智狐': 9,
+          '淡定海豚': 8,
+          '织网蛛': 7,
+          '暖心熊': 9,
+          '灵感章鱼': 8,
+          '沉思猫头鹰': 7,
+          '定心大象': 6,
+          '稳如龟': 5,
+          '隐身猫': 6,
+        };
+        return res.json(defaultDistribution);
+      }
+
+      // Count users by primary role
+      const distribution: Record<string, number> = {
+        '开心柯基': 0,
+        '太阳鸡': 0,
+        '夸夸豚': 0,
+        '机智狐': 0,
+        '淡定海豚': 0,
+        '织网蛛': 0,
+        '暖心熊': 0,
+        '灵感章鱼': 0,
+        '沉思猫头鹰': 0,
+        '定心大象': 0,
+        '稳如龟': 0,
+        '隐身猫': 0,
+      };
+
+      allUsers.forEach((user) => {
+        if (user.primaryRole && distribution.hasOwnProperty(user.primaryRole)) {
+          distribution[user.primaryRole] += 1;
+        }
+      });
+
+      // Convert to percentages
+      const total = allUsers.length;
+      const percentages: Record<string, number> = {};
+      Object.keys(distribution).forEach((role) => {
+        percentages[role] = Math.round((distribution[role] / total) * 100);
+      });
+
+      res.json(percentages);
+    } catch (error) {
+      console.error("Error fetching role distribution:", error);
+      res.status(500).json({ message: "Failed to fetch role distribution" });
+    }
+  });
+
   // Profile routes
   app.post('/api/profile/setup', isPhoneAuthenticated, async (req: any, res) => {
     try {

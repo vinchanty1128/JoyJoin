@@ -8,8 +8,9 @@ import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2, Quote, Targe
 import type { RoleResult } from '@shared/schema';
 import { queryClient } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { archetypeGradients, archetypeEmojis } from '@/lib/archetypeAvatars';
+import { archetypeGradients, archetypeAvatars, archetypeEmojis } from '@/lib/archetypeAvatars';
 import { archetypeConfig } from '@/lib/archetypes';
+import { getTopCompatibleArchetypes, getCompatibilityCategory } from '@/lib/archetypeCompatibility';
 import { useState, useEffect } from 'react';
 
 export default function PersonalityTestResultPage() {
@@ -23,6 +24,10 @@ export default function PersonalityTestResultPage() {
 
   const { data: stats } = useQuery<Record<string, number>>({
     queryKey: ['/api/personality-test/stats'],
+  });
+
+  const { data: roleDistribution } = useQuery<Record<string, number>>({
+    queryKey: ['/api/personality/role-distribution'],
   });
 
   // Countdown timer effect
