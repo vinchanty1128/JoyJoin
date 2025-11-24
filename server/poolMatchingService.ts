@@ -109,27 +109,42 @@ function meetsHardConstraints(
 
 /**
  * 计算两个用户之间的性格化学反应分数 (0-100)
+ * 考虑主角色（70%）和次要角色的交叉兼容性（各15%，共30%）
  */
 function calculateChemistryScore(user1: UserWithProfile, user2: UserWithProfile): number {
-  const archetype1 = user1.archetype || "暖心熊";
-  const archetype2 = user2.archetype || "暖心熊";
+  const primary1 = user1.archetype || "暖心熊";
+  const primary2 = user2.archetype || "暖心熊";
+  const secondary1 = user1.secondaryArchetype || "暖心熊";
+  const secondary2 = user2.secondaryArchetype || "暖心熊";
   
-  return CHEMISTRY_MATRIX[archetype1]?.[archetype2] || 50;
+  // 主角色化学反应（70%权重）
+  const primaryChemistry = (CHEMISTRY_MATRIX[primary1]?.[primary2] || 50) * 0.70;
+  
+  // 次要角色交叉加成（各15%权重，共30%）
+  const crossChemistry1 = (CHEMISTRY_MATRIX[primary1]?.[secondary2] || 50) * 0.15;
+  const crossChemistry2 = (CHEMISTRY_MATRIX[secondary1]?.[primary2] || 50) * 0.15;
+  
+  return Math.round(primaryChemistry + crossChemistry1 + crossChemistry2);
 }
 
 /**
  * 计算兴趣重叠度 (0-100)
+ * 使用Jaccard系数：交集 / 并集
  */
 function calculateInterestScore(user1: UserWithProfile, user2: UserWithProfile): number {
   const interests1 = user1.interestsTop || [];
   const interests2 = user2.interestsTop || [];
   
-  if (interests1.length === 0 || interests2.length === 0) return 50;
+  if (interests1.length === 0 && interests2.length === 0) return 70; // 都没有兴趣记录，默认中等分数
+  if (interests1.length === 0 || interests2.length === 0) return 30; // 一方没有记录，低分
   
   const overlap = interests1.filter(i => interests2.includes(i)).length;
-  const totalUnique = new Set([...interests1, ...interests2]).size;
+  const union = new Set([...interests1, ...interests2]).size;
   
-  return Math.round((overlap / totalUnique) * 100);
+  // Jaccard系数：(交集大小 / 并集大小) * 85 + 15
+  // 无重叠=15分，完全重叠=100分
+  const jaccardRatio = overlap / union;
+  return Math.round(jaccardRatio * 85 + 15);
 }
 
 /**
@@ -221,10 +236,10 @@ function calculatePairScore(user1: UserWithProfile, user2: UserWithProfile): num
   // 权重配置：仅包含配对兼容性维度（总和100%）
   // diversity在小组层面单独计算，避免重复计算
   const weights = {
-    chemistry: 0.375,   // 性格兼容性 37.5%
-    interest: 0.3125,   // 兴趣重叠 31.25%
-    preference: 0.25,   // 活动偏好 25%
-    language: 0.1875    // 语言沟通 18.75%
+    chemistry: 0.35,   // 性格兼容性 35%
+    interest: 0.30,    // 兴趣重叠 30%
+    preference: 0.20,  // 活动偏好 20%
+    language: 0.15     // 语言沟通 15%
   };
   
   const totalScore = 
@@ -398,6 +413,7 @@ export async function matchEventPool(poolId: string): Promise<MatchGroup[]> {
       seniority: users.seniority,
       educationLevel: users.educationLevel,
       archetype: users.archetype,
+      secondaryArchetype: users.secondaryRole,
       interestsTop: users.interestsTop,
       languagesComfort: users.languagesComfort,
     })

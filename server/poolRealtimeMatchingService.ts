@@ -41,9 +41,9 @@ async function getActiveThresholds() {
   // 如果没有配置，返回默认值
   if (!config) {
     return {
-      highCompatibilityThreshold: 85,
-      mediumCompatibilityThreshold: 70,
-      lowCompatibilityThreshold: 55,
+      highCompatibilityThreshold: 82,
+      mediumCompatibilityThreshold: 67,
+      lowCompatibilityThreshold: 52,
       timeDecayEnabled: true,
       timeDecayRate: 5,
       minThresholdAfterDecay: 50,
