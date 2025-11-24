@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MiniRadarChart from "@/components/MiniRadarChart";
+import { personalityQuestions as questions } from "@/data/personalityQuestions";
 
 interface QuestionOption {
   value: string;
@@ -26,139 +27,6 @@ interface Question {
   questionType: "single" | "dual";
   options: QuestionOption[];
 }
-
-const questions: Question[] = [
-  {
-    id: 1,
-    category: "基础行为模式",
-    scenarioText: "🎉 想象一下：周五晚上，你走进了一个温馨的私房菜餐厅，参加一场小型聚会...",
-    questionText: "聚会伊始…你通常会？",
-    questionType: "single",
-    options: [
-      { value: "A", text: "率先自我介绍，并抛出开放问题。", roleMapping: "火花塞" },
-      { value: "B", text: "先安静观察，判断性格与共同点。", roleMapping: "连接者" },
-      { value: "C", text: "与邻座小声交谈，从一对一开始。", roleMapping: "连接者" },
-      { value: "D", text: "等待别人开启话题，随后积极回应。", roleMapping: "氛围组" },
-    ],
-  },
-  {
-    id: 2,
-    category: "基础行为模式",
-    scenarioText: "💬 话题转向你并不熟悉的领域，例如区块链技术或古典音乐...",
-    questionText: "当讨论到你知之甚少的话题时更倾向于？",
-    questionType: "single",
-    options: [
-      { value: "A", text: "提出一系列问题，强烈好奇心。", roleMapping: "探索者" },
-      { value: "B", text: "关联熟悉领域进行类比。", roleMapping: "挑战者" },
-      { value: "C", text: "认真聆听，捕捉观点或故事。", roleMapping: "故事家" },
-      { value: "D", text: "开个玩笑，承认不懂，把发言权交给专家。", roleMapping: "肯定者" },
-    ],
-  },
-  {
-    id: 3,
-    category: "基础行为模式",
-    scenarioText: "😢 气氛突然变得安静，有人刚分享了一段动人的个人经历...",
-    questionText: "当有人分享私人感人故事后沉默，你会？",
-    questionType: "single",
-    options: [
-      { value: "A", text: "分享类似经历以示共鸣。", roleMapping: "故事家" },
-      { value: "B", text: "提出深刻问题促进探讨。", roleMapping: "探索者" },
-      { value: "C", text: "真诚肯定对方（如\"谢谢你愿意分享\"）。", roleMapping: "连接者" },
-      { value: "D", text: "巧妙引入更轻松的话题调节情绪。", roleMapping: "氛围组" },
-    ],
-  },
-  {
-    id: 4,
-    category: "基础行为模式",
-    scenarioText: "🤔 两位朋友开始就某个话题展开辩论，观点针锋相对...",
-    questionText: "你如何看待社交中的\"争论\"？",
-    questionType: "single",
-    options: [
-      { value: "A", text: "有趣，获取新视角的机会。", roleMapping: "挑战者" },
-      { value: "B", text: "必要但需礼貌与逻辑，最好达成共识。", roleMapping: "协调者" },
-      { value: "C", text: "尽量避免，更喜欢和谐氛围。", roleMapping: "连接者" },
-      { value: "D", text: "若过于激烈，我会插科打诨平息。", roleMapping: "氛围组" },
-    ],
-  },
-  {
-    id: 5,
-    category: "反应偏好",
-    scenarioText: "💭 有人说出一个你并不认同的观点...",
-    questionText: "听到不同意的观点时更可能：",
-    questionType: "dual",
-    options: [
-      { value: "A", text: "直接但礼貌地指出逻辑漏洞/事实错误。", roleMapping: "挑战者" },
-      { value: "B", text: "以提问方式引导思考前提。", roleMapping: "协调者" },
-      { value: "C", text: "先表理解，再给另一角度。", roleMapping: "故事家" },
-      { value: "D", text: "保留意见，除非被询问不主动反驳。", roleMapping: "肯定者" },
-    ],
-  },
-  {
-    id: 6,
-    category: "反应偏好",
-    scenarioText: "🎯 在团队讨论中，你发现你可以贡献价值...",
-    questionText: "更擅长/享受的贡献方式：",
-    questionType: "dual",
-    options: [
-      { value: "A", text: "提供信息：数据与细节。", roleMapping: "探索者" },
-      { value: "B", text: "提供视角：新角度或框架。", roleMapping: "挑战者" },
-      { value: "C", text: "提供情感：故事与共情。", roleMapping: "故事家" },
-      { value: "D", text: "提供动力：赞美与鼓励。", roleMapping: "肯定者" },
-    ],
-  },
-  {
-    id: 7,
-    category: "反应偏好",
-    scenarioText: "🌟 有人提出了一个既有趣又复杂的话题...",
-    questionText: "有趣但复杂的话题被提起时你更推动：",
-    questionType: "dual",
-    options: [
-      { value: "A", text: "向下挖掘：为什么与本质，追求深度。", roleMapping: "探索者" },
-      { value: "B", text: "向外发散：还有什么相关，追求广度。", roleMapping: "火花塞" },
-      { value: "C", text: "向内连接：我们如何感受，联系体验。", roleMapping: "故事家" },
-      { value: "D", text: "向前推进：所以呢？能做什么？导向行动。", roleMapping: "协调者" },
-    ],
-  },
-  {
-    id: 8,
-    category: "自我认知",
-    scenarioText: "😰 回想你在社交场合中最不舒服的时刻...",
-    questionText: "社交中你最大的焦虑来自于？",
-    questionType: "single",
-    options: [
-      { value: "A", text: "话题无聊肤浅。", roleMapping: "探索者" },
-      { value: "B", text: "场面失控或无休止争吵。", roleMapping: "协调者" },
-      { value: "C", text: "自己或他人被忽视。", roleMapping: "连接者" },
-      { value: "D", text: "气氛冷清压抑。", roleMapping: "火花塞" },
-    ],
-  },
-  {
-    id: 9,
-    category: "自我认知",
-    scenarioText: "🙅 思考一下，在聚会中有些角色你就是做不来...",
-    questionText: "你最不可能扮演的角色是？",
-    questionType: "single",
-    options: [
-      { value: "A", text: "主动制止跑题的人。", roleMapping: "协调者" },
-      { value: "B", text: "为大家定规则或主题的人。", roleMapping: "协调者" },
-      { value: "C", text: "在争论中坚决维护某一方的人。", roleMapping: "连接者" },
-      { value: "D", text: "记下联系方式并事后组织聚会的人。", roleMapping: "连接者" },
-    ],
-  },
-  {
-    id: 10,
-    category: "自我认知",
-    scenarioText: "👥 如果你的朋友要向别人介绍你...",
-    questionText: "朋友形容你：",
-    questionType: "single",
-    options: [
-      { value: "A", text: "博学/深刻", roleMapping: "探索者" },
-      { value: "B", text: "有趣/好玩", roleMapping: "氛围组" },
-      { value: "C", text: "温暖/贴心", roleMapping: "连接者" },
-      { value: "D", text: "犀利/敏锐", roleMapping: "挑战者" },
-    ],
-  },
-];
 
 export default function PersonalityTestPage() {
   const [, setLocation] = useLocation();
