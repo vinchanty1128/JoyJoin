@@ -7,13 +7,14 @@ import EditFullProfileDialog from "@/components/EditFullProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Edit, LogOut, Shield, HelpCircle, Sparkles, User, GraduationCap, Briefcase, Heart, Star } from "lucide-react";
+import { Edit, LogOut, Shield, HelpCircle, Sparkles, User, GraduationCap, Briefcase, Heart, Star, Quote, Target } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { archetypeConfig } from "@/lib/archetypes";
+import { archetypeGradients } from "@/lib/archetypeAvatars";
 import {
   getGenderDisplay,
   calculateAge,
@@ -135,11 +136,26 @@ export default function ProfilePage() {
     };
   };
 
+  const getArchetypeDetails = () => {
+    const archetype = personalityResults?.primaryRole || user?.primaryRole;
+    if (!archetype) return null;
+    
+    const config = archetypeConfig[archetype];
+    if (!config) return null;
+    
+    return {
+      epicDescription: config.epicDescription,
+      styleQuote: config.styleQuote,
+      coreContributions: config.coreContributions,
+    };
+  };
+
   const handleEditProfile = () => {
     setLocation("/profile/edit");
   };
 
   const avatarConfig = getArchetypeAvatar();
+  const archetypeDetails = getArchetypeDetails();
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -194,6 +210,51 @@ export default function ProfilePage() {
             primaryRoleScore={personalityResults.primaryRoleScore}
             secondaryRoleScore={personalityResults.secondaryRoleScore}
           />
+        )}
+
+        {/* Role Details Card - Show rich archetype content */}
+        {hasCompletedQuiz && personalityResults && archetypeDetails && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                角色深度解读
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Epic Description */}
+              {archetypeDetails.epicDescription && (
+                <div className="space-y-2">
+                  <p className="text-sm leading-relaxed text-foreground/90" data-testid="text-epic-description">
+                    {archetypeDetails.epicDescription}
+                  </p>
+                </div>
+              )}
+
+              {/* Style Quote */}
+              {archetypeDetails.styleQuote && (
+                <div className={`relative bg-gradient-to-br ${archetypeGradients[personalityResults.primaryRole] || 'from-purple-500 to-pink-500'} bg-opacity-10 rounded-lg p-4 border-l-4 border-primary/50`}>
+                  <Quote className="w-6 h-6 text-primary/40 absolute top-2 left-2" />
+                  <p className="text-sm font-medium italic text-foreground pl-8" data-testid="text-style-quote">
+                    {archetypeDetails.styleQuote}
+                  </p>
+                </div>
+              )}
+
+              {/* Core Contributions */}
+              {archetypeDetails.coreContributions && (
+                <div className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
+                  <Target className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-muted-foreground">核心贡献</p>
+                    <p className="text-sm font-medium text-foreground" data-testid="text-core-contributions">
+                      {archetypeDetails.coreContributions}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {!hasCompletedQuiz ? (
