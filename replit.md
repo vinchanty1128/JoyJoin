@@ -20,10 +20,6 @@ JoyJoin (悦聚·Joy) is a social networking platform designed to connect indivi
   - Animated badge pulse effect for "专属测评"
   - Coach selection cards with hover scale and tap interactions
   - Smooth fade-in/fade-out sequences
-- **VoiceQuiz Progress Persistence:**
-  - Auto-save progress to localStorage (key: "voiceQuizProgress") on every state change
-  - Restore progress on component mount to prevent data loss on page refresh
-  - Auto-clear localStorage upon quiz completion
 - **RegistrationPage Progress Integration:** Added global `RegistrationProgress` component for consistent UX across registration flow
 
 ### November 24, 2025 - Archetype Rich Content Enhancement

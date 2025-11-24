@@ -49,33 +49,15 @@ const CONVERSATION_FLOW = [
 ];
 
 export default function VoiceQuiz({ onComplete, onSkip, coachGender }: VoiceQuizProps) {
-  // Initialize from localStorage if available
-  const savedProgress = typeof window !== "undefined" 
-    ? JSON.parse(localStorage.getItem("voiceQuizProgress") || "{}")
-    : {};
-  
-  const [currentStep, setCurrentStep] = useState(savedProgress.currentStep || 0);
+  const [currentStep, setCurrentStep] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCoachSpeaking, setIsCoachSpeaking] = useState(false);
   const [coachAudioTime, setCoachAudioTime] = useState(0);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [responses, setResponses] = useState<string[]>(savedProgress.responses || []);
-  const [showIntro, setShowIntro] = useState(savedProgress.showIntro !== false);
+  const [responses, setResponses] = useState<string[]>([]);
+  const [showIntro, setShowIntro] = useState(true);
   const [canRecord, setCanRecord] = useState(false);
-
-  // Auto-save progress to localStorage
-  useEffect(() => {
-    localStorage.setItem(
-      "voiceQuizProgress",
-      JSON.stringify({
-        currentStep,
-        responses,
-        showIntro,
-        timestamp: Date.now(),
-      })
-    );
-  }, [currentStep, responses, showIntro]);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -395,15 +377,6 @@ export default function VoiceQuiz({ onComplete, onSkip, coachGender }: VoiceQuiz
                 <Mic className="h-8 w-8" />
               )}
             </Button>
-
-            {/* 完成后清除进度 */}
-            {currentStep >= CONVERSATION_FLOW.length && (
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: "localStorage.removeItem('voiceQuizProgress');",
-                }}
-              />
-            )}
             
             <div className="text-center">
               {isCoachSpeaking ? (
