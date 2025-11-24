@@ -1,5 +1,5 @@
 /**
- * 14种社交性格原型配置
+ * 12-Archetype Animal Social Vibe System
  * 用于JoyJoin盲盒活动的AI匹配算法
  */
 
@@ -9,123 +9,119 @@ export const archetypeConfig: Record<string, {
   bgColor: string;
   description: string;
   traits: string[]; // 核心特质
+  energyLevel: number; // 社交能量值 (30-95)
 }> = {
-  // 1. 外向活力型（Energizers）
-  "火花塞": { 
-    icon: "🙌", 
+  // 高能量区 (82-95)
+  "开心柯基": { 
+    icon: "🐕", 
     color: "text-orange-600 dark:text-orange-400",
     bgColor: "bg-orange-100 dark:bg-orange-900/20",
-    description: "点燃话题的开场高手，能打破沉默，带动气氛",
-    traits: ["开场破冰", "带动气氛", "高能量", "热情"]
+    description: "团队永动机，摇尾点火官，擅长破冰和带动气氛",
+    traits: ["破冰高手", "活力充沛", "热情洋溢", "快速建立连接"],
+    energyLevel: 95
   },
-  "氛围组": { 
-    icon: "🎭", 
-    color: "text-pink-600 dark:text-pink-400",
-    bgColor: "bg-pink-100 dark:bg-pink-900/20",
-    description: "活跃气氛，用幽默和活力感染他人",
-    traits: ["幽默风趣", "表演力强", "感染力", "轻松愉快"]
+  "太阳鸡": { 
+    icon: "🐓", 
+    color: "text-amber-600 dark:text-amber-400",
+    bgColor: "bg-amber-100 dark:bg-amber-900/20",
+    description: "人间小暖气，咯咯小太阳，散发稳定温暖的正能量",
+    traits: ["温暖包容", "积极乐观", "照顾他人", "提升幸福感"],
+    energyLevel: 90
   },
-  "连接者": { 
-    icon: "🤝", 
+  "夸夸豚": { 
+    icon: "🐬", 
     color: "text-cyan-600 dark:text-cyan-400",
     bgColor: "bg-cyan-100 dark:bg-cyan-900/20",
-    description: "天生的社交桥梁，帮助他人建立联系",
-    traits: ["社交高手", "介绍引荐", "人脉广", "善于联结"]
+    description: "掌声发动机，首席鼓掌官，善于发现和放大他人优点",
+    traits: ["积极反馈", "鼓励他人", "热情回应", "增强信心"],
+    energyLevel: 85
   },
-  
-  // 2. 智慧探索型（Intellectuals）
-  "探索者": { 
-    icon: "🧭", 
-    color: "text-purple-600 dark:text-purple-400",
-    bgColor: "bg-purple-100 dark:bg-purple-900/20",
-    description: "好奇心驱动，喜欢发现新事物和深入讨论",
-    traits: ["好奇心强", "深度探索", "开放思维", "求知欲"]
-  },
-  "挑战者": { 
-    icon: "⚡", 
+  "机智狐": { 
+    icon: "🦊", 
     color: "text-red-600 dark:text-red-400",
     bgColor: "bg-red-100 dark:bg-red-900/20",
-    description: "思维敏锐，喜欢辩论和挑战传统观点",
-    traits: ["批判思维", "喜欢辩论", "逻辑严密", "不怕冲突"]
+    description: "城市探险家，巷口密探，好奇心强、信息灵通",
+    traits: ["探索新鲜", "信息丰富", "勇于尝试", "带来惊喜"],
+    energyLevel: 82
   },
-  "智者": { 
+  
+  // 中能量区 (68-75)
+  "淡定海豚": { 
+    icon: "🐬", 
+    color: "text-indigo-600 dark:text-indigo-400",
+    bgColor: "bg-indigo-100 dark:bg-indigo-900/20",
+    description: "气氛调频手，气氛冲浪手，情商高、应变力强",
+    traits: ["平衡氛围", "察觉情绪", "化解冲突", "灵活应变"],
+    energyLevel: 75
+  },
+  "织网蛛": { 
+    icon: "🕷️", 
+    color: "text-purple-600 dark:text-purple-400",
+    bgColor: "bg-purple-100 dark:bg-purple-900/20",
+    description: "社交黏合剂，关系织网师，善于建立连接和构建网络",
+    traits: ["连接他人", "发现共同点", "人脉广泛", "社交敏锐"],
+    energyLevel: 72
+  },
+  "暖心熊": { 
+    icon: "🐻", 
+    color: "text-pink-600 dark:text-pink-400",
+    bgColor: "bg-pink-100 dark:bg-pink-900/20",
+    description: "故事收藏家，怀抱故事熊，善于倾听和共情",
+    traits: ["深度倾听", "温暖包容", "情感连接", "真诚共情"],
+    energyLevel: 70
+  },
+  "灵感章鱼": { 
+    icon: "🐙", 
+    color: "text-violet-600 dark:text-violet-400",
+    bgColor: "bg-violet-100 dark:bg-violet-900/20",
+    description: "创意喷射器，脑洞喷墨章，思维跳跃、联想丰富",
+    traits: ["创意发散", "多线思维", "激发脑暴", "无穷想象"],
+    energyLevel: 68
+  },
+  
+  // 低能量区 (52-55)
+  "沉思猫头鹰": { 
     icon: "🦉", 
     color: "text-slate-600 dark:text-slate-400",
     bgColor: "bg-slate-100 dark:bg-slate-900/20",
-    description: "深思熟虑，提供有见地的观点和建议",
-    traits: ["深度思考", "洞察力强", "智慧沉稳", "理性分析"]
+    description: "哲学带师，推镜思考官，逻辑性强、善于提问",
+    traits: ["深度思考", "逻辑严密", "洞察力强", "发现盲点"],
+    energyLevel: 55
+  },
+  "定心大象": { 
+    icon: "🐘", 
+    color: "text-gray-600 dark:text-gray-400",
+    bgColor: "bg-gray-100 dark:bg-gray-900/20",
+    description: "团队定盘星，象鼻定心锚，稳重可靠、包容豁达",
+    traits: ["稳定支持", "可靠后盾", "包容大度", "安全感强"],
+    energyLevel: 52
   },
   
-  // 3. 温暖支持型（Nurturers）
-  "肯定者": { 
-    icon: "🌟", 
-    color: "text-yellow-600 dark:text-yellow-400",
-    bgColor: "bg-yellow-100 dark:bg-yellow-900/20",
-    description: "给予鼓励和支持，让他人感到被认可",
-    traits: ["积极鼓励", "善于倾听", "情感支持", "正能量"]
+  // 超低能量区 (30-38)
+  "稳如龟": { 
+    icon: "🐢", 
+    color: "text-emerald-600 dark:text-emerald-400",
+    bgColor: "bg-emerald-100 dark:bg-emerald-900/20",
+    description: "人间观察家，慢语真知龟，思考深入、言简意赅",
+    traits: ["深度洞察", "一针见血", "观察敏锐", "低频高质"],
+    energyLevel: 38
   },
-  "协调者": { 
-    icon: "🎯", 
+  "隐身猫": { 
+    icon: "🐱", 
     color: "text-indigo-600 dark:text-indigo-400",
     bgColor: "bg-indigo-100 dark:bg-indigo-900/20",
-    description: "平衡各方意见，确保每个人都被听到",
-    traits: ["平衡协调", "公平公正", "照顾全局", "化解矛盾"]
-  },
-  "守护者": { 
-    icon: "🛡️", 
-    color: "text-teal-600 dark:text-teal-400",
-    bgColor: "bg-teal-100 dark:bg-teal-900/20",
-    description: "创造安全空间，让每个人都感到被尊重",
-    traits: ["心理安全", "包容温暖", "保护弱势", "营造信任"]
-  },
-  
-  // 4. 创意表达型（Creatives）
-  "故事家": { 
-    icon: "📖", 
-    color: "text-green-600 dark:text-green-400",
-    bgColor: "bg-green-100 dark:bg-green-900/20",
-    description: "善于分享经历，用故事连接人心",
-    traits: ["故事讲述", "经历丰富", "感染力", "生动有趣"]
-  },
-  "梦想家": { 
-    icon: "🌈", 
-    color: "text-violet-600 dark:text-violet-400",
-    bgColor: "bg-violet-100 dark:bg-violet-900/20",
-    description: "充满创意和想象力，激发新的可能性",
-    traits: ["创意思维", "想象力", "未来导向", "启发灵感"]
-  },
-  "艺术家": { 
-    icon: "🎨", 
-    color: "text-fuchsia-600 dark:text-fuchsia-400",
-    bgColor: "bg-fuchsia-100 dark:bg-fuchsia-900/20",
-    description: "独特的审美视角，带来新鲜的观察角度",
-    traits: ["审美独特", "感性细腻", "艺术气质", "观察敏锐"]
-  },
-  
-  // 5. 务实执行型（Pragmatists）
-  "组织者": { 
-    icon: "📋", 
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-100 dark:bg-blue-900/20",
-    description: "高效有序，推动事情向前发展",
-    traits: ["高效执行", "结构清晰", "目标导向", "实际可行"]
-  },
-  "实干家": { 
-    icon: "🔧", 
-    color: "text-amber-600 dark:text-amber-400",
-    bgColor: "bg-amber-100 dark:bg-amber-900/20",
-    description: "注重实践，提供具体可行的解决方案",
-    traits: ["解决问题", "动手能力", "务实靠谱", "经验丰富"]
+    description: "安静陪伴者，安静伴伴猫，存在感低但不施加压力",
+    traits: ["安静陪伴", "轻松自在", "不施压力", "享受旁观"],
+    energyLevel: 30
   },
 };
 
-// 原型分类
+// 原型分类（按能量区分）
 export const archetypeCategories = {
-  energizers: ["火花塞", "氛围组", "连接者"],
-  intellectuals: ["探索者", "挑战者", "智者"],
-  nurturers: ["肯定者", "协调者", "守护者"],
-  creatives: ["故事家", "梦想家", "艺术家"],
-  pragmatists: ["组织者", "实干家"],
+  highEnergy: ["开心柯基", "太阳鸡", "夸夸豚", "机智狐"],
+  mediumEnergy: ["淡定海豚", "织网蛛", "暖心熊", "灵感章鱼"],
+  lowEnergy: ["沉思猫头鹰", "定心大象"],
+  veryLowEnergy: ["稳如龟", "隐身猫"],
 };
 
 // 获取所有原型名称
@@ -139,4 +135,14 @@ export function getArchetypesByCategory(category: keyof typeof archetypeCategori
 // 检查是否为有效原型
 export function isValidArchetype(archetype: string): boolean {
   return allArchetypes.includes(archetype);
+}
+
+// 根据能量等级获取原型
+export function getArchetypesByEnergyRange(min: number, max: number): string[] {
+  return allArchetypes.filter(
+    archetype => {
+      const energy = archetypeConfig[archetype].energyLevel;
+      return energy >= min && energy <= max;
+    }
+  );
 }
