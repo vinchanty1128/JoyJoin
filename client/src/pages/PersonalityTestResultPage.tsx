@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import PersonalityRadarChart from '@/components/PersonalityRadarChart';
-import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2 } from 'lucide-react';
+import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2, Quote, Target } from 'lucide-react';
 import type { RoleResult } from '@shared/schema';
 import { queryClient } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -307,6 +307,58 @@ export default function PersonalityTestResultPage() {
 
       {/* Scrollable Content Section */}
       <div className="max-w-2xl mx-auto p-4 pb-8 space-y-4">
+        {/* Role Details Card - Epic Description & Style Quote */}
+        {(epicDescription || styleQuote || coreContributions) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  角色深度解读
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Epic Description */}
+                {epicDescription && (
+                  <div className="space-y-2">
+                    <p className="text-sm leading-relaxed text-foreground/90" data-testid="text-epic-description">
+                      {epicDescription}
+                    </p>
+                  </div>
+                )}
+
+                {/* Style Quote */}
+                {styleQuote && (
+                  <div className={`relative bg-gradient-to-br ${gradient} bg-opacity-10 rounded-lg p-4 border-l-4 border-primary/50`}>
+                    <Quote className="w-6 h-6 text-primary/40 absolute top-2 left-2" />
+                    <p className="text-sm font-medium italic text-foreground pl-8" data-testid="text-style-quote">
+                      {styleQuote}
+                    </p>
+                  </div>
+                )}
+
+                {/* Core Contributions */}
+                {coreContributions && (
+                  <div className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
+                    <Target className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-muted-foreground">核心贡献</p>
+                      <p className="text-sm font-medium text-foreground" data-testid="text-core-contributions">
+                        {coreContributions}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Radar Chart Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
