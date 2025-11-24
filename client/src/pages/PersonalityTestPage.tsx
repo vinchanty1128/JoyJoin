@@ -116,6 +116,21 @@ export default function PersonalityTestPage() {
 
   const currentQ = questions[currentQuestion];
   const progress = ((currentQuestion + 1) / questions.length) * 100;
+  
+  // Gamified progress milestones
+  const getProgressLabel = () => {
+    if (isSupplementaryMode) {
+      const suppProgress = currentQuestion - 9;
+      return `精准定位 ${Math.round((suppProgress / supplementaryQuestions.length) * 100)}%`;
+    }
+    
+    const baseProgress = currentQuestion + 1;
+    if (baseProgress <= 3) return "探索社交DNA 🧬";
+    if (baseProgress <= 5) return "解析性格密码 🔐";
+    if (baseProgress <= 7) return "绘制人格图谱 🗺️";
+    if (baseProgress <= 9) return "揭示社交潜能 ✨";
+    return "即将完成分析 🎯";
+  };
   const isLastQuestion = currentQuestion === questions.length - 1;
 
   const handleSingleChoice = (value: string) => {
@@ -396,7 +411,17 @@ export default function PersonalityTestPage() {
             )}
           </span>
         </div>
-        <Progress value={progress} className="h-2" />
+        <div className="space-y-1">
+          <Progress value={progress} className="h-2" />
+          <div className="flex items-center justify-between text-xs">
+            <span className={`font-medium ${isSupplementaryMode ? 'text-purple-600 dark:text-purple-400' : 'text-muted-foreground'}`}>
+              {getProgressLabel()}
+            </span>
+            <span className="text-muted-foreground">
+              {Math.round(progress)}%
+            </span>
+          </div>
+        </div>
         {isSupplementaryMode && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
