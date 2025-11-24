@@ -179,3 +179,67 @@ export function formatArray(arr: string[] | null | undefined): string {
   if (!arr || arr.length === 0) return "";
   return arr.join(" · ");
 }
+
+/**
+ * 12个社交氛围原型映射
+ */
+export const archetypeMap: Record<string, string> = {
+  "开心柯基": "开心柯基 🐶",
+  "太阳鸡": "太阳鸡 🐔",
+  "夸夸豚": "夸夸豚 🐹",
+  "机智狐": "机智狐 🦊",
+  "淡定海豚": "淡定海豚 🐬",
+  "织网蛛": "织网蛛 🕷️",
+  "暖心熊": "暖心熊 🐨",
+  "灵感章鱼": "灵感章鱼 🐙",
+  "沉思猫头鹰": "沉思猫头鹰 🦉",
+  "定心大象": "定心大象 🐘",
+  "稳如龟": "稳如龟 🐢",
+  "隐身猫": "隐身猫 🐱",
+};
+
+export const archetypeNicknameMap: Record<string, string> = {
+  "开心柯基": "摇尾点火官",
+  "太阳鸡": "咯咯小太阳",
+  "夸夸豚": "掌声发动机",
+  "机智狐": "巷口密探",
+  "淡定海豚": "气氛冲浪手",
+  "织网蛛": "关系织网师",
+  "暖心熊": "怀抱故事熊",
+  "灵感章鱼": "脑洞喷墨章",
+  "沉思猫头鹰": "推镜思考官",
+  "定心大象": "象鼻定心锚",
+  "稳如龟": "慢语真知龟",
+  "隐身猫": "安静伴伴猫",
+};
+
+export const archetypeOptions = [
+  { value: "开心柯基", label: "开心柯基 🐶", nickname: "摇尾点火官", energy: 95 },
+  { value: "太阳鸡", label: "太阳鸡 🐔", nickname: "咯咯小太阳", energy: 90 },
+  { value: "夸夸豚", label: "夸夸豚 🐹", nickname: "掌声发动机", energy: 85 },
+  { value: "机智狐", label: "机智狐 🦊", nickname: "巷口密探", energy: 82 },
+  { value: "淡定海豚", label: "淡定海豚 🐬", nickname: "气氛冲浪手", energy: 75 },
+  { value: "织网蛛", label: "织网蛛 🕷️", nickname: "关系织网师", energy: 72 },
+  { value: "暖心熊", label: "暖心熊 🐨", nickname: "怀抱故事熊", energy: 70 },
+  { value: "灵感章鱼", label: "灵感章鱼 🐙", nickname: "脑洞喷墨章", energy: 68 },
+  { value: "沉思猫头鹰", label: "沉思猫头鹰 🦉", nickname: "推镜思考官", energy: 55 },
+  { value: "定心大象", label: "定心大象 🐘", nickname: "象鼻定心锚", energy: 52 },
+  { value: "稳如龟", label: "稳如龟 🐢", nickname: "慢语真知龟", energy: 38 },
+  { value: "隐身猫", label: "隐身猫 🐱", nickname: "安静伴伴猫", energy: 30 },
+] as const;
+
+/**
+ * Get archetype display text (with emoji)
+ */
+export function getArchetypeDisplay(archetype: string | null | undefined): string {
+  if (!archetype) return "";
+  return archetypeMap[archetype] || archetype;
+}
+
+/**
+ * Get archetype nickname
+ */
+export function getArchetypeNickname(archetype: string | null | undefined): string {
+  if (!archetype) return "";
+  return archetypeNicknameMap[archetype] || "";
+}
