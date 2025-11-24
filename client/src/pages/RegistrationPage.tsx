@@ -267,6 +267,12 @@ export default function RegistrationPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <RegistrationProgress 
+        currentStage="basic" 
+        currentStep={step}
+        totalSteps={totalSteps}
+      />
+
       {/* Header with progress */}
       <div className="p-4 border-b bg-background sticky top-0 z-10">
         <div className="flex items-center justify-between mb-2">
