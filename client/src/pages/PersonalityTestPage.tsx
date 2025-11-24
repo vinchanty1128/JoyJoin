@@ -363,11 +363,22 @@ export default function PersonalityTestPage() {
       </AnimatePresence>
 
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className={`p-4 border-b ${isSupplementaryMode ? 'bg-gradient-to-r from-purple-500/10 to-amber-500/10' : ''}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold">性格测评</h1>
-            {Object.keys(answers).length > 0 && (
+            <h1 className="text-lg font-bold">
+              {isSupplementaryMode ? (
+                <span className="flex items-center gap-2">
+                  <span className="bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
+                    精准模式
+                  </span>
+                  <span className="text-xl">🎯</span>
+                </span>
+              ) : (
+                "性格测评"
+              )}
+            </h1>
+            {Object.keys(answers).length > 0 && !isSupplementaryMode && (
               <MiniRadarChart 
                 progress={progress}
                 answeredQuestions={Object.keys(answers).length}
@@ -376,10 +387,25 @@ export default function PersonalityTestPage() {
             )}
           </div>
           <span className="text-sm text-muted-foreground">
-            {currentQuestion + 1}/{questions.length}
+            {isSupplementaryMode ? (
+              <span className="font-medium bg-gradient-to-r from-purple-600 to-amber-600 bg-clip-text text-transparent">
+                深入探索 {currentQuestion - 9}/{supplementaryQuestions.length}
+              </span>
+            ) : (
+              `${currentQuestion + 1}/${questions.length}`
+            )}
           </span>
         </div>
         <Progress value={progress} className="h-2" />
+        {isSupplementaryMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-2 text-xs text-center text-muted-foreground"
+          >
+            正在精准区分：{candidateArchetypes[0]?.name} vs {candidateArchetypes[1]?.name}
+          </motion.div>
+        )}
       </div>
 
       {/* Question content */}
