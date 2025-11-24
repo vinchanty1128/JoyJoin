@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Check, Heart, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { archetypeConfig } from "@/lib/archetypes";
 import { 
@@ -59,17 +59,46 @@ export default function SelectConnectionsStep({
         <CardContent className="p-6 space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
-            <div className="text-4xl">💫</div>
-            <h2 className="text-xl font-bold">选择想继续联系的人</h2>
-            <p className="text-sm text-muted-foreground">
+            <motion.div 
+              className="flex justify-center"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Heart className="h-8 w-8 text-primary fill-primary" />
+            </motion.div>
+            <motion.h2 
+              className="text-xl font-bold"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              选择想继续联系的人
+            </motion.h2>
+            <motion.p 
+              className="text-sm text-muted-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               只有双方互选才会解锁1对1私聊，保护你的隐私
-            </p>
+            </motion.p>
           </div>
 
           {/* Info Banner */}
-          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+          <motion.div 
+            className="bg-primary/5 border border-primary/20 rounded-lg p-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
             <div className="flex items-start gap-3">
-              <div className="text-2xl">🔒</div>
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Lock className="h-5 w-5 text-primary mt-0.5" />
+              </motion.div>
               <div className="flex-1 text-sm">
                 <p className="font-medium text-primary mb-1">隐私保护机制</p>
                 <p className="text-muted-foreground leading-relaxed">
@@ -77,7 +106,7 @@ export default function SelectConnectionsStep({
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Attendee Selection */}
           <div className="space-y-3">

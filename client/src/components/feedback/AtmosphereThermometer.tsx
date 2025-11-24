@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { motion } from "framer-motion";
+import { ThermometerSun, Frown, Meh, Smile, Heart } from "lucide-react";
 
 interface AtmosphereThermometerProps {
   initialScore?: number;
@@ -12,11 +13,11 @@ interface AtmosphereThermometerProps {
 }
 
 const ATMOSPHERE_LABELS = [
-  { value: 1, emoji: "😞", label: "尴尬", description: "气氛不太好" },
-  { value: 2, emoji: "😐", label: "平淡", description: "感觉还行" },
-  { value: 3, emoji: "😊", label: "舒适", description: "挺愉快的" },
-  { value: 4, emoji: "🤩", label: "热烈", description: "非常开心" },
-  { value: 5, emoji: "✨", label: "完美", description: "太棒了！" },
+  { value: 1, Icon: Frown, label: "尴尬", description: "气氛不太好", color: "text-destructive" },
+  { value: 2, Icon: Meh, label: "平淡", description: "感觉还行", color: "text-warning" },
+  { value: 3, Icon: Smile, label: "舒适", description: "挺愉快的", color: "text-primary" },
+  { value: 4, Icon: Heart, label: "热烈", description: "非常开心", color: "text-primary" },
+  { value: 5, Icon: ThermometerSun, label: "完美", description: "太棒了！", color: "text-primary" },
 ];
 
 export default function AtmosphereThermometer({ 
@@ -52,9 +53,32 @@ export default function AtmosphereThermometer({
         <CardContent className="p-6 space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
-            <div className="text-4xl">{currentLabel.emoji}</div>
-            <h2 className="text-xl font-bold">现场氛围如何？</h2>
-            <p className="text-sm text-muted-foreground">滑动描述你的感受</p>
+            <motion.div
+              key={score}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.5, ease: "backOut" }}
+              className="flex justify-center"
+            >
+              <currentLabel.Icon className={`h-8 w-8 ${currentLabel.color}`} />
+            </motion.div>
+            <motion.h2 
+              className="text-xl font-bold"
+              key={`${score}-label`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              现场氛围如何？
+            </motion.h2>
+            <motion.p 
+              className="text-sm text-muted-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              滑动描述你的感受
+            </motion.p>
           </div>
 
           {/* Thermometer Visualization */}
@@ -87,12 +111,15 @@ export default function AtmosphereThermometer({
             />
 
             {/* Labels */}
-            <div className="flex justify-between text-xs text-muted-foreground px-2">
-              <span>😞 尴尬</span>
-              <span>😐 平淡</span>
-              <span>😊 舒适</span>
-              <span>🤩 热烈</span>
-              <span>✨ 完美</span>
+            <div className="flex justify-between text-xs px-2">
+              {ATMOSPHERE_LABELS.map((label) => (
+                <div key={label.value} className="text-center">
+                  <label.Icon className={`h-4 w-4 mx-auto mb-1 ${score === label.value ? label.color : 'text-muted-foreground'}`} />
+                  <span className={score === label.value ? 'font-semibold text-foreground' : 'text-muted-foreground'}>
+                    {label.label}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 

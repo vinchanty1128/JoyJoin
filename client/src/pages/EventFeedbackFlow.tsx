@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, Sparkles, UtensilsCrossed, Wine, Calendar, Clock, MapPin, Users, Gift, Star, Target, CheckCircle2 } from "lucide-react";
+import { motion } from "framer-motion";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 import AtmosphereThermometer from "@/components/feedback/AtmosphereThermometer";
 import SelectConnectionsStep from "@/components/feedback/SelectConnectionsStep";
@@ -239,13 +240,35 @@ function IntroStep({ event, onNext }: { event: BlindBoxEvent; onNext: () => void
       <CardContent className="p-6 space-y-5">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
-            <Sparkles className="h-7 w-7 text-primary" />
-          </div>
-          <h1 className="text-xl font-bold">分享你的活动体验</h1>
-          <p className="text-sm text-muted-foreground">
+          <motion.div 
+            className="mx-auto w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center"
+            initial={{ scale: 0, rotate: -180, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            transition={{ duration: 0.6, ease: "backOut" }}
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            >
+              <Sparkles className="h-7 w-7 text-primary" />
+            </motion.div>
+          </motion.div>
+          <motion.h1 
+            className="text-xl font-bold"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            分享你的活动体验
+          </motion.h1>
+          <motion.p 
+            className="text-sm text-muted-foreground"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
             约需2分钟，帮我们做得更好
-          </p>
+          </motion.p>
         </div>
 
         {/* Event Info Card */}

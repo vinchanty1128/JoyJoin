@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Target, Dice5, Home, BookOpen, Clock, UtensilsCrossed, Lightbulb } from "lucide-react";
 
 interface ImprovementCardsProps {
   initialAreas?: string[];
@@ -14,12 +14,12 @@ interface ImprovementCardsProps {
 }
 
 const IMPROVEMENT_OPTIONS = [
-  { id: "matching", label: "更精准的匹配算法", emoji: "🎯", description: "提升桌友匹配度" },
-  { id: "icebreaker", label: "更有趣的破冰环节", emoji: "🎲", description: "快速打开话题" },
-  { id: "venue", label: "更舒适的活动场地", emoji: "🏠", description: "提升环境体验" },
-  { id: "theme", label: "更明确的主题引导", emoji: "📋", description: "让聊天更有方向" },
-  { id: "timing", label: "优化活动时间安排", emoji: "⏰", description: "更合理的时长" },
-  { id: "food", label: "更好的餐饮选择", emoji: "🍽️", description: "提升用餐体验" },
+  { id: "matching", label: "更精准的匹配算法", icon: Target, description: "提升桌友匹配度" },
+  { id: "icebreaker", label: "更有趣的破冰环节", icon: Dice5, description: "快速打开话题" },
+  { id: "venue", label: "更舒适的活动场地", icon: Home, description: "提升环境体验" },
+  { id: "theme", label: "更明确的主题引导", icon: BookOpen, description: "让聊天更有方向" },
+  { id: "timing", label: "优化活动时间安排", icon: Clock, description: "更合理的时长" },
+  { id: "food", label: "更好的餐饮选择", icon: UtensilsCrossed, description: "提升用餐体验" },
 ];
 
 export default function ImprovementCards({
@@ -59,11 +59,30 @@ export default function ImprovementCards({
         <CardContent className="p-6 space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
-            <div className="text-4xl">🎯</div>
-            <h2 className="text-xl font-bold">让下次更完美</h2>
-            <p className="text-sm text-muted-foreground">
+            <motion.div
+              className="flex justify-center"
+              initial={{ opacity: 0, scale: 0, rotate: -180 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.6, ease: "backOut" }}
+            >
+              <Target className="h-8 w-8 text-primary" />
+            </motion.div>
+            <motion.h2 
+              className="text-xl font-bold"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              让下次更完美
+            </motion.h2>
+            <motion.p 
+              className="text-sm text-muted-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               选择最重要的改进方向（最多3项）
-            </p>
+            </motion.p>
           </div>
 
           {/* Selection Counter */}
@@ -89,17 +108,30 @@ export default function ImprovementCards({
                 >
                   <button
                     onClick={() => toggleArea(option.id)}
-                    className={`w-full p-4 rounded-lg border-2 text-left transition-all hover-elevate active-elevate-2 ${
+                    className={`relative w-full p-4 rounded-lg border-2 text-left transition-all hover-elevate active-elevate-2 ${
                       isSelected
-                        ? "border-primary bg-primary/5"
+                        ? "border-primary bg-primary/5 shadow-lg shadow-primary/20"
                         : "border-border bg-background"
                     }`}
                     data-testid={`improvement-card-${option.id}`}
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Emoji & Check */}
-                      <div className="relative">
-                        <div className="text-2xl">{option.emoji}</div>
+                    {isSelected && (
+                      <motion.div
+                        className="absolute inset-0 rounded-lg bg-primary/10 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    )}
+                    <div className="relative z-10 flex items-start gap-3">
+                      {/* Icon & Check */}
+                      <div className="relative flex-shrink-0">
+                        <motion.div
+                          animate={isSelected ? { scale: 1.1 } : { scale: 1 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <option.icon className="h-6 w-6 text-primary" />
+                        </motion.div>
                         {isSelected && (
                           <motion.div
                             initial={{ scale: 0 }}
@@ -138,7 +170,7 @@ export default function ImprovementCards({
           {/* Other Suggestions */}
           <div className="space-y-2 pt-4 border-t">
             <label className="text-sm font-medium flex items-center gap-2">
-              <span>💡</span>
+              <Lightbulb className="h-4 w-4 text-primary" />
               <span>其他建议</span>
             </label>
             <Textarea
@@ -194,8 +226,9 @@ export default function ImprovementCards({
             {selectedAreas.map((areaId) => {
               const option = IMPROVEMENT_OPTIONS.find(o => o.id === areaId);
               return option ? (
-                <Badge key={areaId} variant="secondary" className="text-xs">
-                  {option.emoji} {option.label}
+                <Badge key={areaId} variant="secondary" className="text-xs flex items-center gap-1">
+                  <option.icon className="h-3 w-3" />
+                  <span>{option.label}</span>
                 </Badge>
               ) : null;
             })}
