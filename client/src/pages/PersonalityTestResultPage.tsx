@@ -7,12 +7,15 @@ import PersonalityRadarChart from '@/components/PersonalityRadarChart';
 import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2 } from 'lucide-react';
 import type { RoleResult } from '@shared/schema';
 import { queryClient } from '@/lib/queryClient';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { archetypeGradients, archetypeEmojis } from '@/lib/archetypeAvatars';
 import { archetypeConfig } from '@/lib/archetypes';
+import { useState, useEffect } from 'react';
 
 export default function PersonalityTestResultPage() {
   const [, setLocation] = useLocation();
+  const [showCountdown, setShowCountdown] = useState(true);
+  const [countdown, setCountdown] = useState(3);
 
   const { data: result, isLoading } = useQuery<RoleResult>({
     queryKey: ['/api/personality-test/results'],
@@ -21,6 +24,23 @@ export default function PersonalityTestResultPage() {
   const { data: stats } = useQuery<Record<string, number>>({
     queryKey: ['/api/personality-test/stats'],
   });
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!result || !showCountdown) return;
+
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => {
+        setShowCountdown(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown, result, showCountdown]);
 
   if (isLoading) {
     return (
@@ -121,8 +141,116 @@ export default function PersonalityTestResultPage() {
     }
   };
 
+  // Countdown Reveal Animation
+  const CountdownReveal = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-background z-50 flex items-center justify-center"
+    >
+      <div className="text-center space-y-8">
+        <AnimatePresence mode="wait">
+          {countdown > 0 ? (
+            <motion.div
+              key={countdown}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: [0.5, 1.2, 1], opacity: 1 }}
+              exit={{ scale: 1.5, opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-9xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+            >
+              {countdown}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="reveal"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              className="space-y-6"
+            >
+              <motion.div
+                animate={{
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0],
+                }}
+                transition={{
+                  duration: 0.6,
+                  ease: "easeInOut"
+                }}
+                className="text-9xl"
+              >
+                {emoji}
+              </motion.div>
+              
+              {/* Particle explosion effect */}
+              <div className="relative">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ 
+                      x: 0, 
+                      y: 0, 
+                      scale: 1,
+                      opacity: 1 
+                    }}
+                    animate={{
+                      x: Math.cos((i * 360 / 20) * Math.PI / 180) * 150,
+                      y: Math.sin((i * 360 / 20) * Math.PI / 180) * 150,
+                      scale: 0,
+                      opacity: 0
+                    }}
+                    transition={{
+                      duration: 0.8,
+                      ease: "easeOut"
+                    }}
+                    className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                    style={{
+                      transformOrigin: 'center'
+                    }}
+                  />
+                ))}
+              </div>
+              
+              <motion.h2
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className={`text-4xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}
+              >
+                {result.primaryRole}
+              </motion.h2>
+              
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-lg text-muted-foreground"
+              >
+                {result.roleSubtype}
+              </motion.p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-sm text-muted-foreground"
+        >
+          {countdown > 0 ? '即将揭晓你的社交角色...' : '✨ 你的独特社交DNA已解锁！'}
+        </motion.p>
+      </div>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Countdown Animation */}
+      <AnimatePresence>
+        {showCountdown && result && <CountdownReveal />}
+      </AnimatePresence>
       {/* Compact Hero Section - Mobile Optimized */}
       <motion.div
         initial={{ opacity: 0 }}
