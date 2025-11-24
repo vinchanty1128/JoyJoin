@@ -10,53 +10,77 @@ interface SocialRoleCardProps {
 }
 
 const roleConfig: Record<string, { emoji: string; color: string; bgGradient: string; description: string }> = {
-  '火花塞': {
-    emoji: '🙌',
+  '开心柯基': {
+    emoji: '🐕',
     color: 'from-yellow-400 to-orange-500',
     bgGradient: 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30',
-    description: '点燃活动氛围的能量源'
+    description: '团队永动机 · 摇尾点火官'
   },
-  '探索者': {
-    emoji: '🧭',
-    color: 'from-blue-400 to-cyan-500',
-    bgGradient: 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30',
-    description: '发现新鲜事物的冒险家'
+  '太阳鸡': {
+    emoji: '🐓',
+    color: 'from-amber-400 to-yellow-500',
+    bgGradient: 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30',
+    description: '人间小暖气 · 咯咯小太阳'
   },
-  '故事家': {
-    emoji: '🗣️',
+  '夸夸豚': {
+    emoji: '🐬',
+    color: 'from-cyan-400 to-blue-500',
+    bgGradient: 'bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30',
+    description: '掌声发动机 · 首席鼓掌官'
+  },
+  '机智狐': {
+    emoji: '🦊',
+    color: 'from-orange-400 to-red-500',
+    bgGradient: 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30',
+    description: '城市探险家 · 巷口密探'
+  },
+  '淡定海豚': {
+    emoji: '🐬',
+    color: 'from-blue-400 to-indigo-500',
+    bgGradient: 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30',
+    description: '气氛调频手 · 气氛冲浪手'
+  },
+  '织网蛛': {
+    emoji: '🕷️',
     color: 'from-purple-400 to-pink-500',
     bgGradient: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30',
-    description: '用故事连接人心'
+    description: '社交黏合剂 · 关系织网师'
   },
-  '挑战者': {
-    emoji: '💪',
-    color: 'from-red-400 to-rose-500',
-    bgGradient: 'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30',
-    description: '推动团队突破边界'
+  '暖心熊': {
+    emoji: '🐻',
+    color: 'from-rose-400 to-pink-500',
+    bgGradient: 'bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30',
+    description: '故事收藏家 · 怀抱故事熊'
   },
-  '连接者': {
-    emoji: '🤗',
+  '灵感章鱼': {
+    emoji: '🐙',
+    color: 'from-violet-400 to-purple-500',
+    bgGradient: 'bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30',
+    description: '创意喷射器 · 脑洞喷墨章'
+  },
+  '沉思猫头鹰': {
+    emoji: '🦉',
+    color: 'from-slate-400 to-gray-500',
+    bgGradient: 'bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-950/30 dark:to-gray-950/30',
+    description: '哲学带师 · 推镜思考官'
+  },
+  '定心大象': {
+    emoji: '🐘',
+    color: 'from-gray-400 to-slate-500',
+    bgGradient: 'bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-950/30 dark:to-slate-950/30',
+    description: '团队定盘星 · 象鼻定心锚'
+  },
+  '稳如龟': {
+    emoji: '🐢',
     color: 'from-green-400 to-emerald-500',
     bgGradient: 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30',
-    description: '搭建友谊的桥梁'
+    description: '人间观察家 · 慢语真知龟'
   },
-  '协调者': {
-    emoji: '🧘',
-    color: 'from-indigo-400 to-blue-500',
-    bgGradient: 'bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30',
-    description: '平衡关系的智者'
-  },
-  '氛围组': {
-    emoji: '🕺',
-    color: 'from-pink-400 to-fuchsia-500',
-    bgGradient: 'bg-gradient-to-br from-pink-50 to-fuchsia-50 dark:from-pink-950/30 dark:to-fuchsia-950/30',
-    description: '制造欢乐的魔法师'
-  },
-  '肯定者': {
-    emoji: '🙏',
-    color: 'from-teal-400 to-green-500',
-    bgGradient: 'bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-950/30 dark:to-green-950/30',
-    description: '传递正能量的太阳'
+  '隐身猫': {
+    emoji: '🐱',
+    color: 'from-indigo-400 to-purple-500',
+    bgGradient: 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30',
+    description: '安静陪伴者 · 安静伴伴猫'
   },
 };
 
@@ -66,7 +90,7 @@ export default function SocialRoleCard({
   primaryRoleScore,
   secondaryRoleScore
 }: SocialRoleCardProps) {
-  const primaryConfig = roleConfig[primaryRole] || roleConfig['火花塞'];
+  const primaryConfig = roleConfig[primaryRole] || roleConfig['暖心熊'];
   const secondaryConfig = secondaryRole ? roleConfig[secondaryRole] : null;
 
   return (
