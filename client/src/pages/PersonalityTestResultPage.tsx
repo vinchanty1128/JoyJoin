@@ -119,8 +119,12 @@ export default function PersonalityTestResultPage() {
   const secondaryGradient = result.secondaryRole ? archetypeGradients[result.secondaryRole] || 'from-blue-500 to-purple-500' : '';
   const emoji = archetypeEmojis[result.primaryRole] || '🌟';
   const secondaryEmoji = result.secondaryRole ? archetypeEmojis[result.secondaryRole] || '✨' : '';
-  const primaryRoleDesc = archetypeConfig[result.primaryRole]?.description || '';
-  const secondaryRoleDesc = result.secondaryRole ? archetypeConfig[result.secondaryRole]?.description || '' : '';
+  const primaryRoleConfig = archetypeConfig[result.primaryRole];
+  const nickname = primaryRoleConfig?.nickname || '';
+  const tagline = primaryRoleConfig?.tagline || '';
+  const epicDescription = primaryRoleConfig?.epicDescription || '';
+  const styleQuote = primaryRoleConfig?.styleQuote || '';
+  const coreContributions = primaryRoleConfig?.coreContributions || '';
 
   const handleShare = async () => {
     const shareData = {
@@ -282,23 +286,21 @@ export default function PersonalityTestResultPage() {
             transition={{ delay: 0.4 }}
             className="space-y-3 md:space-y-4 text-center"
           >
-            <div className="space-y-1 md:space-y-2">
+            <div className="space-y-2 md:space-y-3">
               <h1 className="text-4xl md:text-5xl font-bold text-center" data-testid="text-primary-role">
                 {result.primaryRole}
               </h1>
-              {result.roleSubtype && (
-                <p className="text-lg md:text-xl text-muted-foreground text-center" data-testid="text-role-subtype">
-                  {result.roleSubtype}
+              {nickname && (
+                <p className="text-xl md:text-2xl font-medium text-primary text-center" data-testid="text-nickname">
+                  {nickname}
+                </p>
+              )}
+              {tagline && (
+                <p className="text-base md:text-lg text-muted-foreground text-center italic" data-testid="text-tagline">
+                  {tagline}
                 </p>
               )}
             </div>
-            
-            {/* Primary Role Description */}
-            {primaryRoleDesc && (
-              <p className="text-base md:text-lg text-foreground/80 max-w-md mx-auto px-2 md:px-4 text-center">
-                {primaryRoleDesc}
-              </p>
-            )}
           </motion.div>
         </div>
       </motion.div>
