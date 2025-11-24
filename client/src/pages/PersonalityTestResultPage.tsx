@@ -299,29 +299,6 @@ export default function PersonalityTestResultPage() {
                 {primaryRoleDesc}
               </p>
             )}
-
-            {/* Secondary Role with Avatar */}
-            {result.secondaryRole && (
-              <div className="pt-4 md:pt-6 space-y-2 md:space-y-3 flex flex-col items-center">
-                {/* Secondary Avatar - Smaller */}
-                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${secondaryGradient} flex items-center justify-center shadow-lg`}>
-                  <span className="text-4xl md:text-5xl" data-testid="text-secondary-role-avatar">{secondaryEmoji}</span>
-                </div>
-                
-                {/* Secondary Role Title */}
-                <div className="space-y-1 text-center">
-                  <p className="text-xs md:text-sm text-muted-foreground">辅助角色</p>
-                  <h2 className="text-xl md:text-2xl font-semibold" data-testid="badge-secondary-role">
-                    {result.secondaryRole}
-                  </h2>
-                  {secondaryRoleDesc && (
-                    <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto px-2 md:px-4 text-center pt-1">
-                      {secondaryRoleDesc}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
           </motion.div>
         </div>
       </motion.div>

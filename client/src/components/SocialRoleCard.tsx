@@ -131,30 +131,6 @@ export default function SocialRoleCard({
                 {primaryConfig.description}
               </p>
             </div>
-
-            {/* Secondary Role */}
-            {secondaryRole && secondaryConfig && (
-              <div className="flex items-center gap-2 pt-2">
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${secondaryConfig.color} flex items-center justify-center`}>
-                  <span className="text-lg" data-testid="text-secondary-role-emoji">
-                    {secondaryConfig.emoji}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold" data-testid="text-secondary-role-name">
-                      {secondaryRole}
-                    </span>
-                    {secondaryRoleScore && (
-                      <Badge variant="outline" className="text-xs">
-                        {secondaryRoleScore}分
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">辅助角色</p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
