@@ -13,7 +13,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, matchingThresholds, poolMatchingLogs, type User } from "@shared/schema";
 import { db } from "./db";
-import { eq, or, and, desc, inArray } from "drizzle-orm";
+import { eq, or, and, desc, inArray, isNotNull } from "drizzle-orm";
 
 // 12个社交氛围原型题目映射表（与前端personalityQuestions.ts保持一致）
 const roleMapping: Record<string, Record<string, string>> = {
@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/personality/role-distribution', isPhoneAuthenticated, async (req: any, res) => {
     try {
       // Get all users with personality results
-      const allUsers = await db.select({ primaryRole: users.primaryRole }).from(users).where(users.primaryRole != null);
+      const allUsers = await db.select({ primaryRole: users.primaryRole }).from(users).where(isNotNull(users.primaryRole));
       
       if (allUsers.length === 0) {
         // Return default distribution if no users yet
