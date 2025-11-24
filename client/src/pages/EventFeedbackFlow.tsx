@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, Sparkles } from "lucide-react";
+import { ChevronLeft, Sparkles, UtensilsCrossed, Wine, Calendar, Clock, MapPin, Users, Gift, Star, Target, CheckCircle2 } from "lucide-react";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 import AtmosphereThermometer from "@/components/feedback/AtmosphereThermometer";
 import SelectConnectionsStep from "@/components/feedback/SelectConnectionsStep";
@@ -62,7 +62,7 @@ export default function EventFeedbackFlow() {
           .join("、");
         
         toast({
-          title: "🎉 双向匹配成功！",
+          title: "双向匹配成功！",
           description: `你和${names}互相选择了对方！现在可以开始1对1私聊了～`,
           duration: 6000,
         });
@@ -134,7 +134,7 @@ export default function EventFeedbackFlow() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card>
           <CardContent className="p-6 text-center space-y-4">
-            <div className="text-4xl">✅</div>
+            <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
             <p className="font-medium">你已经完成了这次活动的反馈</p>
             <Button onClick={() => navigate("/events")}>
               返回活动列表
@@ -231,51 +231,45 @@ function IntroStep({ event, onNext }: { event: BlindBoxEvent; onNext: () => void
     ? new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit' }).format(eventDate)
     : '';
   
-  const eventTypeDisplay = event.eventType === '饭局' ? '🍽️ 饭局' : '🍷 酒局';
+  const eventTypeIcon = event.eventType === '饭局' ? <UtensilsCrossed className="h-5 w-5" /> : <Wine className="h-5 w-5" />;
   const totalPeople = event.totalParticipants || 0;
 
   return (
     <Card className="max-w-md mx-auto">
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-6 space-y-5">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="text-4xl mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <Sparkles className="h-8 w-8 text-primary" />
+          <div className="mx-auto w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
+            <Sparkles className="h-7 w-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">回顾你的活动时刻</h1>
+          <h1 className="text-xl font-bold">分享你的活动体验</h1>
           <p className="text-sm text-muted-foreground">
-            花2分钟分享体验，帮助我们做得更好
+            约需2分钟，帮我们做得更好
           </p>
         </div>
 
         {/* Event Info Card */}
-        <div className="p-4 rounded-lg bg-muted/50 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{eventTypeDisplay}</span>
+        <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            {eventTypeIcon}
+            <span>{event.eventType}</span>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-sm text-foreground">
-            <div>📅 {formattedDate}</div>
-            <div>🕐 {formattedTime}</div>
-            <div className="col-span-2">📍 {event.restaurantName || `${event.city} · ${event.district}`}</div>
-            <div>👥 {totalPeople}人参加</div>
-          </div>
-        </div>
-
-        {/* Benefits */}
-        <div className="space-y-3">
-          <p className="text-sm font-medium">完成反馈你将获得：</p>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-2xl">🎁</span>
-              <span>50 积分（可用于下次活动）</span>
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>{formattedDate}</span>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-2xl">⭐</span>
-              <span>「优质反馈者」标识</span>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span>{formattedTime}</span>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-2xl">🎯</span>
-              <span>下期活动匹配优先权</span>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <span>{event.restaurantName || `${event.city} · ${event.district}`}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span>{totalPeople}人参加</span>
             </div>
           </div>
         </div>
