@@ -106,8 +106,8 @@ export const users = pgTable("users", {
   energyLevel: integer("energy_level"),
   
   // Social role (from personality test - now mapped to archetype)
-  primaryRole: varchar("primary_role"), // 8 core roles - legacy
-  secondaryRole: varchar("secondary_role"),
+  primaryRole: varchar("primary_role"), // 12 archetypes (animal-based social vibe system)
+  secondaryRole: varchar("secondary_role"), // Second highest archetype (used in algorithm, hidden from UI)
   roleSubtype: varchar("role_subtype"),
   
   // Gamification
@@ -628,15 +628,15 @@ export const roleResults = pgTable("role_results", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   
-  // Role scores (8 core roles)
-  primaryRole: varchar("primary_role").notNull(), // Highest scoring role
+  // Role scores (12 archetypes)
+  primaryRole: varchar("primary_role").notNull(), // Highest scoring archetype
   primaryRoleScore: integer("primary_role_score").notNull(),
-  secondaryRole: varchar("secondary_role"), // Second highest scoring role
+  secondaryRole: varchar("secondary_role"), // Second highest archetype (used in algorithm, hidden from UI)
   secondaryRoleScore: integer("secondary_role_score"),
   roleSubtype: varchar("role_subtype"), // Subtype based on answer patterns
   
   // Role score breakdown
-  roleScores: jsonb("role_scores").notNull(), // {火花塞: 5, 探索者: 3, ...}
+  roleScores: jsonb("role_scores").notNull(), // {开心柯基: 18, 太阳鸡: 15, 暖心熊: 12, ...}
   
   // Six-dimensional trait scores (0-10 scale)
   affinityScore: integer("affinity_score").notNull(), // 亲和力
