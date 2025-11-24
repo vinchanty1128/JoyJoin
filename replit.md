@@ -6,6 +6,26 @@ JoyJoin (悦聚·Joy) is a social networking platform designed to connect indivi
 
 ## Recent Changes
 
+### November 24, 2025 - Registration Flow UX Optimization
+- **Global Progress Indicator:** Created `RegistrationProgress.tsx` component displaying current stage (basic, interests, personality) with visual stage badges, overall progress bar, and step counter
+- **Field Info Tooltips:** Created `FieldInfoTooltip.tsx` component with contextual information about registration fields (education, industry, language preferences)
+- **ProfileSetupPage Enhancement:** Added time expectation notice ("大约需要 3-5 分钟") to reduce user anxiety with animated entry effect and motion transitions
+- **InterestsTopicsPage Optimization:**
+  - Integrated `RegistrationProgress` component for consistent progress tracking across registration
+  - Added real-time selection counters with color-coded feedback ("已选 X/7") with pulse animations
+  - Implemented celebration effect when completing interests selection (sparkle animation + "完美" text)
+  - Added framer-motion page transitions for smooth step changes
+- **QuizIntro Animation Enhancement:**
+  - Staggered animations for feature cards with spring transitions
+  - Animated badge pulse effect for "专属测评"
+  - Coach selection cards with hover scale and tap interactions
+  - Smooth fade-in/fade-out sequences
+- **VoiceQuiz Progress Persistence:**
+  - Auto-save progress to localStorage (key: "voiceQuizProgress") on every state change
+  - Restore progress on component mount to prevent data loss on page refresh
+  - Auto-clear localStorage upon quiz completion
+- **RegistrationPage Progress Integration:** Added global `RegistrationProgress` component for consistent UX across registration flow
+
 ### November 24, 2025 - Archetype Rich Content Enhancement
 - **Extended Archetype System:** Added 5 new rich content fields to all 12 animal archetypes:
   - `nickname`: Vivid Chinese nickname (e.g., "摇尾点火官")
@@ -29,8 +49,9 @@ Preferred communication style: Simple, everyday language.
 - **Frameworks:** React 18 with TypeScript, Vite, Wouter for routing.
 - **UI/Styling:** Radix UI primitives, shadcn/ui (New York style), Tailwind CSS. The design is mobile-first, supports dark mode, uses a purple-centric warm color palette, and is bilingual (Chinese/English).
 - **State Management:** TanStack Query for server state.
-- **Key UI Patterns:** Bottom navigation, event cards, two-part match scoring, personality radar charts, social role cards, progressive disclosure.
-- **Design Principles:** Emphasizes warmth, accessibility, and responsive design.
+- **Animations:** Framer-motion for all UI transitions and effects
+- **Key UI Patterns:** Bottom navigation, event cards, two-part match scoring, personality radar charts, social role cards, progressive disclosure, registration progress indicators.
+- **Design Principles:** Emphasizes warmth, accessibility, responsive design, and progressive anxiety reduction through clear progress feedback.
 
 ### Backend
 - **Runtime:** Node.js with Express.js, TypeScript.
@@ -52,7 +73,7 @@ Preferred communication style: Simple, everyday language.
 - **AI-Driven Matchmaking:** Utilizes AI for sophisticated event and people matching, considering personality, interests, and group dynamics, with a focus on explainability and a deep feedback system for continuous learning.
 - **Two-Tier Feedback Architecture:** Implements both basic and optional anonymous deep feedback mechanisms to refine the matching algorithms.
 - **Gamified Personality Assessment:** A 10-question test determines social role archetypes, visualized with a Personality Radar Chart, and requiring all users to retake for the new 12-archetype system.
-- **Streamlined Onboarding:** A multi-step registration process covers identity, interests, personality, and profile creation.
+- **Streamlined Onboarding:** A multi-step registration process covers identity, interests, personality, and profile creation with progressive UX enhancements including progress indicators, time expectations, and celebratory animations.
 - **Admin Portal:** A desktop-first interface for comprehensive management of users, subscriptions, events, finance, moderation, and insights. This includes an Admin Matching Lab for real-time algorithm tuning.
 - **Payment & Subscription System:** Full payment infrastructure including WeChat Pay integration, webhook handling, and subscription management.
 - **Intelligent Venue Matching & Booking:** Algorithm-based venue scoring and a transactional booking system with race condition protection.
@@ -69,6 +90,7 @@ Preferred communication style: Simple, everyday language.
 ### UI Component Libraries
 - **Radix UI:** `@radix-ui/react-*`.
 - **Styling:** `tailwindcss`, `autoprefixer`, `postcss`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`.
+- **Animations:** `framer-motion`.
 
 ### Database & ORM
 - **Database:** `@neondatabase/serverless` (PostgreSQL).
