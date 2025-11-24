@@ -29,6 +29,30 @@ const roleMapping: Record<string, Record<string, string>> = {
   "10": { "A": "太阳鸡", "B": "机智狐", "C": "灵感章鱼", "D": "定心大象" },
 };
 
+// 补测题映射表（ID 101-120）
+const supplementaryRoleMapping: Record<string, Record<string, string>> = {
+  "101": { "A": "开心柯基", "B": "太阳鸡" },
+  "102": { "A": "开心柯基", "B": "太阳鸡" },
+  "103": { "A": "淡定海豚", "B": "织网蛛" },
+  "104": { "A": "淡定海豚", "B": "织网蛛" },
+  "105": { "A": "沉思猫头鹰", "B": "稳如龟" },
+  "106": { "A": "沉思猫头鹰", "B": "稳如龟" },
+  "107": { "A": "机智狐", "B": "灵感章鱼" },
+  "108": { "A": "机智狐", "B": "灵感章鱼" },
+  "109": { "A": "暖心熊", "B": "夸夸豚" },
+  "110": { "A": "暖心熊", "B": "夸夸豚" },
+  "111": { "A": "定心大象", "B": "淡定海豚" },
+  "112": { "A": "定心大象", "B": "淡定海豚" },
+  "113": { "A": "隐身猫", "B": "稳如龟" },
+  "114": { "A": "隐身猫", "B": "稳如龟" },
+  "115": { "A": "开心柯基", "B": "机智狐" },
+  "116": { "A": "太阳鸡", "B": "暖心熊" },
+  "117": { "A": "织网蛛", "B": "机智狐" },
+  "118": { "A": "灵感章鱼", "B": "沉思猫头鹰" },
+  "119": { "A": "定心大象", "B": "稳如龟" },
+  "120": { "A": "夸夸豚", "B": "太阳鸡" },
+};
+
 function calculateRoleScores(responses: Record<number, any>): Record<string, number> {
   const scores: Record<string, number> = {
     "开心柯基": 0,
@@ -46,14 +70,20 @@ function calculateRoleScores(responses: Record<number, any>): Record<string, num
   };
 
   Object.entries(responses).forEach(([questionId, answer]) => {
+    // Determine which mapping to use based on question ID
+    const qId = parseInt(questionId);
+    const mapping = qId >= 101 ? supplementaryRoleMapping[questionId] : roleMapping[questionId];
+    
+    if (!mapping) return;
+
     if (answer.type === "single") {
-      const role = roleMapping[questionId]?.[answer.value];
+      const role = mapping[answer.value];
       if (role) {
         scores[role] = (scores[role] || 0) + 2;
       }
     } else if (answer.type === "dual") {
-      const mostLikeRole = roleMapping[questionId]?.[answer.mostLike];
-      const secondLikeRole = roleMapping[questionId]?.[answer.secondLike];
+      const mostLikeRole = mapping[answer.mostLike];
+      const secondLikeRole = mapping[answer.secondLike];
       if (mostLikeRole) {
         scores[mostLikeRole] = (scores[mostLikeRole] || 0) + 2;
       }
@@ -311,6 +341,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Personality test routes
+  
+  // Preliminary scoring - check if supplementary questions are needed
+  app.post('/api/personality-test/preliminary-score', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const { responses } = req.body;
+
+      // Calculate role scores from base 10 questions
+      const roleScores = calculateRoleScores(responses);
+      
+      // Sort roles by score
+      const sortedRoles = Object.entries(roleScores)
+        .sort(([roleA, scoreA], [roleB, scoreB]) => {
+          if (scoreB !== scoreA) return scoreB - scoreA;
+          return roleA.localeCompare(roleB);
+        });
+      
+      const top1 = sortedRoles[0];
+      const top2 = sortedRoles[1];
+      const scoreDiff = top1[1] - top2[1];
+
+      // Threshold for supplementary testing: if top 2 are within 3 points
+      const SUPPLEMENTARY_THRESHOLD = 3;
+
+      if (scoreDiff < SUPPLEMENTARY_THRESHOLD) {
+        // Need supplementary questions
+        res.json({
+          needsSupplementary: true,
+          candidateArchetypes: [
+            { name: top1[0], score: top1[1] },
+            { name: top2[0], score: top2[1] }
+          ],
+          allScores: roleScores,
+        });
+      } else {
+        // Scores are clear enough, return final result
+        const primaryRole = top1[0];
+        const secondaryRole = top2[0];
+        const roleSubtype = determineSubtype(primaryRole, responses);
+        const traitScores = calculateTraitScores(primaryRole, secondaryRole);
+        const insights = generateInsights(primaryRole, secondaryRole);
+
+        res.json({
+          needsSupplementary: false,
+          result: {
+            primaryRole,
+            primaryRoleScore: top1[1],
+            secondaryRole,
+            secondaryRoleScore: top2[1],
+            roleSubtype,
+            ...traitScores,
+            ...insights,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error in preliminary scoring:", error);
+      res.status(500).json({ message: "Failed to calculate preliminary score" });
+    }
+  });
+
   app.post('/api/personality-test/submit', isPhoneAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;
