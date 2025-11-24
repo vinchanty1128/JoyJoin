@@ -41,6 +41,7 @@ export interface UserWithProfile {
   seniority: string | null;
   educationLevel: string | null;
   archetype: string | null;
+  secondaryArchetype: string | null;
   interestsTop: string[] | null;
   languagesComfort: string[] | null;
   
@@ -112,10 +113,10 @@ function meetsHardConstraints(
  * 考虑主角色（70%）和次要角色的交叉兼容性（各15%，共30%）
  */
 function calculateChemistryScore(user1: UserWithProfile, user2: UserWithProfile): number {
-  const primary1 = user1.archetype || "暖心熊";
-  const primary2 = user2.archetype || "暖心熊";
-  const secondary1 = user1.secondaryArchetype || "暖心熊";
-  const secondary2 = user2.secondaryArchetype || "暖心熊";
+  const primary1 = (user1.archetype || "暖心熊") as keyof typeof CHEMISTRY_MATRIX;
+  const primary2 = (user2.archetype || "暖心熊") as keyof typeof CHEMISTRY_MATRIX;
+  const secondary1 = (user1.secondaryArchetype || "暖心熊") as keyof typeof CHEMISTRY_MATRIX;
+  const secondary2 = (user2.secondaryArchetype || "暖心熊") as keyof typeof CHEMISTRY_MATRIX;
   
   // 主角色化学反应（70%权重）
   const primaryChemistry = (CHEMISTRY_MATRIX[primary1]?.[primary2] || 50) * 0.70;
@@ -302,7 +303,7 @@ function calculateEnergyBalance(members: UserWithProfile[]): number {
   
   // 1. 获取每个成员的能量值
   const energyLevels = members.map(m => {
-    const archetype = m.archetype || "暖心熊"; // 默认中等能量
+    const archetype = (m.archetype || "暖心熊") as keyof typeof ARCHETYPE_ENERGY;
     return ARCHETYPE_ENERGY[archetype] || 50;
   });
   
