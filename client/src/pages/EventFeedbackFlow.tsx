@@ -9,26 +9,15 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, Sparkles } from "lucide-react";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 import AtmosphereThermometer from "@/components/feedback/AtmosphereThermometer";
-import TraitTagsWall from "@/components/feedback/TraitTagsWall";
-import ConnectionRadar from "@/components/feedback/ConnectionRadar";
 import SelectConnectionsStep from "@/components/feedback/SelectConnectionsStep";
 import ImprovementCards from "@/components/feedback/ImprovementCards";
 import FeedbackCompletion from "@/components/feedback/FeedbackCompletion";
 
-type FeedbackStep = "intro" | "atmosphere" | "traits" | "radar" | "selectConnections" | "improvement" | "completion";
+type FeedbackStep = "intro" | "atmosphere" | "selectConnections" | "improvement" | "completion";
 
 interface FeedbackData {
   atmosphereScore?: number;
   atmosphereNote?: string;
-  attendeeTraits?: Record<string, any>;
-  connectionRadar?: {
-    topicResonance: number;
-    personalityMatch: number;
-    backgroundDiversity: number;
-    overallFit: number;
-  };
-  hasNewConnections?: boolean;
-  connectionStatus?: string;
   connections?: string[];
   improvementAreas?: string[];
   improvementOther?: string;
@@ -90,7 +79,7 @@ export default function EventFeedbackFlow() {
     },
   });
 
-  const steps: FeedbackStep[] = ["intro", "atmosphere", "traits", "radar", "selectConnections", "improvement", "completion"];
+  const steps: FeedbackStep[] = ["intro", "atmosphere", "selectConnections", "improvement", "completion"];
   const currentStepIndex = steps.indexOf(currentStep);
   const progressPercentage = (currentStepIndex / (steps.length - 1)) * 100;
 
@@ -99,9 +88,7 @@ export default function EventFeedbackFlow() {
     setFeedbackData(updatedData);
 
     if (currentStep === "intro") setCurrentStep("atmosphere");
-    else if (currentStep === "atmosphere") setCurrentStep("traits");
-    else if (currentStep === "traits") setCurrentStep("radar");
-    else if (currentStep === "radar") setCurrentStep("selectConnections");
+    else if (currentStep === "atmosphere") setCurrentStep("selectConnections");
     else if (currentStep === "selectConnections") setCurrentStep("improvement");
     else if (currentStep === "improvement") {
       // Submit feedback
@@ -111,9 +98,7 @@ export default function EventFeedbackFlow() {
 
   const handleBack = () => {
     if (currentStep === "atmosphere") setCurrentStep("intro");
-    else if (currentStep === "traits") setCurrentStep("atmosphere");
-    else if (currentStep === "radar") setCurrentStep("traits");
-    else if (currentStep === "selectConnections") setCurrentStep("radar");
+    else if (currentStep === "selectConnections") setCurrentStep("atmosphere");
     else if (currentStep === "improvement") setCurrentStep("selectConnections");
     else if (currentStep === "intro") navigate("/events");
   };
@@ -195,23 +180,6 @@ export default function EventFeedbackFlow() {
           <AtmosphereThermometer
             initialScore={feedbackData.atmosphereScore}
             initialNote={feedbackData.atmosphereNote}
-            onNext={handleNext}
-          />
-        )}
-        
-        {currentStep === "traits" && event?.matchedAttendees && Array.isArray(event.matchedAttendees) ? (
-          <TraitTagsWall
-            attendees={event.matchedAttendees as Array<{userId: string; displayName: string; archetype?: string}>}
-            initialTraits={feedbackData.attendeeTraits}
-            onNext={handleNext}
-          />
-        ) : null}
-        
-        {currentStep === "radar" && (
-          <ConnectionRadar
-            initialRadar={feedbackData.connectionRadar}
-            initialHasConnections={feedbackData.hasNewConnections}
-            initialConnectionStatus={feedbackData.connectionStatus}
             onNext={handleNext}
           />
         )}
