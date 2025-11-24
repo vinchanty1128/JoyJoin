@@ -26,16 +26,19 @@ const explanationTemplates = {
 };
 
 const archetypeQualities: Record<string, { zh: string, en: string }> = {
-  "The Explorer": { zh: "好奇探索", en: "energetic curiosity" },
-  "The Storyteller": { zh: "生动叙事", en: "engaging storytelling" },
-  "The Sage": { zh: "深刻洞察", en: "thoughtful depth" },
-  "The Radiator": { zh: "积极能量", en: "positive energy" },
-  "The Anchor": { zh: "稳定支持", en: "grounding presence" },
-  "探索者": { zh: "好奇探索", en: "energetic curiosity" },
-  "讲故事的人": { zh: "生动叙事", en: "engaging storytelling" },
-  "智者": { zh: "深刻洞察", en: "thoughtful depth" },
-  "发光体": { zh: "积极能量", en: "positive energy" },
-  "稳定器": { zh: "稳定支持", en: "grounding presence" },
+  // 12-Archetype Animal Social Vibe System
+  "开心柯基": { zh: "活力破冰", en: "energetic icebreaking" },
+  "太阳鸡": { zh: "温暖正能量", en: "warm positivity" },
+  "夸夸豚": { zh: "积极鼓励", en: "uplifting encouragement" },
+  "机智狐": { zh: "探索新鲜", en: "curious exploration" },
+  "淡定海豚": { zh: "平衡氛围", en: "balanced vibes" },
+  "织网蛛": { zh: "社交连接", en: "social networking" },
+  "暖心熊": { zh: "深度倾听", en: "empathetic listening" },
+  "灵感章鱼": { zh: "创意发散", en: "creative inspiration" },
+  "沉思猫头鹰": { zh: "深刻洞察", en: "thoughtful insight" },
+  "定心大象": { zh: "稳定支持", en: "grounding presence" },
+  "稳如龟": { zh: "深度观察", en: "keen observation" },
+  "隐身猫": { zh: "安静陪伴", en: "gentle presence" },
 };
 
 function getRandomTemplate(templates: string[]): string {
@@ -99,10 +102,10 @@ export function generateMatchExplanation(attendees: AttendeeData[]): string {
     // Use shared interests template
     template = getRandomTemplate(explanationTemplates.sharedInterests);
     const interestsStr = commonInterests.join("、");
-    const archetype1 = topArchetypes[0] || "探索者";
-    const archetype2 = topArchetypes[1] || "讲故事的人";
+    const archetype1 = topArchetypes[0] || "暖心熊";
+    const archetype2 = topArchetypes[1] || "开心柯基";
     const quality1 = archetypeQualities[archetype1]?.zh || "独特视角";
-    const quality2 = archetypeQualities[archetype2]?.zh || "生动表达";
+    const quality2 = archetypeQualities[archetype2]?.zh || "活力氛围";
     
     explanation = template
       .replace("{interests}", interestsStr)

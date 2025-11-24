@@ -899,7 +899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-1", 
             displayName: "小美", 
-            archetype: "社交达人", 
+            archetype: "夸夸豚", 
             topInterests: ["美食", "旅行", "艺术"], 
             age: 27, 
             birthdate: "1998-05-15", 
@@ -919,7 +919,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-2", 
             displayName: "阿强", 
-            archetype: "探索者", 
+            archetype: "机智狐", 
             topInterests: ["美食", "摄影", "旅行"], 
             age: 30, 
             birthdate: "1995-03-20", 
@@ -939,7 +939,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-3", 
             displayName: "Lisa", 
-            archetype: "连接者", 
+            archetype: "织网蛛", 
             topInterests: ["美食", "艺术", "音乐"], 
             age: 28, 
             birthdate: "1997-07-10", 
@@ -959,7 +959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-4", 
             displayName: "David", 
-            archetype: "创意家", 
+            archetype: "灵感章鱼", 
             topInterests: ["美食", "音乐", "电影"], 
             age: 32, 
             birthdate: "1993-11-05", 
@@ -1009,7 +1009,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-5", 
             displayName: "Sarah", 
-            archetype: "氛围组", 
+            archetype: "太阳鸡", 
             topInterests: ["音乐", "社交", "美食"], 
             age: 29, 
             birthdate: "1996-04-12", 
@@ -1029,7 +1029,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-6", 
             displayName: "Alex", 
-            archetype: "火花塞", 
+            archetype: "开心柯基", 
             topInterests: ["创业", "科技", "阅读"], 
             age: 31, 
             birthdate: "1994-09-08", 
@@ -1049,7 +1049,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-7", 
             displayName: "小红", 
-            archetype: "故事家", 
+            archetype: "暖心熊", 
             topInterests: ["旅行", "摄影", "美食"], 
             age: 28, 
             birthdate: "1997-02-18", 
@@ -1069,7 +1069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-8", 
             displayName: "Tom", 
-            archetype: "探索者", 
+            archetype: "机智狐", 
             topInterests: ["音乐", "电影", "旅行"], 
             age: 30, 
             birthdate: "1995-07-22", 
@@ -1089,7 +1089,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { 
             userId: "demo-9", 
             displayName: "Emma", 
-            archetype: "连接者", 
+            archetype: "织网蛛", 
             topInterests: ["艺术", "文化", "咖啡"], 
             age: 27, 
             birthdate: "1998-01-30", 
@@ -1229,7 +1229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           userId: "demo1",
           displayName: "Alex",
-          archetype: "探索者",
+          archetype: "机智狐",
           topInterests: ["film_entertainment", "travel_exploration", "photography"],
           age: 29,
           birthdate: "1996-03-15",
@@ -1249,7 +1249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           userId: "demo2",
           displayName: "小明",
-          archetype: "讲故事的人",
+          archetype: "暖心熊",
           topInterests: ["food_dining", "music_concerts", "travel_exploration"],
           age: 27,
           birthdate: "1998-07-20",
@@ -1289,7 +1289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           userId: "demo4",
           displayName: "李华",
-          archetype: "发光体",
+          archetype: "太阳鸡",
           topInterests: ["fitness_health", "travel_exploration", "outdoor_activities"],
           age: 28,
           birthdate: "1997-09-25",
@@ -1308,7 +1308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
       
-      const demoExplanation = "这桌聚集了对电影、旅行充满热情的朋友。我们平衡了探索者的好奇探索与讲故事的人的生动叙事，确保对话既热烈又有深度。";
+      const demoExplanation = "这桌聚集了对电影、旅行充满热情的朋友。我们平衡了机智狐的探索新鲜与暖心熊的深度倾听，确保对话既热烈又有深度。";
       
       const event = await storage.setBlindBoxEventMatchData(eventId, userId, {
         matchedAttendees: demoMatchedAttendees,
@@ -1668,7 +1668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create demo users with different archetypes and complete profiles
       const [demoUser1] = await db.insert(users).values({
         displayName: '小明',
-        archetype: '火花塞',
+        archetype: '开心柯基',
         hasCompletedProfileSetup: true,
         hasCompletedPersonalityTest: true,
         hasCompletedInterestsTopics: true,
@@ -1687,7 +1687,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const [demoUser2] = await db.insert(users).values({
         displayName: '小红',
-        archetype: '连接者',
+        archetype: '织网蛛',
         hasCompletedProfileSetup: true,
         hasCompletedPersonalityTest: true,
         hasCompletedInterestsTopics: true,
@@ -1706,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const [demoUser3] = await db.insert(users).values({
         displayName: '阿杰',
-        archetype: '探索者',
+        archetype: '机智狐',
         hasCompletedProfileSetup: true,
         hasCompletedPersonalityTest: true,
         hasCompletedInterestsTopics: true,
@@ -1851,7 +1851,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create direct message threads (private 1-1 chats)
       console.log(`[SEED-DEMO] Creating direct message thread 1: ${userId} <-> ${demoUser1.id}`);
-      // Thread 1: Current user with demoUser1 (小明-火花塞)
+      // Thread 1: Current user with demoUser1 (小明-开心柯基)
       const [thread1] = await db.insert(directMessageThreads).values({
         user1Id: userId,
         user2Id: demoUser1.id,
@@ -1876,7 +1876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Thread 2: Current user with demoUser2 (小红-连接者)
+      // Thread 2: Current user with demoUser2 (小红-织网蛛)
       console.log(`[SEED-DEMO] Creating direct message thread 2: ${userId} <-> ${demoUser2.id}`);
       const [thread2] = await db.insert(directMessageThreads).values({
         user1Id: userId,
@@ -1913,8 +1913,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { title: event3.title, status: 'past', dateTime: event3.dateTime },
         ],
         privateChats: [
-          { with: '小明 (火花塞)', messages: 3, threadId: thread1.id },
-          { with: '小红 (连接者)', messages: 4, threadId: thread2.id },
+          { with: '小明 (开心柯基)', messages: 3, threadId: thread1.id },
+          { with: '小红 (织网蛛)', messages: 4, threadId: thread2.id },
         ]
       });
     } catch (error) {
