@@ -4,6 +4,21 @@
 
 JoyJoin (悦聚·Joy) is a social networking platform designed to connect individuals locally through small, curated micro-events (5-10 attendees). The platform leverages AI for intelligent user matching based on interests, personality, and social compatibility, with a strong emphasis on psychological safety and inclusivity. Primarily targeting the Hong Kong/Shenzhen market, JoyJoin aims to foster meaningful local connections and build community. Key capabilities include AI-powered matching for events and people, a comprehensive feedback system for continuous algorithm refinement, streamlined event management, and a robust Admin Portal for platform oversight and analytics. A core innovation is the 12-Archetype Animal Social Vibe System, which categorizes user social energy and personality for sophisticated group dynamics and chemistry matching.
 
+## Recent Changes
+
+### November 24, 2025 - Archetype Rich Content Enhancement
+- **Extended Archetype System:** Added 5 new rich content fields to all 12 animal archetypes:
+  - `nickname`: Vivid Chinese nickname (e.g., "摇尾点火官")
+  - `tagline`: One-line positioning statement (e.g., "瞬间破冰的气氛点火手")
+  - `epicDescription`: Detailed paragraph describing the role's essence
+  - `styleQuote`: Unique style quote with quotation formatting
+  - `coreContributions`: Key contribution statement (e.g., "破冰启动，创造欢乐氛围")
+- **UI Enhancements:**
+  - Updated PersonalityTestResultPage Hero section to display nickname and tagline instead of simple description
+  - Added new "角色深度解读" (Role Details) card showing epicDescription, styleQuote, and coreContributions
+  - Updated SocialRoleCard component to display nickname and tagline for richer information display
+- **Design Improvements:** Implemented quote-style formatting for styleQuote with gradient backgrounds and icon, target icon for core contributions, and improved visual hierarchy
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
