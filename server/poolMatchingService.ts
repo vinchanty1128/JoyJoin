@@ -111,8 +111,8 @@ function meetsHardConstraints(
  * 计算两个用户之间的性格化学反应分数 (0-100)
  */
 function calculateChemistryScore(user1: UserWithProfile, user2: UserWithProfile): number {
-  const archetype1 = user1.archetype || "社交蝴蝶";
-  const archetype2 = user2.archetype || "社交蝴蝶";
+  const archetype1 = user1.archetype || "暖心熊";
+  const archetype2 = user2.archetype || "暖心熊";
   
   return CHEMISTRY_MATRIX[archetype1]?.[archetype2] || 50;
 }
@@ -287,7 +287,7 @@ function calculateEnergyBalance(members: UserWithProfile[]): number {
   
   // 1. 获取每个成员的能量值
   const energyLevels = members.map(m => {
-    const archetype = m.archetype || "温暖聆听者"; // 默认中等能量
+    const archetype = m.archetype || "暖心熊"; // 默认中等能量
     return ARCHETYPE_ENERGY[archetype] || 50;
   });
   
