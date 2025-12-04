@@ -1,3 +1,4 @@
+//my path:/Users/felixg/projects/JoyJoin3/client/src/components/JoinBlindBoxSheet.tsx
 import React, { useState } from "react";
 import { Drawer } from "vaul";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ interface JoinBlindBoxSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   eventData: {
+    poolId: string | null;
     date: string;
     time: string;
     eventType: "饭局" | "酒局";
@@ -210,32 +212,68 @@ export default function JoinBlindBoxSheet({
     // 保存预算偏好到用户profile
     try {
       await saveBudgetMutation.mutateAsync(budgetPreference);
-      
+
+      // 归一化前端要传给后端 / 支付页的数据
+      const city = eventData.city || "深圳";
+      const area = eventData.area;
+      // 目前后端将 district 用作「商圈/区域」键；先用 area 直接作为 district，保证与默认池 key 一致
+      const district = area;
+
+      // 用户本次报名的主预算档（取所选中的第一个）
+      const primaryBudgetTier = budgetPreference[0] || "";
+
       // 保存城市信息和用户偏好到localStorage用于后续页面
-      localStorage.setItem("blindbox_city", eventData.city || "深圳");
-      localStorage.setItem("blindbox_preferences", JSON.stringify({
-        languages: selectedLanguages,
-        tasteIntensity: selectedTasteIntensity,
-        cuisines: selectedCuisines,
-      }));
-      
-      // 保存盲盒事件数据到localStorage，用于支付后创建事件
-      localStorage.setItem("blindbox_event_data", JSON.stringify({
+      localStorage.setItem("blindbox_city", city);
+      localStorage.setItem(
+        "blindbox_preferences",
+        JSON.stringify({
+          languages: selectedLanguages,
+          tasteIntensity: selectedTasteIntensity,
+          cuisines: selectedCuisines,
+        })
+      );
+
+      // 保存盲盒事件数据到localStorage，用于支付页调用 /api/blind-box-events
+      const blindboxEventPayload = {
+        // 关联的活动池 ID（用于后端将用户报名写入正确的池子）
+        poolId: eventData.poolId || null,
+
+        // 基本信息
         date: eventData.date,
         time: eventData.time,
         eventType: eventData.eventType,
-        city: eventData.city || "深圳",
-        area: eventData.area,
+        city,
+
+        // 区域相关：同时写 district 和 area，后端会优先用 district，fallback 到 area
+        district,
+        area,
+
+        // 预算：数组 + 主预算档，兼容后端的 budget / budgetTier 逻辑
+        budgetTier: primaryBudgetTier,
         budget: budgetPreference,
+
+        // 偏好信息
         acceptNearby,
         selectedLanguages,
         selectedTasteIntensity,
         selectedCuisines,
+
+        // 参与意图：同时写入 socialGoals 和 intent，方便后端与其它模块复用
+        socialGoals: selectedIntent,
+        intent: selectedIntent,
+
+        // 邀请相关
         inviteFriends,
         friendsCount,
-        intent: selectedIntent, // Store user's event intent
-      }));
-      
+      };
+
+      console.log("[JoinBlindBoxSheet] saving blindbox_event_data:", blindboxEventPayload);
+
+      localStorage.setItem(
+        "blindbox_event_data",
+        JSON.stringify(blindboxEventPayload)
+      );
+
       setShowConfirmDialog(false);
       onOpenChange(false);
       // 导航到付费页面

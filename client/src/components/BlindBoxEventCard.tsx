@@ -1,5 +1,6 @@
+// /Users/felixg/projects/JoyJoin3/client/src/components/BlindBoxEventCard.tsx
+
 import { useState } from "react";
-import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ interface BlindBoxEventCardProps {
   isAA?: boolean;
   city?: "香港" | "深圳";
   isGirlsNight?: boolean;
+  poolId?: string; // <-- add this line
 }
 
 export default function BlindBoxEventCard({
@@ -32,42 +34,48 @@ export default function BlindBoxEventCard({
   priceTier,
   isAA,
   city,
-  isGirlsNight
+  isGirlsNight,
+  poolId,
 }: BlindBoxEventCardProps) {
-  const [, navigate] = useLocation();
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
   const [joinSheetOpen, setJoinSheetOpen] = useState(false);
 
   const handleJoinClick = () => {
-    // Navigate to event pool registration page
-    navigate(`/event-pool/${id}/register`);
+    console.log("[BlindBoxEventCard] opening JoinBlindBoxSheet with poolId:", poolId);
+    // 不再跳转到 /event-pool/...，而是打开盲盒报名弹窗
+    setJoinSheetOpen(true);
   };
 
   return (
     <>
-      <Card className="hover-elevate active-elevate-2 transition-all border shadow-sm" data-testid={`card-blindbox-${id}`}>
+      <Card
+        className="hover-elevate active-elevate-2 transition-all border shadow-sm"
+        data-testid={`card-blindbox-${id}`}
+      >
         <div className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
               <h3 className="font-display font-bold text-lg text-muted-foreground/60 mb-2">
                 {mysteryTitle}
               </h3>
-              
+
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1.5 text-sm font-medium">
                   <Calendar className="h-4 w-4 text-primary" />
-                  <span>{date} {time}</span>
+                  <span>
+                    {date} {time}
+                  </span>
                 </div>
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className="text-xs px-2 py-0.5 rounded-md"
                   data-testid={`badge-event-type-${eventType}`}
                 >
                   {eventType}
                 </Badge>
                 {isGirlsNight && (
-                  <Badge 
-                    variant="default" 
+                  <Badge
+                    variant="default"
                     className="text-xs px-2 py-0.5 rounded-md bg-pink-500 hover:bg-pink-600"
                     data-testid="badge-girls-night"
                   >
@@ -76,7 +84,7 @@ export default function BlindBoxEventCard({
                 )}
               </div>
             </div>
-            
+
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
 
@@ -94,8 +102,8 @@ export default function BlindBoxEventCard({
           </div>
 
           <div className="flex gap-2 pt-1">
-            <Button 
-              className="flex-1" 
+            <Button
+              className="flex-1"
               size="default"
               onClick={handleJoinClick}
               data-testid={`button-join-${id}`}
@@ -103,8 +111,8 @@ export default function BlindBoxEventCard({
               <Sparkles className="h-4 w-4 mr-1.5" />
               立即参与
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="default"
               onClick={() => setInfoSheetOpen(true)}
               data-testid={`button-learn-more-${id}`}
@@ -115,6 +123,7 @@ export default function BlindBoxEventCard({
         </div>
       </Card>
 
+      {/* 活动介绍弹窗 */}
       <BlindBoxInfoSheet
         open={infoSheetOpen}
         onOpenChange={setInfoSheetOpen}
@@ -125,14 +134,16 @@ export default function BlindBoxEventCard({
           area,
           priceTier,
           isAA,
-          city
+          city,
         }}
       />
 
+      {/* 报名 / 预算 / 偏好弹窗 */}
       <JoinBlindBoxSheet
         open={joinSheetOpen}
         onOpenChange={setJoinSheetOpen}
         eventData={{
+          poolId: poolId ?? null,
           date,
           time,
           eventType,
@@ -140,7 +151,7 @@ export default function BlindBoxEventCard({
           priceTier,
           isAA,
           isGirlsNight,
-          city
+          city,
         }}
       />
     </>

@@ -14,10 +14,7 @@ npm run db:push          # Sync database schema
 npm run dev              # Start on http://localhost:5000
 ```
 
-### Admin Access
-- **URL:** http://localhost:5000/admin
-- **Phone:** 19896500978
-- **Password:** Lasalle11
+ 
 
 ### Test User Flow
 1. Go to `/register`

@@ -1,6 +1,6 @@
 // 12-Archetype Animal Social Vibe System
 // Avatar image mapping system with high-res illustrations
-
+//my path: Users/felixg/projects/JoyJoin3/client/src/lib/archetypeAvatars.ts
 import corgiImg from '@assets/开心柯基_1763997660297.png';
 import chickenImg from '@assets/太阳鸡_1763997660294.png';
 import dolphinImg from '@assets/夸夸豚_1763997660288.png';
@@ -45,18 +45,8 @@ export const archetypeGradients: Record<string, string> = {
   '隐身猫': 'from-indigo-500 via-purple-500 to-violet-500',     // Very low energy
 };
 
-// Animal emoji avatars (primary visual representation)
-export const archetypeEmojis: Record<string, string> = {
-  '开心柯基': '🐕',
-  '太阳鸡': '🐓',
-  '夸夸豚': '🐬',
-  '机智狐': '🦊',
-  '淡定海豚': '🐬',
-  '织网蛛': '🕷️',
-  '暖心熊': '🐻',
-  '灵感章鱼': '🐙',
-  '沉思猫头鹰': '🦉',
-  '定心大象': '🐘',
-  '稳如龟': '🐢',
-  '隐身猫': '🐱',
-};
+// Primary avatar mapping used by UI components.
+// For backward compatibility, archetypeEmojis now points to the image URLs
+// instead of emoji characters, so existing code that uses archetypeEmojis
+// will automatically start rendering the imported images.
+export const archetypeEmojis: Record<string, string> = archetypeAvatars;

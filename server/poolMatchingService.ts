@@ -1,3 +1,5 @@
+
+//my path:/Users/felixg/projects/JoyJoin3/server/poolMatchingService.ts
 /**
  * Pool-Based Matching Service (池内匹配服务)
  * 两阶段匹配模型 - Stage 2: 用户报名后，在活动池内进行智能分组
@@ -18,6 +20,8 @@ import {
   eventPools, 
   eventPoolRegistrations, 
   eventPoolGroups,
+  events,
+  eventAttendance,
   users, 
   matchingConfig,
   invitationUses,
@@ -620,8 +624,38 @@ export async function saveMatchResults(poolId: string, groups: MatchGroup[]): Pr
       })
       .where(inArray(eventPoolRegistrations.id, memberRegistrationIds));
     
-    // 3. 发送WebSocket通知给每个匹配到的用户
+    // 2.5 创建对应的events记录，使其出现在活动管理模块
     const memberUserIds = group.members.map(m => m.userId);
+    const location = pool?.district ? `${pool.city} ${pool.district}` : pool?.city || "待定";
+    
+    const [eventRecord] = await db.insert(events).values({
+      title: `${pool?.title || "盲盒活动"} - 第${i + 1}组`,
+      description: `来自活动池匹配：${pool?.description || ""}\n匹配分数: ${group.overallScore}\n化学反应: ${group.temperatureLevel}`,
+      dateTime: pool?.dateTime || new Date(),
+      location: location,
+      area: pool?.district || null,
+      maxAttendees: group.members.length,
+      currentAttendees: group.members.length,
+      hostId: pool?.createdBy || null,
+      status: "matched", // 匹配成功的状态
+      iconName: pool?.eventType === "饭局" ? "utensils" : pool?.eventType === "酒局" ? "wine" : "calendar",
+    }).returning();
+    
+    // 2.6 为每个成员创建eventAttendance记录
+    for (const member of group.members) {
+      await db.insert(eventAttendance).values({
+        eventId: eventRecord.id,
+        userId: member.userId,
+        status: "confirmed",
+      });
+    }
+    
+    // 2.7 更新groupRecord关联的eventId（如果需要的话，可以在eventPoolGroups表添加eventId字段）
+    // 这里暂时不修改schema，只是创建关联记录
+    
+    console.log(`[Pool Matching] Created event ${eventRecord.id} for group ${i + 1} with ${memberUserIds.length} attendees`);
+    
+    // 3. 发送WebSocket通知给每个匹配到的用户
     const notificationData: PoolMatchedData = {
       poolId,
       poolTitle: pool?.title || "活动池",

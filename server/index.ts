@@ -6,6 +6,12 @@ import { subscriptionService } from "./subscriptionService";
 import { wsService } from "./wsService";
 import { scanAllActivePools } from "./poolRealtimeMatchingService";
 
+// Detect if running on Replit infra (where reusePort is supported/needed)
+const IS_REPLIT =
+  !!process.env.REPL_ID ||
+  process.env.REPLIT_ENV === "true" ||
+  process.env.REPL_OWNER != null;
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -60,36 +66,47 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  // Initialize WebSocket server
-  wsService.initialize(server);
+  const port = parseInt(process.env.PORT || "5000", 10);
+  const host = "0.0.0.0";
 
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
+  const listenOptions: any = {
     port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+    host,
+  };
+
+  // On Replit, we can enable reusePort; on local dev (macOS, etc.) it may cause ENOTSUP,
+  // so we keep it off by default there.
+  if (IS_REPLIT) {
+    listenOptions.reusePort = true;
+  }
+
+  server.listen(listenOptions, () => {
     log(`serving on port ${port}`);
-    
+
+    // In development, Vite already uses its own WebSocket server for HMR on this port.
+    // To avoid protocol conflicts (e.g. "Invalid frame header" from Vite's client),
+    // we only start our own wsService WebSocket server in non-development environments.
+    if (app.get("env") !== "development") {
+      wsService.initialize(server);
+      log(`WebSocket server ready at ws://0.0.0.0:${port}/ws`);
+    } else {
+      log(`[WS] Skipping wsService in development to avoid conflict with Vite HMR`);
+    }
+
     // Warmup database connection to prevent autosuspend issues
     warmupDatabase();
-    
+
     // Start subscription expiry checker (runs every hour)
     subscriptionService.startExpiryChecker();
-    
+
     // Start realtime matching scheduler (runs every hour)
     const MATCHING_SCAN_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
     setInterval(() => {
-      scanAllActivePools().catch(err => {
-        console.error('[Matching Scheduler] Error scanning pools:', err);
+      scanAllActivePools().catch((err) => {
+        console.error("[Matching Scheduler] Error scanning pools:", err);
       });
     }, MATCHING_SCAN_INTERVAL);
-    
+
     log(`Realtime matching scheduler started (scanning every 60 minutes)`);
-    log(`WebSocket server ready at ws://0.0.0.0:${port}/ws`);
   });
 })();

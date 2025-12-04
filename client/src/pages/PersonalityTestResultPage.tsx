@@ -1,3 +1,4 @@
+//my path: /Users/felixg/projects/JoyJoin3/client/src/pages/PersonalityTestResultPage.tsx
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Sparkles, Users, TrendingUp, AlertTriangle, Heart, Share2, Quote, Targe
 import type { RoleResult } from '@shared/schema';
 import { queryClient } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import { archetypeGradients, archetypeAvatars, archetypeEmojis } from '@/lib/archetypeAvatars';
+import { archetypeGradients, archetypeAvatars } from '@/lib/archetypeAvatars';
 import { archetypeConfig } from '@/lib/archetypes';
 import { getTopCompatibleArchetypes, getCompatibilityCategory } from '@/lib/archetypeCompatibility';
 import { useState, useEffect } from 'react';
@@ -122,8 +123,8 @@ export default function PersonalityTestResultPage() {
   const myPercentage = stats?.[result.primaryRole] || 0;
   const gradient = archetypeGradients[result.primaryRole] || 'from-purple-500 to-pink-500';
   const secondaryGradient = result.secondaryRole ? archetypeGradients[result.secondaryRole] || 'from-blue-500 to-purple-500' : '';
-  const emoji = archetypeEmojis[result.primaryRole] || '🌟';
-  const secondaryEmoji = result.secondaryRole ? archetypeEmojis[result.secondaryRole] || '✨' : '';
+  const primaryAvatar = archetypeAvatars[result.primaryRole];
+  const secondaryAvatar = result.secondaryRole ? archetypeAvatars[result.secondaryRole] : undefined;
   const primaryRoleConfig = archetypeConfig[result.primaryRole];
   const nickname = primaryRoleConfig?.nickname || '';
   const tagline = primaryRoleConfig?.tagline || '';
@@ -187,9 +188,17 @@ export default function PersonalityTestResultPage() {
                   duration: 0.6,
                   ease: "easeInOut"
                 }}
-                className="text-9xl"
+                className="flex justify-center"
               >
-                {emoji}
+                {primaryAvatar ? (
+                  <img
+                    src={primaryAvatar}
+                    alt={result.primaryRole}
+                    className="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover shadow-lg"
+                  />
+                ) : (
+                  <span className="text-9xl">🌟</span>
+                )}
               </motion.div>
               
               {/* Particle explosion effect */}
@@ -280,7 +289,16 @@ export default function PersonalityTestResultPage() {
             className="flex justify-center"
           >
             <div className={`w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-2xl`}>
-              <span className="text-6xl md:text-9xl" data-testid="text-role-avatar">{emoji}</span>
+              {primaryAvatar ? (
+                <img
+                  src={primaryAvatar}
+                  alt={result.primaryRole}
+                  className="w-24 h-24 md:w-40 md:h-40 rounded-full object-cover"
+                  data-testid="text-role-avatar"
+                />
+              ) : (
+                <span className="text-6xl md:text-9xl" data-testid="text-role-avatar">🌟</span>
+              )}
             </div>
           </motion.div>
 
@@ -419,11 +437,27 @@ export default function PersonalityTestResultPage() {
                   <span>理想朋友类型</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {result.idealFriendTypes?.map((type: string) => (
-                    <Badge key={type} variant="outline" data-testid={`badge-ideal-friend-${type}`}>
-                      {archetypeEmojis[type] || '👥'} {type}
-                    </Badge>
-                  ))}
+                  {result.idealFriendTypes?.map((type: string) => {
+                    const avatar = archetypeAvatars[type];
+                    return (
+                      <Badge
+                        key={type}
+                        variant="outline"
+                        data-testid={`badge-ideal-friend-${type}`}
+                      >
+                        {avatar ? (
+                          <img
+                            src={avatar}
+                            alt={type}
+                            className="w-4 h-4 rounded-full mr-1 inline-block"
+                          />
+                        ) : (
+                          <span className="mr-1">👥</span>
+                        )}
+                        {type}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>
@@ -462,13 +496,26 @@ export default function PersonalityTestResultPage() {
                     {Object.entries(stats)
                       .sort((a, b) => b[1] - a[1])
                       .slice(0, 4)
-                      .map(([role, percentage]) => (
-                        <div key={role} className="text-center p-2 rounded-lg bg-muted/30">
-                          <div className="text-lg mb-1">{archetypeEmojis[role]}</div>
-                          <div className="text-xs font-semibold">{percentage}%</div>
-                          <div className="text-[10px] text-muted-foreground truncate">{role}</div>
-                        </div>
-                      ))}
+                      .map(([role, percentage]) => {
+                        const avatar = archetypeAvatars[role];
+                        return (
+                          <div key={role} className="text-center p-2 rounded-lg bg-muted/30">
+                            <div className="mb-1 flex justify-center">
+                              {avatar ? (
+                                <img
+                                  src={avatar}
+                                  alt={role}
+                                  className="w-8 h-8 rounded-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-lg">👥</span>
+                              )}
+                            </div>
+                            <div className="text-xs font-semibold">{percentage}%</div>
+                            <div className="text-[10px] text-muted-foreground truncate">{role}</div>
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
               </CardContent>
@@ -505,7 +552,17 @@ export default function PersonalityTestResultPage() {
                       transition={{ delay: index * 0.1 }}
                       className="flex items-center gap-3 p-3 rounded-lg bg-muted/30"
                     >
-                      <div className="text-2xl">{archetypeEmojis[match.role]}</div>
+                      <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-muted">
+                        {archetypeAvatars[match.role] ? (
+                          <img
+                            src={archetypeAvatars[match.role]}
+                            alt={match.role}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-2xl">👥</span>
+                        )}
+                      </div>
                       <div className="flex-1">
                         <div className="font-semibold text-sm">{match.role}</div>
                         <div className="w-full bg-muted rounded-full h-2 mt-1">

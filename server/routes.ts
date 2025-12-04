@@ -1,3 +1,4 @@
+//my path:/Users/felixg/projects/JoyJoin3/server/routes.ts
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -11,9 +12,9 @@ import { matchEventPool, saveMatchResults } from "./poolMatchingService";
 import { roleTraits, roleInsights } from "./archetypeConfig";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, matchingThresholds, poolMatchingLogs, type User } from "@shared/schema";
+import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, matchingThresholds, poolMatchingLogs, blindBoxEvents, type User } from "@shared/schema";
 import { db } from "./db";
-import { eq, or, and, desc, inArray, isNotNull } from "drizzle-orm";
+import { eq, or, and, desc, inArray, isNotNull, gt, sql } from "drizzle-orm";
 
 // 12个社交氛围原型题目映射表（与前端personalityQuestions.ts保持一致）
 const roleMapping: Record<string, Record<string, string>> = {
@@ -1186,6 +1187,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🎯 DEMO: Seed registrations into a pool for quick matching tests
+  app.post('/api/demo/seed-pool-registrations', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        console.error("[DemoSeedPoolRegistrations] No userId in session");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { poolId, count, budgetTier } = req.body || {};
+
+      if (!poolId) {
+        console.warn("[DemoSeedPoolRegistrations] missing poolId");
+        return res.status(400).json({ message: "poolId is required" });
+      }
+
+      // 确认这个池子存在
+      const [pool] = await db
+        .select()
+        .from(eventPools)
+        .where(eq(eventPools.id, poolId));
+
+      if (!pool) {
+        console.warn("[DemoSeedPoolRegistrations] pool not found:", poolId);
+        return res.status(404).json({ message: "Pool not found" });
+      }
+
+      const insertCount = typeof count === "number" && count > 0 ? count : 4;
+      const finalBudget = budgetTier ?? "100以下";
+
+      const registrationsToInsert: any[] = [];
+      for (let i = 0; i < insertCount; i++) {
+        registrationsToInsert.push({
+          poolId,
+          userId,
+          budgetRange: [finalBudget],
+          preferredLanguages: [],
+          tasteIntensity: [],
+          cuisinePreferences: [],
+          socialGoals: [],
+          dietaryRestrictions: [],
+          matchStatus: "pending",
+        });
+      }
+
+      const inserted = await db
+        .insert(eventPoolRegistrations)
+        .values(registrationsToInsert)
+        .returning();
+
+      // 更新池子的报名计数
+      await db
+        .update(eventPools)
+        .set({
+          totalRegistrations: sql`${eventPools.totalRegistrations} + ${inserted.length}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(eventPools.id, poolId));
+
+      console.log("[DemoSeedPoolRegistrations] inserted registrations:", {
+        poolId,
+        userId,
+        count: inserted.length,
+      });
+
+      return res.json({
+        ok: true,
+        poolId,
+        insertedCount: inserted.length,
+      });
+    } catch (error: any) {
+      console.error("[DemoSeedPoolRegistrations] Error seeding registrations:", error);
+      res.status(500).json({
+        message: "Failed to seed pool registrations",
+        error: error?.message || String(error),
+      });
+    }
+  });
+
+  // Debug middleware for blind box event routes
+  app.use('/api/blind-box-events', (req, _res, next) => {
+    console.log("[BlindBoxDebug] incoming request on /api/blind-box-events", {
+      method: req.method,
+      originalUrl: req.originalUrl,
+      params: req.params,
+      query: req.query,
+      body: req.body,
+    });
+    next();
+  });
   // Blind Box Event routes
   app.get('/api/my-events', isPhoneAuthenticated, async (req: any, res) => {
     try {
@@ -1198,36 +1289,778 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // app.post('/api/blind-box-events', isPhoneAuthenticated, async (req: any, res) => {
+  //   try {
+  //     const userId = req.session.userId;
+  //     const { date, time, eventType, city, area, budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines, inviteFriends, friendsCount } = req.body;
+      
+  //     if (!date || !time || !eventType || !area || !budget || budget.length === 0) {
+  //       return res.status(400).json({ message: "Missing required fields" });
+  //     }
+      
+  //     const event = await storage.createBlindBoxEvent(userId, {
+  //       date,
+  //       time,
+  //       eventType,
+  //       city: city || "深圳",
+  //       area,
+  //       budget,
+  //       acceptNearby,
+  //       selectedLanguages,
+  //       selectedTasteIntensity,
+  //       selectedCuisines,
+  //       inviteFriends,
+  //       friendsCount,
+  //     });
+      
+  //     res.json(event);
+  //   } catch (error) {
+  //     console.error("Error creating blind box event:", error);
+  //     res.status(500).json({ message: "Failed to create blind box event" });
+  //   }
+  // });
+
   app.post('/api/blind-box-events', isPhoneAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;
-      const { date, time, eventType, city, area, budget, acceptNearby, selectedLanguages, selectedTasteIntensity, selectedCuisines, inviteFriends, friendsCount } = req.body;
-      
-      if (!date || !time || !eventType || !area || !budget || budget.length === 0) {
-        return res.status(400).json({ message: "Missing required fields" });
+      if (!userId) {
+        console.error("[BlindBoxPayment] No userId in session");
+        return res.status(401).json({ message: "Unauthorized" });
       }
-      
-      const event = await storage.createBlindBoxEvent(userId, {
-        date,
-        time,
+
+      // 尽量把当前用户查出来，方便 debug（可选）
+      try {
+        const usersResult = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId));
+        console.log("[BlindBoxPayment] current user from DB:", usersResult);
+      } catch (userErr) {
+        console.warn("[BlindBoxPayment] failed to load user for debug:", userErr);
+      }
+
+      // 支付页 / 发现页传过来的盲盒报名数据（兼容老字段）
+      const {
+        // 新版字段
+        city,
+        district,
         eventType,
-        city: city || "深圳",
-        area,
-        budget,
-        acceptNearby,
+        budgetTier,
         selectedLanguages,
         selectedTasteIntensity,
         selectedCuisines,
+        socialGoals,
+        dietaryRestrictions,
+        poolId,
+        // 兼容旧版字段
+        area,
+        budget,
+        acceptNearby,
+        inviteFriends,
+        friendsCount,
+      } = req.body || {};
+
+      console.log("[BlindBoxPayment] incoming payload:", {
+        userId,
+        city,
+        district,
+        area,
+        eventType,
+        budgetTier,
+        budget,
+        selectedLanguages,
+        selectedTasteIntensity,
+        selectedCuisines,
+        socialGoals,
+        dietaryRestrictions,
+        poolId,
+        acceptNearby,
         inviteFriends,
         friendsCount,
       });
-      
-      res.json(event);
-    } catch (error) {
-      console.error("Error creating blind box event:", error);
-      res.status(500).json({ message: "Failed to create blind box event" });
+
+      // ✅ 必须显式指定 poolId（这个池子是 admin 在后台创好的）
+      if (!poolId) {
+        console.warn("[BlindBoxPayment] missing poolId in request");
+        return res.status(400).json({
+          message: "缺少必填字段：poolId",
+        });
+      }
+
+      // ✅ 统一处理预算：优先用 budgetTier，其次用 budget 数组
+      let budgetRange: string[] = [];
+      if (budgetTier !== undefined && budgetTier !== null) {
+        if (Array.isArray(budgetTier)) {
+          budgetRange = budgetTier.map((b) => String(b));
+        } else {
+          budgetRange = [String(budgetTier)];
+        }
+      } else if (Array.isArray(budget)) {
+        budgetRange = budget.map((b: any) => String(b));
+      }
+
+      if (budgetRange.length === 0) {
+        console.warn("[BlindBoxPayment] missing budget info");
+        return res.status(400).json({
+          message: "参数不完整：需要 budgetTier 或 budget",
+        });
+      }
+
+      // ✅ 只允许报名已经存在且开放报名的池子（status = active 且 registrationDeadline 未来）
+      const now = new Date();
+      const poolsById = await db
+        .select()
+        .from(eventPools)
+        .where(
+          and(
+            eq(eventPools.id, poolId),
+            eq(eventPools.status, "active"),
+            gt(eventPools.registrationDeadline, now)
+          )
+        );
+
+      if (!poolsById || poolsById.length === 0) {
+        console.warn("[BlindBoxPayment] pool not found or not active / expired:", poolId);
+        return res.status(404).json({
+          message: "指定的活动池不存在或已关闭报名",
+        });
+      }
+
+      const pool = poolsById[0];
+
+      console.log("[BlindBoxPayment] final chosen pool for registration:", {
+        id: pool.id,
+        title: pool.title,
+        city: pool.city,
+        district: pool.district,
+      });
+
+      // ✅ 防止重复报名：同一用户 + 同一池子只允许一条报名记录
+      const existingRegistrations = await db
+        .select({ id: eventPoolRegistrations.id })
+        .from(eventPoolRegistrations)
+        .where(
+          and(
+            eq(eventPoolRegistrations.poolId, pool.id),
+            eq(eventPoolRegistrations.userId, userId)
+          )
+        );
+
+      if (existingRegistrations.length > 0) {
+        console.warn("[BlindBoxPayment] user already registered for this pool:", {
+          userId,
+          poolId: pool.id,
+        });
+        return res.status(400).json({
+          message: "你已经报名过这个活动盲盒啦，无法重复报名",
+        });
+      }
+
+      // ✅ 在 event_pool_registrations 中插入报名记录（用户付完钱就直接进池子）
+      const registrationData = {
+        poolId: pool.id,
+        userId,
+        budgetRange,
+        preferredLanguages: Array.isArray(selectedLanguages) ? selectedLanguages : [],
+        tasteIntensity: Array.isArray(selectedTasteIntensity) ? selectedTasteIntensity : [],
+        cuisinePreferences: Array.isArray(selectedCuisines) ? selectedCuisines : [],
+        socialGoals: Array.isArray(socialGoals) ? socialGoals : [],
+        dietaryRestrictions: Array.isArray(dietaryRestrictions) ? dietaryRestrictions : [],
+      };
+
+      console.log("[BlindBoxPayment] creating eventPoolRegistration with data:", registrationData);
+
+      const [registration] = await db
+        .insert(eventPoolRegistrations)
+        .values(registrationData)
+        .returning();
+
+      console.log("[BlindBoxPayment] created eventPoolRegistration:", registration);
+
+      // ✅ 更新活动池的 totalRegistrations 计数
+      const [updatedPool] = await db
+        .update(eventPools)
+        .set({
+          totalRegistrations: sql`${eventPools.totalRegistrations} + 1`,
+          updatedAt: new Date(),
+        })
+        .where(eq(eventPools.id, pool.id))
+        .returning();
+
+      console.log("[BlindBoxPayment] updated eventPool after registration:", updatedPool);
+
+      // ✅ 返回报名信息（前端目前只需要知道成功了 & 池子信息）
+      return res.json({
+        ok: true,
+        registration,
+        pool: updatedPool || pool,
+      });
+    } catch (error: any) {
+      console.error("[BlindBoxPayment] Failed to create pool registration:", error);
+      res.status(500).json({
+        message: "Failed to create blind box registration",
+        error: error?.message || String(error),
+      });
     }
   });
+  // app.post('/api/blind-box-events', isPhoneAuthenticated, async (req: any, res) => {
+  //   try {
+  //     const userId = req.session.userId;
+  //     if (!userId) {
+  //       console.error("[BlindBoxPayment] No userId in session");
+  //       return res.status(401).json({ message: "Unauthorized" });
+  //     }
+
+  //     // 尽量把当前用户查出来，方便 debug（可选）
+  //     try {
+  //       const usersResult = await db
+  //         .select()
+  //         .from(users)
+  //         .where(eq(users.id, userId));
+  //       console.log("[BlindBoxPayment] current user from DB:", usersResult);
+  //     } catch (userErr) {
+  //       console.warn("[BlindBoxPayment] failed to load user for debug:", userErr);
+  //     }
+
+  //     // 支付页 / 发现页传过来的盲盒报名数据（兼容老字段）
+  //     const {
+  //       // 新版字段
+  //       city,
+  //       district,
+  //       eventType,
+  //       budgetTier,
+  //       selectedLanguages,
+  //       selectedTasteIntensity,
+  //       selectedCuisines,
+  //       socialGoals,
+  //       dietaryRestrictions,
+  //       poolId,
+  //       // 兼容旧版字段
+  //       area,
+  //       budget,
+  //       acceptNearby,
+  //       inviteFriends,
+  //       friendsCount,
+  //     } = req.body || {};
+
+  //     console.log("[BlindBoxPayment] incoming payload:", {
+  //       userId,
+  //       city,
+  //       district,
+  //       area,
+  //       eventType,
+  //       budgetTier,
+  //       budget,
+  //       selectedLanguages,
+  //       selectedTasteIntensity,
+  //       selectedCuisines,
+  //       socialGoals,
+  //       dietaryRestrictions,
+  //       poolId,
+  //       acceptNearby,
+  //       inviteFriends,
+  //       friendsCount,
+  //     });
+
+  //     // ✅ 我们现在的逻辑：必须显式指定 poolId（这个池子是 admin 在后台创好的）
+  //     if (!poolId) {
+  //       console.warn("[BlindBoxPayment] missing poolId in request");
+  //       return res.status(400).json({
+  //         message: "缺少必填字段：poolId",
+  //       });
+  //     }
+
+  //     // ✅ 统一处理预算：优先用 budgetTier，其次用 budget 数组
+  //     let budgetRange: string[] = [];
+  //     if (budgetTier !== undefined && budgetTier !== null) {
+  //       if (Array.isArray(budgetTier)) {
+  //         budgetRange = budgetTier.map((b) => String(b));
+  //       } else {
+  //         budgetRange = [String(budgetTier)];
+  //       }
+  //     } else if (Array.isArray(budget)) {
+  //       budgetRange = budget.map((b: any) => String(b));
+  //     }
+
+  //     if (budgetRange.length === 0) {
+  //       console.warn("[BlindBoxPayment] missing budget info");
+  //       return res.status(400).json({
+  //         message: "参数不完整：需要 budgetTier 或 budget",
+  //       });
+  //     }
+
+  //     // ✅ 只允许报名已经存在且开放报名的池子（status = active 且 registrationDeadline 未来）
+  //     const now = new Date();
+  //     const poolsById = await db
+  //       .select()
+  //       .from(eventPools)
+  //       .where(
+  //         and(
+  //           eq(eventPools.id, poolId),
+  //           eq(eventPools.status, "active"),
+  //           gt(eventPools.registrationDeadline, now)
+  //         )
+  //       );
+
+  //     if (!poolsById || poolsById.length === 0) {
+  //       console.warn("[BlindBoxPayment] pool not found or not active / expired:", poolId);
+  //       return res.status(404).json({
+  //         message: "指定的活动池不存在或已关闭报名",
+  //       });
+  //     }
+
+  //     const pool = poolsById[0];
+
+  //     console.log("[BlindBoxPayment] final chosen pool for registration:", {
+  //       id: pool.id,
+  //       title: pool.title,
+  //       city: pool.city,
+  //       district: pool.district,
+  //     });
+
+  //     // ✅ 在 event_pool_registrations 中插入报名记录（用户付完钱就直接进池子）
+  //     const registrationData = {
+  //       poolId: pool.id,
+  //       userId,
+  //       budgetRange,
+  //       preferredLanguages: Array.isArray(selectedLanguages) ? selectedLanguages : [],
+  //       tasteIntensity: Array.isArray(selectedTasteIntensity) ? selectedTasteIntensity : [],
+  //       cuisinePreferences: Array.isArray(selectedCuisines) ? selectedCuisines : [],
+  //       socialGoals: Array.isArray(socialGoals) ? socialGoals : [],
+  //       dietaryRestrictions: Array.isArray(dietaryRestrictions) ? dietaryRestrictions : [],
+  //     };
+
+  //     console.log("[BlindBoxPayment] creating eventPoolRegistration with data:", registrationData);
+
+  //     const [registration] = await db
+  //       .insert(eventPoolRegistrations)
+  //       .values(registrationData)
+  //       .returning();
+
+  //     console.log("[BlindBoxPayment] created eventPoolRegistration:", registration);
+
+  //     // ✅ 更新活动池的 totalRegistrations 计数
+  //     const [updatedPool] = await db
+  //       .update(eventPools)
+  //       .set({
+  //         totalRegistrations: sql`${eventPools.totalRegistrations} + 1`,
+  //         updatedAt: new Date(),
+  //       })
+  //       .where(eq(eventPools.id, pool.id))
+  //       .returning();
+
+  //     console.log("[BlindBoxPayment] updated eventPool after registration:", updatedPool);
+
+  //     // ✅ 返回报名信息（前端目前只需要知道成功了 & 池子信息）
+  //     return res.json({
+  //       ok: true,
+  //       registration,
+  //       pool: updatedPool || pool,
+  //     });
+  //   } catch (error: any) {
+  //     console.error("[BlindBoxPayment] Failed to create pool registration:", error);
+  //     res.status(500).json({
+  //       message: "Failed to create blind box registration",
+  //       error: error?.message || String(error),
+  //     });
+  //   }
+  // });
+  // app.post('/api/blind-box-events', isPhoneAuthenticated, async (req: any, res) => {
+  //   try {
+  //     const userId = req.session.userId;
+  //     if (!userId) {
+  //       console.error("[BlindBoxPayment] No userId in session");
+  //       return res.status(401).json({ message: "Unauthorized" });
+  //     }
+
+  //     // Try to fetch user for debugging (safe even if it fails)
+  //     try {
+  //       const usersResult = await db
+  //         .select()
+  //         .from(users)
+  //         .where(eq(users.id, userId));
+  //       console.log("[BlindBoxPayment] current user from DB:", usersResult);
+  //     } catch (userErr) {
+  //       console.warn("[BlindBoxPayment] failed to load user for debug:", userErr);
+  //     }
+
+  //     // 支付页传过来的盲盒报名数据 / 兼容老参数
+  //     const {
+  //       // 新版字段
+  //       city,
+  //       district,
+  //       eventType,
+  //       budgetTier,
+  //       selectedLanguages,
+  //       selectedTasteIntensity,
+  //       selectedCuisines,
+  //       socialGoals,
+  //       dietaryRestrictions,
+  //       // 兼容旧版字段
+  //       area,
+  //       budget,
+  //       acceptNearby,
+  //       inviteFriends,
+  //       friendsCount,
+  //     } = req.body || {};
+
+  //     console.log("[BlindBoxPayment] incoming payload:", {
+  //       userId,
+  //       city,
+  //       district,
+  //       area,
+  //       eventType,
+  //       budgetTier,
+  //       budget,
+  //       selectedLanguages,
+  //       selectedTasteIntensity,
+  //       selectedCuisines,
+  //       socialGoals,
+  //       dietaryRestrictions,
+  //       acceptNearby,
+  //       inviteFriends,
+  //       friendsCount,
+  //     });
+
+  //     // 统一处理城市和商圈/区域
+  //     const finalCity = city || "深圳";
+  //     const finalDistrict = district || area;
+  //     // 统一处理预算：优先用 budgetTier，其次用 budget 数组
+  //     let budgetRange: string[] = [];
+  //     if (budgetTier !== undefined && budgetTier !== null) {
+  //       if (Array.isArray(budgetTier)) {
+  //         budgetRange = budgetTier.map((b) => String(b));
+  //       } else {
+  //         budgetRange = [String(budgetTier)];
+  //       }
+  //     } else if (Array.isArray(budget)) {
+  //       budgetRange = budget.map((b: any) => String(b));
+  //     }
+
+  //     if (!finalCity || !finalDistrict || budgetRange.length === 0 || !eventType) {
+  //       console.warn("[BlindBoxPayment] missing required fields after normalization:", {
+  //         finalCity,
+  //         finalDistrict,
+  //         budgetRange,
+  //         eventType,
+  //       });
+  //       return res.status(400).json({
+  //         message: "参数不完整：需要 city / district(area) / eventType / budget",
+  //       });
+  //     }
+
+  //     // 1) 查询当前城市 + 商圈下可用的活动池（admin 预设）
+  //     const now = new Date();
+  //     const pools = await db
+  //       .select()
+  //       .from(eventPools)
+  //       .where(
+  //         and(
+  //           eq(eventPools.city, finalCity),
+  //           eq(eventPools.district, finalDistrict),
+  //           eq(eventPools.status, "active"),
+  //           gt(eventPools.registrationDeadline, now)
+  //         )
+  //       );
+
+  //     console.log("[BlindBoxPayment] matched event pools:", pools);
+
+  //     // 🧊 优先用已有池子；如果没有，就懒创建一个「常驻池」
+  //     let pool = pools[0];
+
+  //     if (!pool) {
+  //       console.log(
+  //         "[BlindBoxPayment] No active pool found, creating persistent default pool for:",
+  //         { city: finalCity, district: finalDistrict, eventType }
+  //       );
+
+  //       const farFuture = new Date();
+  //       farFuture.setFullYear(2035); // 超远的占位时间
+
+  //       const [createdPool] = await db
+  //         .insert(eventPools)
+  //         .values({
+  //           title: `${finalCity}·${finalDistrict} ${eventType}常驻池`,
+  //           description: null,
+  //           eventType,
+  //           city: finalCity,
+  //           district: finalDistrict,
+  //           venue: null,
+
+  //           // ✅ 必填字段
+  //           dateTime: farFuture,
+  //           registrationDeadline: farFuture,
+
+  //           minBudget: null,
+  //           maxBudget: null,
+  //           minAge: null,
+  //           maxAge: null,
+
+  //           minParticipants: 4,
+  //           maxParticipants: 6,
+  //           minPartySize: 1,
+
+  //           genderBalanceMode: null,
+  //           status: "active",
+  //           totalRegistrations: 0,
+  //           totalMatches: 0,
+
+  //           // ✅ 这里改成当前 userId（之前是 null 导致报错）
+  //           createdBy: userId,
+  //         })
+  //         .returning();
+
+  //       console.log("[BlindBoxPayment] created default persistent pool:", createdPool);
+  //       pool = createdPool;
+  //     }
+
+  //     // 2) 在 event_pool_registrations 中插入报名记录
+  //     const registrationData = {
+  //       poolId: pool.id,
+  //       userId,
+  //       budgetRange,
+  //       preferredLanguages: Array.isArray(selectedLanguages) ? selectedLanguages : [],
+  //       tasteIntensity: Array.isArray(selectedTasteIntensity) ? selectedTasteIntensity : [],
+  //       cuisinePreferences: Array.isArray(selectedCuisines) ? selectedCuisines : [],
+  //       socialGoals: Array.isArray(socialGoals) ? socialGoals : [],
+  //       dietaryRestrictions: Array.isArray(dietaryRestrictions) ? dietaryRestrictions : [],
+  //     };
+
+  //     console.log("[BlindBoxPayment] creating eventPoolRegistration with data:", registrationData);
+
+  //     const [registration] = await db
+  //       .insert(eventPoolRegistrations)
+  //       .values(registrationData)
+  //       .returning();
+
+  //     console.log("[BlindBoxPayment] created eventPoolRegistration:", registration);
+
+  //     // 3) 更新活动池的 totalRegistrations 计数
+  //     const [updatedPool] = await db
+  //       .update(eventPools)
+  //       .set({
+  //         totalRegistrations: sql`${eventPools.totalRegistrations} + 1`,
+  //         updatedAt: new Date(),
+  //       })
+  //       .where(eq(eventPools.id, pool.id))
+  //       .returning();
+
+  //     console.log("[BlindBoxPayment] updated eventPool after registration:", updatedPool);
+
+  //     // 4) 返回报名信息
+  //     return res.json({
+  //       ok: true,
+  //       registration,
+  //       pool: updatedPool || pool,
+  //     });
+  //   } catch (error: any) {
+  //     console.error("[BlindBoxPayment] Failed to create pool registration:", error);
+  //     res.status(500).json({
+  //       message: "Failed to create blind box registration",
+  //       error: error?.message || String(error),
+  //     });
+  //   }
+  // });  
+  // app.post('/api/blind-box-events', isPhoneAuthenticated, async (req: any, res) => {
+  //   try {
+  //     const userId = req.session.userId;
+  //     if (!userId) {
+  //       console.error("[BlindBoxPayment] No userId in session");
+  //       return res.status(401).json({ message: "Unauthorized" });
+  //     }
+
+  //     // 尽量把当前用户查出来，方便 debug
+  //     try {
+  //       const usersResult = await db
+  //         .select()
+  //         .from(users)
+  //         .where(eq(users.id, userId));
+  //       console.log("[BlindBoxPayment] current user from DB:", usersResult);
+  //     } catch (userErr) {
+  //       console.warn("[BlindBoxPayment] failed to load user for debug:", userErr);
+  //     }
+
+  //     // 支付页传过来的盲盒报名数据 / 兼容老参数
+  //     const {
+  //       // 新版字段
+  //       city,
+  //       district,
+  //       eventType,
+  //       budgetTier,
+  //       selectedLanguages,
+  //       selectedTasteIntensity,
+  //       selectedCuisines,
+  //       socialGoals,
+  //       dietaryRestrictions,
+  //       // 兼容旧版字段
+  //       area,
+  //       budget,
+  //       acceptNearby,
+  //       inviteFriends,
+  //       friendsCount,
+  //     } = req.body || {};
+
+  //     console.log("[BlindBoxPayment] incoming payload:", {
+  //       userId,
+  //       city,
+  //       district,
+  //       area,
+  //       eventType,
+  //       budgetTier,
+  //       budget,
+  //       selectedLanguages,
+  //       selectedTasteIntensity,
+  //       selectedCuisines,
+  //       socialGoals,
+  //       dietaryRestrictions,
+  //       acceptNearby,
+  //       inviteFriends,
+  //       friendsCount,
+  //     });
+
+  //     // 统一处理城市和商圈/区域
+  //     const finalCity = city || "深圳";
+  //     const finalDistrict = district || area;
+  //     // 统一处理预算：优先用 budgetTier，其次用 budget 数组
+  //     let budgetRange: string[] = [];
+  //     if (budgetTier !== undefined && budgetTier !== null) {
+  //       if (Array.isArray(budgetTier)) {
+  //         budgetRange = budgetTier.map((b) => String(b));
+  //       } else {
+  //         budgetRange = [String(budgetTier)];
+  //       }
+  //     } else if (Array.isArray(budget)) {
+  //       budgetRange = budget.map((b: any) => String(b));
+  //     }
+
+  //     if (!finalCity || !finalDistrict || budgetRange.length === 0 || !eventType) {
+  //       console.warn("[BlindBoxPayment] missing required fields after normalization:", {
+  //         finalCity,
+  //         finalDistrict,
+  //         budgetRange,
+  //         eventType,
+  //       });
+  //       return res.status(400).json({
+  //         message: "参数不完整：需要 city / district(area) / eventType / budget",
+  //       });
+  //     }
+
+  //     // 1) 查询当前城市 + 商圈下可用的活动池（admin 预设）
+  //     const now = new Date();
+  //     const pools = await db
+  //       .select()
+  //       .from(eventPools)
+  //       .where(
+  //         and(
+  //           eq(eventPools.city, finalCity),
+  //           eq(eventPools.district, finalDistrict),
+  //           eq(eventPools.status, "active"),
+  //           gt(eventPools.registrationDeadline, now)
+  //         )
+  //       );
+
+  //     console.log("[BlindBoxPayment] matched event pools:", pools);
+
+  //     // 🧊 先用已有池子；如果没有，就懒创建一个「常驻池」
+  //     let pool = pools[0];
+
+  //     if (!pool) {
+  //       console.log(
+  //         "[BlindBoxPayment] No active pool found, creating persistent default pool for:",
+  //         { city: finalCity, district: finalDistrict, eventType }
+  //       );
+
+  //       // 给这个常驻池一个很远的时间（既当活动时间又当报名截止时间）
+  //       const farFuture = new Date();
+  //       farFuture.setFullYear(2035); // 你要改成别的年份也可以
+
+  //       const [createdPool] = await db
+  //         .insert(eventPools)
+  //         .values({
+  //           title: `${finalCity}·${finalDistrict} ${eventType}常驻池`,
+  //           description: null,
+  //           eventType,
+  //           city: finalCity,
+  //           district: finalDistrict,
+  //           venue: null,
+
+  //           // ✅ 关键：一定要填 dateTime（NOT NULL）
+  //           dateTime: farFuture,
+  //           // ✅ 报名截止时间也给一个很远的时间
+  //           registrationDeadline: farFuture,
+
+  //           // 预算 / 年龄段先留空，之后 admin 可以在后台改
+  //           minBudget: null,
+  //           maxBudget: null,
+  //           minAge: null,
+  //           maxAge: null,
+
+  //           // 一个合理的默认桌子规模（你也可以按需求改）
+  //           minParticipants: 4,
+  //           maxParticipants: 6,
+  //           minPartySize: 1,
+
+  //           genderBalanceMode: null, // 如果 schema 允许 null 就这样；有默认值的话可以不写
+  //           status: "active",
+  //           totalRegistrations: 0,
+  //           totalMatches: 0,
+
+  //           // createdBy 可以留 null，或者填当前用户 / admin id
+  //           createdBy: null,
+  //         })
+  //         .returning();
+
+  //       console.log("[BlindBoxPayment] created default persistent pool:", createdPool);
+  //       pool = createdPool;
+  //     }
+
+  //     // 2) 在 event_pool_registrations 中插入报名记录（用户付完钱就直接进池子）
+  //     const registrationData = {
+  //       poolId: pool.id,
+  //       userId,
+  //       budgetRange,
+  //       preferredLanguages: Array.isArray(selectedLanguages) ? selectedLanguages : [],
+  //       tasteIntensity: Array.isArray(selectedTasteIntensity) ? selectedTasteIntensity : [],
+  //       cuisinePreferences: Array.isArray(selectedCuisines) ? selectedCuisines : [],
+  //       socialGoals: Array.isArray(socialGoals) ? socialGoals : [],
+  //       dietaryRestrictions: Array.isArray(dietaryRestrictions) ? dietaryRestrictions : [],
+  //     };
+
+  //     console.log("[BlindBoxPayment] creating eventPoolRegistration with data:", registrationData);
+
+  //     const [registration] = await db
+  //       .insert(eventPoolRegistrations)
+  //       .values(registrationData)
+  //       .returning();
+
+  //     console.log("[BlindBoxPayment] created eventPoolRegistration:", registration);
+
+  //     // 3) 更新活动池的 totalRegistrations 计数
+  //     const [updatedPool] = await db
+  //       .update(eventPools)
+  //       .set({
+  //         totalRegistrations: sql`${eventPools.totalRegistrations} + 1`,
+  //         updatedAt: new Date(),
+  //       })
+  //       .where(eq(eventPools.id, pool.id))
+  //       .returning();
+
+  //     console.log("[BlindBoxPayment] updated eventPool after registration:", updatedPool);
+
+  //     // 4) 返回报名信息（前端目前只需要知道成功了）
+  //     return res.json({
+  //       ok: true,
+  //       registration,
+  //       pool: updatedPool || pool,
+  //     });
+  //   } catch (error: any) {
+  //     console.error("[BlindBoxPayment] Failed to create pool registration:", error);
+  //     res.status(500).json({
+  //       message: "Failed to create blind box registration",
+  //       error: error?.message || String(error),
+  //     });
+  //   }
+  // });
 
   app.get('/api/blind-box-events/:eventId', isPhoneAuthenticated, async (req: any, res) => {
     try {
@@ -1267,17 +2100,648 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // app.post('/api/blind-box-events/:eventId/cancel', isPhoneAuthenticated, async (req: any, res) => {
+  //   try {
+  //     const userId = req.session.userId;
+  //     const { eventId } = req.params;
+  //     const event = await storage.cancelBlindBoxEvent(eventId, userId);
+  //     res.json(event);
+  //   } catch (error) {
+  //     console.error("Error canceling blind box event:", error);
+  //     res.status(500).json({ message: "Failed to cancel blind box event" });
+  //   }
+  // });
   app.post('/api/blind-box-events/:eventId/cancel', isPhoneAuthenticated, async (req: any, res) => {
     try {
+      console.log("[BlindBoxCancel] route hit, raw request:", {
+        method: req.method,
+        originalUrl: req.originalUrl,
+        params: req.params,
+        body: req.body,
+        sessionUserId: req.session?.userId,
+      });
+
       const userId = req.session.userId;
       const { eventId } = req.params;
-      const event = await storage.cancelBlindBoxEvent(eventId, userId);
-      res.json(event);
+
+      if (!userId) {
+        console.error("[BlindBoxCancel] No userId in session");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      console.log("[BlindBoxCancel] incoming cancel request:", {
+        userId,
+        eventId,
+      });
+
+      // 1) 先尝试旧逻辑：如果你之前有真正的 blindBoxEvent 记录
+      try {
+        const legacyResult = await storage.cancelBlindBoxEvent(eventId, userId);
+        if (legacyResult) {
+          console.log("[BlindBoxCancel] legacy cancelBlindBoxEvent succeeded:", {
+            eventId,
+            userId,
+          });
+          return res.json(legacyResult);
+        }
+      } catch (legacyErr) {
+        console.warn("[BlindBoxCancel] legacy cancelBlindBoxEvent failed or not applicable:", legacyErr);
+      }
+
+      // 2) 新逻辑优先：把 eventId 当作报名记录 id（event_pool_registrations.id）来删除
+      // 这样 Activities 页如果传 registrationId 也可以正常取消
+      let deletedRegistrations = await db
+        .delete(eventPoolRegistrations)
+        .where(
+          and(
+            eq(eventPoolRegistrations.id, eventId),
+            eq(eventPoolRegistrations.userId, userId)
+          )
+        )
+        .returning();
+
+      if (deletedRegistrations.length > 0) {
+        console.log("[BlindBoxCancel] cancelled by registrationId:", {
+          userId,
+          registrationId: eventId,
+          count: deletedRegistrations.length,
+        });
+        console.log("[BlindBoxCancel] response (by registrationId):", {
+          userId,
+          cancelledIds: deletedRegistrations.map((r) => r.id),
+        });
+
+        // 对每个被删除的报名，把对应池子的 totalRegistrations - 1
+        for (const reg of deletedRegistrations) {
+          if (reg.poolId) {
+            await db
+              .update(eventPools)
+              .set({
+                totalRegistrations: sql`${eventPools.totalRegistrations} - 1`,
+                updatedAt: new Date(),
+              })
+              .where(eq(eventPools.id, reg.poolId));
+          }
+        }
+
+        return res.json({
+          ok: true,
+          cancelledRegistrationIds: deletedRegistrations.map((r) => r.id),
+        });
+      }
+
+      // 3) 兼容旧调用方式：把 eventId 当作 poolId，用于删除当前用户在该池子的报名记录
+      deletedRegistrations = await db
+        .delete(eventPoolRegistrations)
+        .where(
+          and(
+            eq(eventPoolRegistrations.poolId, eventId),
+            eq(eventPoolRegistrations.userId, userId)
+          )
+        )
+        .returning();
+
+      if (deletedRegistrations.length === 0) {
+        console.warn("[BlindBoxCancel] no registration found to cancel:", {
+          userId,
+          eventId,
+        });
+        return res.status(404).json({
+          message: "没有找到可取消的报名记录，可能已经取消过了",
+        });
+      }
+
+      console.log("[BlindBoxCancel] cancelled by poolId:", {
+        userId,
+        poolId: eventId,
+        count: deletedRegistrations.length,
+      });
+      console.log("[BlindBoxCancel] response (by poolId):", {
+        userId,
+        cancelledIds: deletedRegistrations.map((r) => r.id),
+      });
+
+      // 同样更新对应池子的 totalRegistrations
+      for (const reg of deletedRegistrations) {
+        if (reg.poolId) {
+          await db
+            .update(eventPools)
+            .set({
+              totalRegistrations: sql`${eventPools.totalRegistrations} - 1`,
+              updatedAt: new Date(),
+            })
+            .where(eq(eventPools.id, reg.poolId));
+        }
+      }
+
+      return res.json({
+        ok: true,
+        cancelledRegistrationIds: deletedRegistrations.map((r) => r.id),
+      });
     } catch (error) {
-      console.error("Error canceling blind box event:", error);
+      console.error("[BlindBoxCancel] Error canceling blind box event / pool registration:", error);
       res.status(500).json({ message: "Failed to cancel blind box event" });
     }
   });
+
+
+  // ============ ADMIN BLIND BOX EVENT ROUTES ============
+  // ============ ADMIN BLIND BOX EVENT ROUTES ============
+
+  // Admin: list all blind box events (for management console)
+  app.get('/api/admin/events', requireAdmin, async (req: any, res) => {
+    try {
+      const adminId = req.session.userId;
+      console.log("[AdminBlindBox] GET /api/admin/events by admin:", adminId);
+
+      const events = await db
+        .select()
+        .from(blindBoxEvents)
+        .orderBy(desc(blindBoxEvents.dateTime));
+
+      console.log("[AdminBlindBox] Loaded blind box events count:", events.length);
+      res.json(events);
+    } catch (error: any) {
+      console.error("[AdminBlindBox] Error fetching blind box events:", error);
+      res.status(500).json({
+        message: "Failed to fetch blind box events",
+        error: error?.message || String(error),
+      });
+    }
+  });
+
+  // Admin: create a blind box event (桌) that admins manage
+  app.post('/api/admin/blind-box-events', requireAdmin, async (req: any, res) => {
+    try {
+      const adminId = req.session.userId;
+      if (!adminId) {
+        console.error("[AdminBlindBox] No adminId in session on create");
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const {
+        // 桌子标题（比如「海底捞」）
+        title,
+        // 饭局 / 酒局
+        eventType,
+        // 必须绑定一个池子：这个桌子就是在这个池子里开出来的
+        poolId,
+        // 预算档位（前端传的 budgetTier，直接存进去）
+        budgetTier,
+        // 下面几个是偏好字段，前端可能用 languages / cuisines / tasteIntensity，
+        // 也可能用 selectedLanguages / selectedCuisines / selectedTasteIntensity，这里统一兼容
+        languages,
+        cuisines,
+        tasteIntensity,
+        selectedLanguages,
+        selectedCuisines,
+        selectedTasteIntensity,
+        // 预留：后面如果要做「自动匹配」可以用这个开关
+        autoMatch,
+      } = req.body || {};
+
+      // 必填校验：这里刻意不要求 city/district/dateTime，因为这些都从 pool 上继承
+      if (!title || !eventType || !poolId || !budgetTier) {
+        console.warn("[AdminBlindBox] Missing required fields when creating blind box event");
+        return res.status(400).json({
+          message: "缺少必填字段：title / eventType / poolId / budgetTier",
+        });
+      }
+
+      // 找到对应的活动池
+      const [pool] = await db
+        .select()
+        .from(eventPools)
+        .where(eq(eventPools.id, poolId));
+
+      if (!pool) {
+        console.warn("[AdminBlindBox] Pool not found for create:", poolId);
+        return res.status(404).json({ message: "活动池不存在" });
+      }
+
+      // 参数归一化
+      const toStringArray = (value: any): string[] => {
+        if (Array.isArray(value)) return value.map((v) => String(v));
+        if (typeof value === "string") {
+          return value
+            .split(/[,\s/、]+/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+        }
+        return [];
+      };
+
+      const normalizedLanguages = toStringArray(selectedLanguages ?? languages);
+      const normalizedCuisines = toStringArray(selectedCuisines ?? cuisines);
+      const normalizedTasteIntensity = toStringArray(selectedTasteIntensity ?? tasteIntensity);
+
+      console.log("[AdminBlindBox] incoming create payload:", {
+        adminId,
+        title,
+        eventType,
+        poolId,
+        budgetTier,
+        normalizedLanguages,
+        normalizedCuisines,
+        normalizedTasteIntensity,
+        autoMatch,
+      });
+
+      const [created] = await db
+        .insert(blindBoxEvents)
+        .values({
+          // 用 admin 的 userId 做创建者
+          userId: adminId ?? "",
+          title: title ?? "",
+          eventType: eventType ?? "",
+          // 城市 / 区域 / 时间直接继承池子的配置
+          city: pool.city,
+          district: pool.district ?? "",
+          dateTime: pool.dateTime,
+          // 绑定池子，后面匹配会用到
+          poolId: pool.id,
+          // 桌子的预算档
+          budgetTier: budgetTier ?? "",
+          // 偏好字段
+          selectedLanguages: normalizedLanguages,
+          selectedTasteIntensity: normalizedTasteIntensity,
+          selectedCuisines: normalizedCuisines,
+          cuisineTags: normalizedCuisines,
+          // 桌子初始状态：匹配中
+          status: "matching",
+          progress: 0,
+          currentParticipants: 0,
+          totalParticipants: pool.maxGroupSize ?? null,
+          // 暂时把池子的 venue 复用到店名/地址上（以后有更细 schema 再拆）
+          restaurantName: null,
+          restaurantAddress: null,
+        })
+        .returning();
+
+      console.log("[AdminBlindBox] created blindBoxEvent:", created);
+
+      res.json(created);
+    } catch (error: any) {
+      console.error("[AdminBlindBox] Failed to create blind box event:", error);
+      res.status(500).json({
+        message: "Failed to create blind box event",
+        error: error?.message || String(error),
+      });
+    }
+  });
+
+  // Admin: manual match trigger for blind box event
+  app.post('/api/admin/events/:id/match', requireAdmin, async (req: any, res) => {
+    try {
+      const adminId = req.session.userId;
+      const eventId = req.params.id;
+
+      console.log("[AdminBlindBox] manual match trigger by admin:", {
+        adminId,
+        eventId,
+      });
+
+      // 1. 读取桌子信息
+      const [event] = await db
+        .select()
+        .from(blindBoxEvents)
+        .where(eq(blindBoxEvents.id, eventId));
+
+      if (!event) {
+        console.warn("[AdminBlindBox] event not found for manual match:", eventId);
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      if (!event.poolId) {
+        console.warn("[AdminBlindBox] event has no poolId, cannot match:", eventId);
+        return res.status(400).json({ message: "该盲盒活动未绑定活动池，无法匹配" });
+      }
+
+      // 2. 读取池子配置
+      const [pool] = await db
+        .select()
+        .from(eventPools)
+        .where(eq(eventPools.id, event.poolId));
+
+      if (!pool) {
+        console.warn("[AdminBlindBox] pool not found for event:", {
+          eventId,
+          poolId: event.poolId,
+        });
+        return res.status(404).json({ message: "活动池不存在" });
+      }
+
+      const minSize = pool.minGroupSize ?? 4;
+      const maxSize = pool.maxGroupSize ?? 6;
+
+      // 3. 取出池子里所有「待匹配」的用户
+      const pendingRegistrations = await db
+        .select()
+        .from(eventPoolRegistrations)
+        .where(
+          and(
+            eq(eventPoolRegistrations.poolId, pool.id),
+            eq(eventPoolRegistrations.matchStatus, "pending")
+          )
+        )
+        .orderBy(eventPoolRegistrations.registeredAt);
+
+      console.log("[AdminBlindBox] pending registrations count:", pendingRegistrations.length);
+
+      if (pendingRegistrations.length < minSize) {
+        return res.status(400).json({
+          message: `当前池子报名人数不足（${pendingRegistrations.length}/${minSize}），暂时无法成局`,
+        });
+      }
+
+      // 简单版本：按报名先后顺序取一桌
+      const groupSize = Math.min(maxSize, pendingRegistrations.length);
+      const selected = pendingRegistrations.slice(0, groupSize);
+
+      const selectedIds = selected.map((r) => r.id);
+
+      // 4. 更新报名记录为 matched，并标记桌子 id
+      await db
+        .update(eventPoolRegistrations)
+        .set({
+          matchStatus: "matched",
+          assignedGroupId: event.id,
+        })
+        .where(inArray(eventPoolRegistrations.id, selectedIds));
+
+      // 5. 更新桌子状态
+      const [updatedEvent] = await db
+        .update(blindBoxEvents)
+        .set({
+          status: "matched",
+          progress: 100,
+          currentParticipants: groupSize,
+          totalParticipants: groupSize,
+        })
+        .where(eq(blindBoxEvents.id, event.id))
+        .returning();
+
+      console.log("[AdminBlindBox] manual match finished:", {
+        eventId: event.id,
+        poolId: pool.id,
+        groupSize,
+      });
+
+      return res.json({
+        ok: true,
+        event: updatedEvent,
+        poolId: pool.id,
+        groupSize,
+        registrationIds: selectedIds,
+      });
+    } catch (error: any) {
+      console.error("[AdminBlindBox] Error in manual match:", error);
+      res.status(500).json({
+        message: "Failed to run manual match",
+        error: error?.message || String(error),
+      });
+    }
+  });
+  // // Admin: list all blind box events (for management console)
+  // app.get('/api/admin/events', requireAdmin, async (req: any, res) => {
+  //   try {
+  //     const adminId = req.session.userId;
+  //     console.log("[AdminBlindBox] GET /api/admin/events by admin:", adminId);
+
+  //     const { db } = await import("./db");
+  //     const { blindBoxEvents } = await import("@shared/schema");
+  //     const { desc } = await import("drizzle-orm");
+
+  //     const events = await db
+  //       .select()
+  //       .from(blindBoxEvents)
+  //       .orderBy(desc(blindBoxEvents.dateTime));
+
+  //     console.log("[AdminBlindBox] Loaded blind box events count:", events.length);
+  //     res.json(events);
+  //   } catch (error: any) {
+  //     console.error("[AdminBlindBox] Error fetching blind box events:", error);
+  //     res.status(500).json({
+  //       message: "Failed to fetch blind box events",
+  //       error: error?.message || String(error),
+  //     });
+  //   }
+  // });
+
+  // // Admin: create a blind box event (桌) that admins manage
+  // app.post('/api/admin/blind-box-events', requireAdmin, async (req: any, res) => {
+  //   try {
+  //     const adminId = req.session.userId;
+  //     if (!adminId) {
+  //       console.error("[AdminBlindBox] No adminId in session on create");
+  //       return res.status(401).json({ message: "Unauthorized" });
+  //     }
+
+  //     const {
+  //       // basic info
+  //       title,
+  //       eventType,
+  //       city,
+  //       district,
+  //       dateTime,
+  //       // pool linkage (optional, can be wired up later)
+  //       poolId,
+  //       // capacity
+  //       minParticipants,
+  //       maxParticipants,
+  //       // budget / venue
+  //       budgetTier,
+  //       venueAddress,
+  //       // preferences
+  //       languages,
+  //       cuisines,
+  //       tasteIntensity,
+  //       // flags
+  //       autoMatch,
+  //     } = req.body || {};
+
+  //     // Support both `languages` / `cuisines` / `tasteIntensity` and
+  //     // `selectedLanguages` / `selectedCuisines` / `selectedTasteIntensity` from frontend
+  //     const rawLanguages = languages ?? (req.body as any).selectedLanguages;
+  //     const rawCuisines = cuisines ?? (req.body as any).selectedCuisines;
+  //     const rawTasteIntensity = tasteIntensity ?? (req.body as any).selectedTasteIntensity;
+
+  //     const toStringArray = (value: any): string[] => {
+  //       if (Array.isArray(value)) {
+  //         return value.map((v) => String(v));
+  //       }
+  //       if (typeof value === "string") {
+  //         return value
+  //           .split(/[,\s/、]+/)
+  //           .map((s) => s.trim())
+  //           .filter(Boolean);
+  //       }
+  //       return [];
+  //     };
+
+  //     const normalizedLanguages = toStringArray(rawLanguages);
+  //     const normalizedCuisines = toStringArray(rawCuisines);
+  //     const normalizedTasteIntensity = toStringArray(rawTasteIntensity);
+
+  //     console.log("[AdminBlindBox] incoming create payload:", {
+  //       adminId,
+  //       title,
+  //       eventType,
+  //       city,
+  //       district,
+  //       dateTime,
+  //       poolId,
+  //       minParticipants,
+  //       maxParticipants,
+  //       budgetTier,
+  //       venueAddress,
+  //       languages,
+  //       cuisines,
+  //       tasteIntensity,
+  //       normalizedLanguages,
+  //       normalizedCuisines,
+  //       normalizedTasteIntensity,
+  //       autoMatch,
+  //     });
+
+  //     // ✅ Treat budgetTier as required as well
+  //     if (!title || !eventType || !city || !district || !dateTime || !budgetTier) {
+  //       console.warn("[AdminBlindBox] Missing required fields when creating blind box event");
+  //       return res.status(400).json({
+  //         message: "缺少必填字段：title / eventType / city / district / dateTime / budgetTier",
+  //       });
+  //     }
+
+  //     const eventDate = new Date(dateTime);
+  //     if (Number.isNaN(eventDate.getTime())) {
+  //       console.warn("[AdminBlindBox] Invalid dateTime:", dateTime);
+  //       return res.status(400).json({
+  //         message: "无效的活动时间 dateTime",
+  //       });
+  //     }
+
+  //     const { db } = await import("./db");
+  //     const { blindBoxEvents } = await import("@shared/schema");
+
+  //     const [created] = await db
+  //       .insert(blindBoxEvents)
+  //       .values({
+  //         // 用 userId 标记是由哪个管理员创建的（后续可以加专门的 createdByAdmin 字段）
+  //         userId: adminId,
+  //         title,
+  //         eventType,
+  //         city,
+  //         district,
+  //         dateTime: eventDate,
+  //         // ✅ budgetTier is non-null in DB, so we must always send a value
+  //         budgetTier,
+  //         // 语言/口味偏好：尽量与前端的多选字段一致
+  //         selectedLanguages: normalizedLanguages,
+  //         selectedTasteIntensity: normalizedTasteIntensity,
+  //         selectedCuisines: normalizedCuisines,
+  //         // 冗余存一份，方便筛选
+  //         cuisineTags: normalizedCuisines,
+  //         // admin 创建的桌默认还在匹配/招募阶段
+  //         status: "matching",
+  //         progress: 0,
+  //         currentParticipants: 0,
+  //         totalParticipants: maxParticipants ?? null,
+  //         // 暂时把 venueAddress 存进 restaurantName / restaurantAddress 字段，后续可以拆出专门的字段
+  //         restaurantName: venueAddress || null,
+  //         restaurantAddress: venueAddress || null,
+  //         // 预留：根据 autoMatch 决定是否以后自动触发匹配逻辑（目前仅记录在日志中）
+  //       })
+  //       .returning();
+
+  //     console.log("[AdminBlindBox] created blindBoxEvent:", created);
+
+  //     res.json(created);
+  //   } catch (error: any) {
+  //     console.error("[AdminBlindBox] Failed to create blind box event:", error);
+  //     res.status(500).json({
+  //       message: "Failed to create blind box event",
+  //       error: error?.message || String(error),
+  //     });
+  //   }
+  // });
+
+  // // Admin: manual match trigger for blind box event
+  // app.post('/api/admin/events/:id/match', requireAdmin, async (req: any, res) => {
+  //   try {
+  //     const adminId = req.session.userId;
+  //     const eventId = req.params.id;
+
+  //     console.log("[AdminBlindBox] manual match trigger by admin:", {
+  //       adminId,
+  //       eventId,
+  //     });
+
+  //     const { blindBoxEvents } = await import("@shared/schema");
+  //     const { db } = await import("./db");
+
+  //     // Load event
+  //     const [event] = await db
+  //       .select()
+  //       .from(blindBoxEvents)
+  //       .where(eq(blindBoxEvents.id, eventId));
+
+  //     if (!event) {
+  //       console.warn("[AdminBlindBox] event not found for manual match:", eventId);
+  //       return res.status(404).json({ message: "Event not found" });
+  //     }
+
+  //     // TODO: 在这里接入真正的匹配逻辑，比如：
+  //     // - 根据 event.city / event.district / eventType 找到对应活动池
+  //     // - 从 eventPoolRegistrations 中捞人
+  //     // - 将匹配结果写入 matchedAttendees / currentParticipants / totalParticipants
+  //     // 当前先只把状态标记为 matching / pending_match 的占位逻辑
+
+  //     let newStatus = event.status;
+  //     if (event.status === "pending_match") {
+  //       newStatus = "matching";
+  //     }
+
+  //     const [updated] = await db
+  //       .update(blindBoxEvents)
+  //       .set({
+  //         status: newStatus,
+  //         updatedAt: new Date(),
+  //       })
+  //       .where(eq(blindBoxEvents.id, eventId))
+  //       .returning();
+
+  //     console.log("[AdminBlindBox] manual match route updated event:", {
+  //       id: updated.id,
+  //       status: updated.status,
+  //     });
+
+  //     return res.json({
+  //       ok: true,
+  //       message: "Match trigger accepted (stub).",
+  //       event: updated,
+  //     });
+  //   } catch (err: any) {
+  //     console.error("[AdminBlindBox] error in manual match route:", err);
+  //     return res
+  //       .status(500)
+  //       .json({ message: "Failed to trigger match for this event" });
+  //   }
+  // });
+
+
+// =============================================end of blind box event routes============================
+// ======================================================================================================
+
+
+
+
+
+
+
+
+
+
+
 
   // Demo endpoint to set match data for testing
   app.post('/api/blind-box-events/:eventId/set-demo-match', isPhoneAuthenticated, async (req: any, res) => {
@@ -2708,34 +4172,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Event Pools - Get all event pools (admin view)
   app.get("/api/admin/event-pools", requireAdmin, async (req, res) => {
     try {
-      const pools = await db.query.eventPools.findMany({
-        orderBy: (eventPools, { desc }) => [desc(eventPools.createdAt)],
-        with: {
-          creator: {
-            columns: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-            }
-          }
-        }
-      });
-      
-      // Add registration counts
-      const poolsWithStats = await Promise.all(pools.map(async (pool: any) => {
-        const registrations = await db.query.eventPoolRegistrations.findMany({
-          where: (regs: any, { eq }: any) => eq(regs.poolId, pool.id)
-        });
-        
-        return {
-          ...pool,
-          registrationCount: registrations.length,
-          matchedCount: registrations.filter((r: any) => r.matchStatus === 'matched').length,
-          pendingCount: registrations.filter((r: any) => r.matchStatus === 'pending').length,
-        };
-      }));
-      
+      // 不用 relations，直接查 event_pools 表
+      const pools = await db
+        .select({
+          id: eventPools.id,
+          title: eventPools.title,
+          description: eventPools.description,
+          eventType: eventPools.eventType,
+          city: eventPools.city,
+          district: eventPools.district,
+          dateTime: eventPools.dateTime,
+          registrationDeadline: eventPools.registrationDeadline,
+          genderRestriction: eventPools.genderRestriction,
+          industryRestrictions: eventPools.industryRestrictions,
+          seniorityRestrictions: eventPools.seniorityRestrictions,
+          educationLevelRestrictions: eventPools.educationLevelRestrictions,
+          ageRangeMin: eventPools.ageRangeMin,
+          ageRangeMax: eventPools.ageRangeMax,
+          minGroupSize: eventPools.minGroupSize,
+          maxGroupSize: eventPools.maxGroupSize,
+          targetGroups: eventPools.targetGroups,
+          status: eventPools.status,
+          totalRegistrations: eventPools.totalRegistrations,
+          successfulMatches: eventPools.successfulMatches,
+          createdBy: eventPools.createdBy,
+          createdAt: eventPools.createdAt,
+          updatedAt: eventPools.updatedAt,
+          matchedAt: eventPools.matchedAt,
+        })
+        .from(eventPools)
+        .orderBy(desc(eventPools.createdAt));
+
+      console.log("[Admin] fetched raw eventPools:", pools);
+
+      // 继续保留“报名数 / matched / pending”统计逻辑
+      const poolsWithStats = await Promise.all(
+        pools.map(async (pool) => {
+          const registrations = await db.query.eventPoolRegistrations.findMany({
+            where: (regs, { eq }) => eq(regs.poolId, pool.id),
+          });
+
+          return {
+            ...pool,
+            registrationCount: registrations.length,
+            matchedCount: registrations.filter((r) => r.matchStatus === "matched").length,
+            pendingCount: registrations.filter((r) => r.matchStatus === "pending").length,
+          };
+        })
+      );
+
+      console.log("[Admin] eventPools with stats:", poolsWithStats);
+
       res.json(poolsWithStats);
     } catch (error) {
       console.error("Error fetching event pools:", error);
@@ -2743,58 +4230,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Event Pools - Create new event pool
-  app.post("/api/admin/event-pools", requireAdmin, async (req, res) => {
-    try {
-      const user = req.user as User;
+  // // Event Pools - Create new event pool
+  // app.post("/api/admin/event-pools", requireAdmin, async (req, res) => {
+  //   try {
+  //     const user = req.user as User;
       
-      // Validate input
-      const validatedData = insertEventPoolSchema.parse({
-        ...req.body,
-        createdBy: user.id,
-        dateTime: new Date(req.body.dateTime),
-        registrationDeadline: new Date(req.body.registrationDeadline),
-      });
+  //     // Validate input
+  //     const validatedData = insertEventPoolSchema.parse({
+  //       ...req.body,
+  //       createdBy: user.id,
+  //       dateTime: new Date(req.body.dateTime),
+  //       registrationDeadline: new Date(req.body.registrationDeadline),
+  //     });
       
-      const [pool] = await db.insert(eventPools).values(validatedData).returning();
+  //     const [pool] = await db.insert(eventPools).values(validatedData).returning();
       
-      res.json(pool);
-    } catch (error: any) {
-      console.error("Error creating event pool:", error);
-      res.status(400).json({ 
-        message: "Failed to create event pool", 
-        error: error.message 
-      });
-    }
-  });
+  //     res.json(pool);
+  //   } catch (error: any) {
+  //     console.error("Error creating event pool:", error);
+  //     res.status(400).json({ 
+  //       message: "Failed to create event pool", 
+  //       error: error.message 
+  //     });
+  //   }
+  // });
+// Event Pools - Create new event pool
+app.post("/api/admin/event-pools", requireAdmin, async (req, res) => {
+  try {
+    const anyReq = req as any;
+    const user = anyReq.user as User | undefined;
+    const userIdFromReq = anyReq.userId || anyReq.adminId;
+    const sessionUserId = anyReq.session?.userId;
 
-  // Event Pools - Get single event pool with details
-  app.get("/api/admin/event-pools/:id", requireAdmin, async (req, res) => {
-    try {
-      const pool = await db.query.eventPools.findFirst({
-        where: (pools, { eq }) => eq(pools.id, req.params.id),
-        with: {
-          creator: {
-            columns: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-            }
-          }
-        }
+    console.log("[EventPools] incoming create payload:", req.body);
+    console.log("[EventPools] req.user =", user);
+    console.log("[EventPools] req.userId / adminId =", userIdFromReq);
+    console.log("[EventPools] session.userId =", sessionUserId);
+
+    // ⚠️ 这里连 session 也一起兜底
+    const createdBy =
+      (user && user.id) ||
+      userIdFromReq ||
+      sessionUserId ||
+      null;
+
+    if (!createdBy) {
+      console.error(
+        "[EventPools] Missing admin user when creating event pool. Headers:",
+        req.headers,
+      );
+      return res.status(401).json({
+        message: "Unauthorized: admin user not found on request",
       });
-      
-      if (!pool) {
-        return res.status(404).json({ message: "Event pool not found" });
-      }
-      
-      res.json(pool);
-    } catch (error) {
-      console.error("Error fetching event pool:", error);
-      res.status(500).json({ message: "Failed to fetch event pool" });
     }
-  });
+
+    // 校验 + 正常化
+    const validatedData = insertEventPoolSchema.parse({
+      ...req.body,
+      createdBy,
+      dateTime: new Date(req.body.dateTime),
+      registrationDeadline: new Date(req.body.registrationDeadline),
+    });
+
+    console.log("[EventPools] validatedData =", validatedData);
+
+    const [pool] = await db
+      .insert(eventPools)
+      .values(validatedData)
+      .returning();
+
+    console.log("[EventPools] created pool:", pool);
+
+    res.json(pool);
+  } catch (error: any) {
+    console.error("Error creating event pool:", error);
+    res.status(400).json({
+      message: "Failed to create event pool",
+      error: error?.message,
+    });
+  }
+});
 
   // Event Pools - Update event pool
   app.patch("/api/admin/event-pools/:id", requireAdmin, async (req, res) => {
@@ -2962,40 +4477,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ USER EVENT POOLS (用户端活动池) ============
   
   // Get all active event pools (for DiscoverPage)
-  app.get("/api/event-pools", async (req, res) => {
+  app.get('/api/event-pools', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const { city } = req.query;
-      
-      let whereClause = (pools: any, { eq, and }: any) => {
-        const conditions = [eq(pools.status, 'active')];
-        if (city) {
-          conditions.push(eq(pools.city, city));
-        }
-        return and(...conditions);
-      };
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
 
-      const pools = await db.query.eventPools.findMany({
-        where: whereClause,
-        orderBy: (eventPools, { asc }) => [asc(eventPools.dateTime)],
+      const { city, eventType } = req.query;
+      const now = new Date();
+
+      const whereClauses = [
+        eq(eventPools.status, "active"),
+        gt(eventPools.registrationDeadline, now),
+      ];
+
+      if (city) {
+        whereClauses.push(eq(eventPools.city, String(city)));
+      }
+
+      if (eventType) {
+        whereClauses.push(eq(eventPools.eventType, String(eventType)));
+      }
+
+      const pools = await db
+        .select()
+        .from(eventPools)
+        .where(and(...whereClauses))
+        // 不用 asc/desc，直接按时间排序即可，防止少 import 报错
+        .orderBy(eventPools.dateTime);
+
+      if (pools.length === 0) {
+        return res.json([]);
+      }
+
+      const poolIds = pools.map((p) => p.id);
+
+      // 查出当前用户在这些池子里的报名记录
+      const userRegistrations = await db
+        .select({ poolId: eventPoolRegistrations.poolId })
+        .from(eventPoolRegistrations)
+        .where(
+          and(
+            eq(eventPoolRegistrations.userId, userId),
+            inArray(eventPoolRegistrations.poolId, poolIds)
+          )
+        );
+
+      const registeredPoolIds = new Set(userRegistrations.map((r) => r.poolId));
+
+      // 过滤掉已经报名过的池子
+      const visiblePools = pools.filter((p) => !registeredPoolIds.has(p.id));
+
+      console.log("[EventPools] visible pools for user:", {
+        userId,
+        total: pools.length,
+        registeredCount: userRegistrations.length,
+        visibleCount: visiblePools.length,
       });
 
-      // Add registration counts
-      const poolsWithStats = await Promise.all(pools.map(async (pool: any) => {
-        const registrations = await db.query.eventPoolRegistrations.findMany({
-          where: (regs: any, { eq }: any) => eq(regs.poolId, pool.id)
-        });
-
-        return {
-          ...pool,
-          registrationCount: registrations.length,
-          spotsLeft: (pool.minGroupSize * pool.targetGroups) - registrations.length,
-        };
-      }));
-
-      res.json(poolsWithStats);
+      return res.json(visiblePools);
     } catch (error) {
       console.error("Error fetching event pools:", error);
-      res.status(500).json({ message: "Failed to fetch event pools" });
+      return res.status(500).json({ message: "Failed to fetch event pools" });
     }
   });
 
@@ -3146,162 +4690,229 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user's pool registrations
-  app.get("/api/my-pool-registrations", requireAuth, async (req, res) => {
-    try {
-      const userId = (req.user as User).id;
 
-      const registrations = await db
-        .select({
-          id: eventPoolRegistrations.id,
-          poolId: eventPoolRegistrations.poolId,
-          budgetRange: eventPoolRegistrations.budgetRange,
-          preferredLanguages: eventPoolRegistrations.preferredLanguages,
-          socialGoals: eventPoolRegistrations.socialGoals,
-          matchStatus: eventPoolRegistrations.matchStatus,
-          assignedGroupId: eventPoolRegistrations.assignedGroupId,
-          matchScore: eventPoolRegistrations.matchScore,
-          registeredAt: eventPoolRegistrations.registeredAt,
-          // Pool details
-          poolTitle: eventPools.title,
-          poolEventType: eventPools.eventType,
-          poolCity: eventPools.city,
-          poolDistrict: eventPools.district,
-          poolDateTime: eventPools.dateTime,
-          poolStatus: eventPools.status,
-        })
-        .from(eventPoolRegistrations)
-        .innerJoin(eventPools, eq(eventPoolRegistrations.poolId, eventPools.id))
-        .where(eq(eventPoolRegistrations.userId, userId))
-        .orderBy(desc(eventPoolRegistrations.registeredAt));
+// Get user's pool registrations
+app.get("/api/my-pool-registrations", requireAuth, async (req, res) => {
+  try {
+    const anyReq = req as any;
+    const session = anyReq.session;
+    const reqUser = anyReq.user;
 
-      // Enrich with invitation relationship info
-      const enrichedRegistrations = await Promise.all(
-        registrations.map(async (reg) => {
-          // Check if user was invited (is invitee)
-          const [inviteUse] = await db
+    // 尽量兼容不同的 user 存放方式：req.user / session.userId / session.user.id
+    const userId: string | undefined =
+      reqUser?.id ||
+      session?.userId ||
+      session?.user?.id;
+
+    console.log("[MyPoolRegistrations] identity debug:", {
+      hasReqUser: !!reqUser,
+      hasSession: !!session,
+      sessionUserId: session?.userId,
+      sessionUser: session?.user,
+      finalUserId: userId,
+    });
+
+    if (!userId) {
+      console.error("[MyPoolRegistrations] No user on request/session");
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    console.log("[MyPoolRegistrations] fetching registrations for userId:", userId);
+
+    const registrations = await db
+      .select({
+        id: eventPoolRegistrations.id,
+        poolId: eventPoolRegistrations.poolId,
+        budgetRange: eventPoolRegistrations.budgetRange,
+        preferredLanguages: eventPoolRegistrations.preferredLanguages,
+        socialGoals: eventPoolRegistrations.socialGoals,
+        matchStatus: eventPoolRegistrations.matchStatus,
+        assignedGroupId: eventPoolRegistrations.assignedGroupId,
+        matchScore: eventPoolRegistrations.matchScore,
+        registeredAt: eventPoolRegistrations.registeredAt,
+        // Pool details
+        poolTitle: eventPools.title,
+        poolEventType: eventPools.eventType,
+        poolCity: eventPools.city,
+        poolDistrict: eventPools.district,
+        poolDateTime: eventPools.dateTime,
+        poolStatus: eventPools.status,
+      })
+      .from(eventPoolRegistrations)
+      .innerJoin(eventPools, eq(eventPoolRegistrations.poolId, eventPools.id))
+      .where(eq(eventPoolRegistrations.userId, userId))
+      .orderBy(desc(eventPoolRegistrations.registeredAt));
+
+    console.log("[MyPoolRegistrations] base registrations count:", registrations.length);
+
+    // 原来的邀请关系 enrichment 逻辑我全部保留，只是包了一层 Promise.all
+    const enrichedRegistrations = await Promise.all(
+      registrations.map(async (reg) => {
+        const [inviteUse] = await db
+          .select()
+          .from(invitationUses)
+          .where(eq(invitationUses.poolRegistrationId, reg.id))
+          .limit(1);
+        
+        let invitationRole: "inviter" | "invitee" | null = null;
+        let relatedUserName: string | null = null;
+        
+        if (inviteUse && inviteUse.invitationId) {
+          // 用户是被邀请的一方
+          const [invitation] = await db
             .select()
-            .from(invitationUses)
-            .where(eq(invitationUses.poolRegistrationId, reg.id))
+            .from(invitations)
+            .where(eq(invitations.code, inviteUse.invitationId))
             .limit(1);
           
-          let invitationRole: "inviter" | "invitee" | null = null;
-          let relatedUserName: string | null = null;
-          
-          if (inviteUse && inviteUse.invitationId) {
-            // User is invitee, get inviter info
-            const [invitation] = await db
-              .select()
-              .from(invitations)
-              .where(eq(invitations.code, inviteUse.invitationId))
+          if (invitation) {
+            const [inviter] = await db
+              .select({ firstName: users.firstName, lastName: users.lastName })
+              .from(users)
+              .where(eq(users.id, invitation.inviterId))
               .limit(1);
             
-            if (invitation) {
-              const [inviter] = await db
+            if (inviter) {
+              invitationRole = "invitee";
+              relatedUserName =
+                `${inviter.firstName || ""} ${inviter.lastName || ""}`.trim() ||
+                "好友";
+            }
+          }
+        } else {
+          // 看看当前用户是不是邀请人
+          const userInvitations = await db
+            .select({ code: invitations.code })
+            .from(invitations)
+            .where(eq(invitations.inviterId, userId))
+            .limit(10);
+          
+          if (userInvitations.length > 0) {
+            const codes = userInvitations.map((inv) => inv.code);
+            const [relatedInviteUse] = await db
+              .select({
+                inviteeId: invitationUses.inviteeId,
+              })
+              .from(invitationUses)
+              .innerJoin(
+                eventPoolRegistrations,
+                eq(invitationUses.poolRegistrationId, eventPoolRegistrations.id)
+              )
+              .where(
+                and(
+                  inArray(invitationUses.invitationId, codes),
+                  eq(eventPoolRegistrations.poolId, reg.poolId)
+                )
+              )
+              .limit(1);
+            
+            if (relatedInviteUse) {
+              const [invitee] = await db
                 .select({ firstName: users.firstName, lastName: users.lastName })
                 .from(users)
-                .where(eq(users.id, invitation.inviterId))
+                .where(eq(users.id, relatedInviteUse.inviteeId))
                 .limit(1);
               
-              if (inviter) {
-                invitationRole = "invitee";
-                relatedUserName = `${inviter.firstName || ''} ${inviter.lastName || ''}`.trim() || "好友";
-              }
-            }
-          } else {
-            // Check if user is inviter (someone used their invitation for this pool)
-            const userInvitations = await db
-              .select({ code: invitations.code })
-              .from(invitations)
-              .where(eq(invitations.inviterId, userId))
-              .limit(10);
-            
-            if (userInvitations.length > 0) {
-              const codes = userInvitations.map(inv => inv.code);
-              const [relatedInviteUse] = await db
-                .select({
-                  inviteeId: invitationUses.inviteeId
-                })
-                .from(invitationUses)
-                .innerJoin(
-                  eventPoolRegistrations,
-                  eq(invitationUses.poolRegistrationId, eventPoolRegistrations.id)
-                )
-                .where(
-                  and(
-                    inArray(invitationUses.invitationId, codes),
-                    eq(eventPoolRegistrations.poolId, reg.poolId)
-                  )
-                )
-                .limit(1);
-              
-              if (relatedInviteUse) {
-                const [invitee] = await db
-                  .select({ firstName: users.firstName, lastName: users.lastName })
-                  .from(users)
-                  .where(eq(users.id, relatedInviteUse.inviteeId))
-                  .limit(1);
-                
-                if (invitee) {
-                  invitationRole = "inviter";
-                  relatedUserName = `${invitee.firstName || ''} ${invitee.lastName || ''}`.trim() || "好友";
-                }
+              if (invitee) {
+                invitationRole = "inviter";
+                relatedUserName =
+                  `${invitee.firstName || ""} ${invitee.lastName || ""}`.trim() ||
+                  "好友";
               }
             }
           }
-          
-          return {
-            ...reg,
-            invitationRole,
-            relatedUserName
-          };
-        })
-      );
+        }
+        
+        return {
+          ...reg,
+          invitationRole,
+          relatedUserName,
+        };
+      })
+    );
 
-      res.json(enrichedRegistrations);
-    } catch (error) {
-      console.error("Error fetching user pool registrations:", error);
-      res.status(500).json({ message: "Failed to fetch registrations" });
-    }
-  });
+    console.log("[MyPoolRegistrations] enriched registrations:", enrichedRegistrations);
 
-  // Cancel pool registration (only pending registrations)
-  app.delete("/api/pool-registrations/:id", requireAuth, async (req, res) => {
+    res.json(enrichedRegistrations);
+  } catch (error) {
+    console.error("Error fetching user pool registrations:", error);
+    res.status(500).json({ message: "Failed to fetch registrations" });
+  }
+});
+
+
+  // 取消盲盒报名（从活动池中移除当前用户的报名记录）
+  app.delete('/api/pool-registrations/:id', isPhoneAuthenticated, async (req: any, res) => {
     try {
-      const registrationId = req.params.id;
-      const userId = (req.user as User).id;
-
-      // Get registration to verify ownership and status
-      const registration = await db.query.eventPoolRegistrations.findFirst({
-        where: (regs, { eq }) => eq(regs.id, registrationId),
+      console.log('[MyPoolRegistrationsCancel] route hit for /api/pool-registrations/:id', {
+        method: req.method,
+        originalUrl: req.originalUrl,
+        params: req.params,
+        sessionUserId: req.session?.userId,
       });
 
-      if (!registration) {
-        return res.status(404).json({ message: "Registration not found" });
+      const userId = req.session.userId;
+      const { id } = req.params;
+
+      if (!userId) {
+        console.error('[MyPoolRegistrationsCancel] No userId in session');
+        return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      // Verify user owns this registration
-      if (registration.userId !== userId) {
-        return res.status(403).json({ message: "You can only cancel your own registrations" });
-      }
+      console.log('[MyPoolRegistrationsCancel] attempting to delete registration', {
+        userId,
+        registrationId: id,
+      });
 
-      // Only allow cancellation of pending registrations
-      if (registration.matchStatus !== "pending") {
-        return res.status(400).json({ 
-          message: "Cannot cancel registration after matching",
-          code: "ALREADY_MATCHED"
+      // 1) 删除当前用户在这个报名记录上的 row
+      let deletedRegistrations = await db
+        .delete(eventPoolRegistrations)
+        .where(
+          and(
+            eq(eventPoolRegistrations.id, id),
+            eq(eventPoolRegistrations.userId, userId),
+          )
+        )
+        .returning();
+
+      if (deletedRegistrations.length === 0) {
+        console.warn('[MyPoolRegistrationsCancel] no registration found to delete', {
+          userId,
+          registrationId: id,
+        });
+        return res.status(404).json({
+          message: '没有找到可以取消的报名记录，可能已经取消过了',
         });
       }
 
-      // Delete the registration
-      await db
-        .delete(eventPoolRegistrations)
-        .where(eq(eventPoolRegistrations.id, registrationId));
+      console.log('[MyPoolRegistrationsCancel] deleted registrations:', {
+        count: deletedRegistrations.length,
+        ids: deletedRegistrations.map((r) => r.id),
+        poolIds: deletedRegistrations.map((r) => r.poolId),
+      });
 
-      res.json({ message: "Registration cancelled successfully" });
+      // 2) 对每个受影响的池子，把 totalRegistrations - 1
+      for (const reg of deletedRegistrations) {
+        if (reg.poolId) {
+          await db
+            .update(eventPools)
+            .set({
+              totalRegistrations: sql`${eventPools.totalRegistrations} - 1`,
+              updatedAt: new Date(),
+            })
+            .where(eq(eventPools.id, reg.poolId));
+        }
+      }
+
+      console.log('[MyPoolRegistrationsCancel] updated pools after deletion');
+
+      return res.json({
+        ok: true,
+        cancelledRegistrationIds: deletedRegistrations.map((r) => r.id),
+      });
     } catch (error) {
-      console.error("Error cancelling pool registration:", error);
-      res.status(500).json({ message: "Failed to cancel registration" });
+      console.error('[MyPoolRegistrationsCancel] error while cancelling registration', error);
+      return res.status(500).json({ message: 'Failed to cancel pool registration' });
     }
   });
 

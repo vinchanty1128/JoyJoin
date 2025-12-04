@@ -1,3 +1,4 @@
+//my path:/Users/felixg/projects/JoyJoin3/shared/schema.ts
 import { sql } from 'drizzle-orm';
 import {
   index,
@@ -213,6 +214,8 @@ export const eventPoolRegistrations = pgTable("event_pool_registrations", {
   assignedGroupId: varchar("assigned_group_id"), // 分配到的组ID（如果匹配成功）
   matchScore: integer("match_score"), // 匹配分数
   
+  // 一旦被分配到具体盲盒局（桌子），就填这里
+  eventId: varchar("event_id").references(() => blindBoxEvents.id),
   // 元数据
   registeredAt: timestamp("registered_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -477,6 +480,7 @@ export const insertEventPoolRegistrationSchema = createInsertSchema(eventPoolReg
   assignedGroupId: true,
   matchScore: true,
   registeredAt: true,
+  eventId: true,
   updatedAt: true,
 }).extend({
   poolId: z.string().min(1),
@@ -547,6 +551,9 @@ export const blindBoxEvents = pgTable("blind_box_events", {
   city: varchar("city").notNull(), // 深圳/香港
   district: varchar("district").notNull(), // 南山区
   dateTime: timestamp("date_time").notNull(),
+  
+  // Pool association (for admin-created events)
+  poolId: varchar("pool_id").references(() => eventPools.id),
   
   // Budget and preferences
   budgetTier: varchar("budget_tier").notNull(), // "100-200"
@@ -727,29 +734,28 @@ export const insertRoleResultSchema = createInsertSchema(roleResults).omit({
 // Venues table - Restaurant/Bar partners
 export const venues = pgTable("venues", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar("name").notNull(),
-  type: varchar("type").notNull(), // restaurant, bar
+  name: text("name").notNull(),
+  venueType: text("venue_type").notNull(), // restaurant, bar
   address: text("address").notNull(),
-  city: varchar("city").notNull(), // 深圳, 香港
-  district: varchar("district").notNull(), // 南山区, 中环 etc.
-  contactName: varchar("contact_name"),
-  contactPhone: varchar("contact_phone"),
+  city: text("city").notNull(), // 深圳, 香港
+  area: text("area").notNull(), // 南山区, 中环 etc.
+  contactPerson: text("contact_person"),
+  contactPhone: text("contact_phone"),
   commissionRate: integer("commission_rate").default(20), // percentage
   
   // Venue tags for matching
   tags: text("tags").array(), // atmosphere tags: cozy, lively, upscale, casual
   cuisines: text("cuisines").array(), // 粤菜, 川菜, 日料, 西餐 etc.
-  priceRange: varchar("price_range"), // 100-200, 200-300, 300+ per person
+  priceRange: text("price_range"), // 100-200, 200-300, 300+ per person
   
   // Capacity management
-  maxConcurrentEvents: integer("max_concurrent_events").default(1), // How many events can run at same time
+  capacity: integer("capacity").default(1), // How many events can run at same time
+  operatingHours: text("operating_hours"), // e.g., "11:00-22:00"
   
   // Status
   isActive: boolean("is_active").default(true),
-  notes: text("notes"), // Internal admin notes
   
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Event Templates table - Recurring time slots and themes
@@ -795,7 +801,7 @@ export const subscriptions = pgTable("subscriptions", {
   // Status
   status: varchar("status").notNull().default("active"), // active, expired, cancelled
   autoRenew: boolean("auto_renew").default(false),
-  
+  isActive: boolean("is_active").notNull().default(true), // whether this subscription is currently active (for queries using s.is_active)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -831,27 +837,23 @@ export const payments = pgTable("payments", {
 // Coupons table - Discount codes
 export const coupons = pgTable("coupons", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  code: varchar("code").notNull().unique(), // e.g., "WELCOME50"
+  code: text("code").notNull().unique(), // e.g., "WELCOME50"
   
   // Discount details
-  discountType: varchar("discount_type").notNull(), // "fixed_amount", "percentage"
+  discountType: text("discount_type").notNull(), // "fixed_amount", "percentage"
   discountValue: integer("discount_value").notNull(), // ¥50 or 20 (for 20%)
   
   // Usage limits
-  maxUses: integer("max_uses"), // null = unlimited
-  currentUses: integer("current_uses").default(0),
-  maxUsesPerUser: integer("max_uses_per_user").default(1),
+  minPurchase: integer("min_purchase"), // Minimum purchase amount required
+  usageLimit: integer("usage_limit"), // null = unlimited
+  usedCount: integer("used_count").default(0),
   
   // Validity
   validFrom: timestamp("valid_from").defaultNow(),
   validUntil: timestamp("valid_until"),
   
-  // Applicable to
-  applicableTo: varchar("applicable_to").default("all"), // "all", "subscription_only", "event_only"
-  
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Coupon Usage table - Track coupon redemptions
@@ -1020,7 +1022,6 @@ export const invitationUses = pgTable("invitation_uses", {
 export const insertVenueSchema = createInsertSchema(venues).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export const insertEventTemplateSchema = createInsertSchema(eventTemplates).omit({
@@ -1043,7 +1044,6 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 export const insertCouponSchema = createInsertSchema(coupons).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export const insertUserCouponSchema = createInsertSchema(userCoupons).omit({

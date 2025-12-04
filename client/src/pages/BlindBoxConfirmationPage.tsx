@@ -1,3 +1,5 @@
+//my path:/Users/felixg/projects/JoyJoin3/client/src/pages/BlindBoxConfirmationPage.tsx
+
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

@@ -18,29 +18,36 @@ import { useToast } from "@/hooks/use-toast";
 export default function BlindBoxPaymentPage() {
   const [, setLocation] = useLocation();
   const [promoOpen, setPromoOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"single" | "monthly">("single");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const city = (localStorage.getItem("blindbox_city") || "深圳") as "香港" | "深圳";
   const currencySymbol = getCurrencySymbol(city);
 
+  const singlePrice = 88;
+  const monthlyPrice = 199;
+  const totalAmount = selectedPlan === "single" ? singlePrice : monthlyPrice;
+
   const createEventMutation = useMutation({
-    mutationFn: async (eventData: any) => {
-      return await apiRequest("POST", "/api/blind-box-events", eventData);
+    mutationFn: async (payload: any) => {
+      return await apiRequest("POST", "/api/blind-box-events", payload);
     },
     onSuccess: () => {
-      // 立即刷新Event Tab数据
+      // 立即刷新Event Tab数据（旧逻辑保留，防止还有旧 blind box 依赖）
       queryClient.invalidateQueries({ queryKey: ["/api/my-events"] });
       // 刷新聊天页面数据（群聊列表）
       queryClient.invalidateQueries({ queryKey: ["/api/events/joined"] });
+      // 刷新匹配池报名数据
+      queryClient.invalidateQueries({ queryKey: ["/api/my-pool-registrations"] });
       // 清除临时数据
       localStorage.removeItem("blindbox_event_data");
       // 跳转到活动页面
       setLocation("/events");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "创建活动失败",
-        description: error.message,
+        description: error?.message || "服务器开小差了，请稍后重试",
         variant: "destructive",
       });
     },
@@ -60,11 +67,54 @@ export default function BlindBoxPaymentPage() {
         setLocation("/discover");
         return;
       }
-      
+
       const eventData = JSON.parse(eventDataStr);
-      
-      // 创建盲盒事件
-      await createEventMutation.mutateAsync(eventData);
+
+      console.log("[BlindBoxPayment] loaded eventData from localStorage:", eventData);
+
+      // 从 localStorage 里解析出 poolId（兼容几种可能的命名）
+      const resolvedPoolId =
+        eventData.poolId ??
+        eventData.eventPoolId ??
+        eventData.id ??
+        eventData.pool_id ??
+        null;
+
+      console.log("[BlindBoxPayment] resolvedPoolId:", resolvedPoolId);
+
+      if (!resolvedPoolId) {
+        console.error("[BlindBoxPayment] missing poolId in eventData:", eventData);
+        toast({
+          title: "数据错误",
+          description: "未找到活动池信息，请从发现页重新选择活动再试一次",
+          variant: "destructive",
+        });
+        setLocation("/discover");
+        return;
+      }
+
+      // 构造报名到匹配池的 payload（只保留后端需要的字段）
+      const registrationPayload = {
+        poolId: resolvedPoolId,
+        city: eventData.city,
+        district: eventData.district,
+        eventType: eventData.eventType,
+        budgetTier: eventData.budgetTier,
+        // 这些字段在不同版本里命名可能略有不同，做一下兜底
+        selectedLanguages: eventData.selectedLanguages ?? eventData.languages ?? [],
+        selectedTasteIntensity: eventData.selectedTasteIntensity ?? eventData.tasteIntensity ?? [],
+        selectedCuisines: eventData.selectedCuisines ?? eventData.cuisines ?? [],
+        socialGoals: eventData.socialGoals ?? [],
+        dietaryRestrictions: eventData.dietaryRestrictions ?? [],
+        // 记录本次选择的付费方案，方便以后区分单次票 / 月卡
+        planType: selectedPlan,
+        pricePaid: totalAmount,
+      };
+
+      console.log("[BlindBoxPayment] final registrationPayload:", registrationPayload);
+
+      // 向后端创建匹配池报名记录（不再创建具体 blindBoxEvent 桌子）
+      await createEventMutation.mutateAsync(registrationPayload);
     } catch (error) {
       console.error("Payment error:", error);
     }
@@ -173,8 +223,16 @@ export default function BlindBoxPaymentPage() {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedPlan("single")}
               >
-                <Card className="p-4 border-2 border-primary bg-primary/5 hover-elevate cursor-pointer relative overflow-hidden" data-testid="card-single-ticket">
+                <Card
+                  className={`p-4 cursor-pointer relative overflow-hidden hover-elevate ${
+                    selectedPlan === "single"
+                      ? "border-2 border-primary bg-primary/5"
+                      : "border border-muted bg-background"
+                  }`}
+                  data-testid="card-single-ticket"
+                >
                   <div className="absolute top-2 right-2">
                     <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0">
                       <Gift className="h-3 w-3 mr-1" />
@@ -187,7 +245,9 @@ export default function BlindBoxPaymentPage() {
                       <p className="text-xs text-muted-foreground">本次活动专享</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">{currencySymbol}88</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {currencySymbol}{singlePrice}
+                      </div>
                       <div className="text-xs text-muted-foreground">服务费</div>
                     </div>
                   </div>
@@ -198,8 +258,16 @@ export default function BlindBoxPaymentPage() {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedPlan("monthly")}
               >
-                <Card className="p-4 border hover-elevate cursor-pointer" data-testid="card-monthly-sub">
+                <Card
+                  className={`p-4 cursor-pointer hover-elevate ${
+                    selectedPlan === "monthly"
+                      ? "border-2 border-primary bg-primary/5"
+                      : "border bg-background"
+                  }`}
+                  data-testid="card-monthly-sub"
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-bold">月度畅玩卡</h4>
@@ -208,7 +276,9 @@ export default function BlindBoxPaymentPage() {
                     <div className="text-right">
                       <div className="flex items-baseline gap-1">
                         <span className="text-lg line-through text-muted-foreground">{currencySymbol}299</span>
-                        <span className="text-2xl font-bold">{currencySymbol}199</span>
+                        <span className="text-2xl font-bold">
+                          {currencySymbol}{monthlyPrice}
+                        </span>
                       </div>
                       <div className="text-xs text-green-600 font-medium">省33%</div>
                     </div>
@@ -242,7 +312,9 @@ export default function BlindBoxPaymentPage() {
           <div className="pt-4 border-t space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-lg font-bold">总计</span>
-              <span className="text-3xl font-bold text-primary">{currencySymbol}88</span>
+              <span className="text-3xl font-bold text-primary">
+                {currencySymbol}{totalAmount}
+              </span>
             </div>
 
             {/* 支付按钮 - 超级Gamified */}

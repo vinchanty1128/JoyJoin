@@ -1,3 +1,4 @@
+//my path:/Users/felixg/projects/JoyJoin3/client/src/pages/EventsPage.tsx
 import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import PendingMatchCard from "@/components/PendingMatchCard";

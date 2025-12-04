@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -6,7 +7,7 @@ interface ArchetypeData {
   name: string;
   percentage: number;
   color: string;
-  emoji: string;
+  emoji: ReactNode;
   description: string;
 }
 

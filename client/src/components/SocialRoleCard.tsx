@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import { archetypeConfig } from "@/lib/archetypes";
+import { archetypeAvatars } from "@/lib/archetypeAvatars";
 
 interface SocialRoleCardProps {
   primaryRole: string;
@@ -84,6 +85,7 @@ export default function SocialRoleCard({
   const primaryArchetype = archetypeConfig[primaryRole];
   const nickname = primaryArchetype?.nickname || '';
   const tagline = primaryArchetype?.tagline || '';
+  const primaryAvatar = archetypeAvatars[primaryRole];
 
   return (
     <Card className={`border-2 shadow-lg overflow-hidden ${primaryConfig.bgGradient}`}>
@@ -103,9 +105,18 @@ export default function SocialRoleCard({
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${primaryConfig.color} flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-300`}>
-              <span className="text-5xl" data-testid="text-primary-role-emoji">
-                {primaryConfig.emoji}
-              </span>
+              {primaryAvatar ? (
+                <img
+                  src={primaryAvatar}
+                  alt={primaryRole}
+                  className="w-20 h-20 rounded-2xl object-cover"
+                  data-testid="text-primary-role-emoji"
+                />
+              ) : (
+                <span className="text-5xl" data-testid="text-primary-role-emoji">
+                  {primaryConfig.emoji}
+                </span>
+              )}
             </div>
             {/* Score Badge */}
             <div className="absolute -bottom-2 -right-2 bg-background border-2 border-primary rounded-full px-2 py-0.5 shadow-md">
