@@ -9,11 +9,11 @@ import {
   formatAge,
   getEducationDisplay,
   getStudyLocaleDisplay,
-  getSeniorityDisplay,
   getRelationshipDisplay,
   getChildrenDisplay,
   getIntentDisplay,
 } from "@/lib/userFieldMappings";
+import { getOccupationDisplayLabel, getIndustryDisplayLabel, WORK_MODE_TO_LABEL, type WorkMode } from "@shared/occupations";
 
 export default function EditProfilePage() {
   const [, setLocation] = useLocation();
@@ -56,8 +56,11 @@ export default function EditProfilePage() {
       fields: [
         { label: "关系状态", value: user.relationshipStatus ? getRelationshipDisplay(user.relationshipStatus) : null },
         { label: "孩子状况", value: user.children ? getChildrenDisplay(user.children) : null },
+        { label: "毛孩子", value: user.hasPets === true ? "有" : user.hasPets === false ? "没有" : null },
+        { label: "兄弟姐妹", value: user.hasSiblings === true ? "有" : user.hasSiblings === false ? "独生子女" : null },
+        { label: "现居城市", value: user.currentCity || null },
       ],
-      hint: "💡 提示：此信息仅自己可见",
+      hint: "提示：此信息仅自己可见",
     },
     {
       id: "education",
@@ -79,9 +82,9 @@ export default function EditProfilePage() {
       icon: <Briefcase className="h-4 w-4" />,
       path: "/profile/edit/work",
       fields: [
-        { label: "行业", value: user.industry },
-        { label: "职位", value: user.roleTitleShort },
-        { label: "资历", value: user.seniority ? getSeniorityDisplay(user.seniority) : null },
+        { label: "职业", value: getOccupationDisplayLabel(user.occupationId, user.workMode, { showWorkMode: true }) || user.industry },
+        { label: "行业", value: getIndustryDisplayLabel(user.occupationId) || (user.industry && !user.occupationId ? user.industry : null) },
+        { label: "工作身份", value: user.workMode ? WORK_MODE_TO_LABEL[user.workMode as WorkMode] : null },
       ],
     },
     {

@@ -1,10 +1,10 @@
-//my path:/Users/felixg/projects/JoyJoin3/client/src/pages/EventsPage.tsx
 import MobileHeader from "@/components/MobileHeader";
 import BottomNav from "@/components/BottomNav";
 import PendingMatchCard from "@/components/PendingMatchCard";
 import MatchedEventCard from "@/components/MatchedEventCard";
 import CompletedEventCard from "@/components/CompletedEventCard";
 import PoolRegistrationCard from "@/components/PoolRegistrationCard";
+import ReunionInviteCard from "@/components/ReunionInviteCard";
 import SlidingTabs from "@/components/SlidingTabs";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,15 +15,28 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { invalidateCacheForEvent } from "@/lib/cacheInvalidation";
 import type { BlindBoxEvent, EventFeedback } from "@shared/schema";
 
-// 温度等级emoji辅助函数
-function getTemperatureEmoji(temperatureLevel: string): string {
-  const emojiMap: Record<string, string> = {
-    "fire": "🔥",
-    "warm": "🌡️",
-    "mild": "🌤️",
-    "cold": "❄️"
+interface ReunionInvite {
+  responseId: string;
+  requestId: string;
+  eventDescription: string;
+  minParticipants: number;
+  maxParticipants: number;
+  currentAccepted: number;
+  expiresAt: string;
+  createdAt: string;
+  status: string;
+  originalEventId: string;
+}
+
+// 温度等级文字标签（无emoji）
+function getTemperatureLabel(temperatureLevel: string): string {
+  const labelMap: Record<string, string> = {
+    "fire": "超火热",
+    "warm": "很温暖",
+    "mild": "刚刚好",
+    "cold": "较冷清"
   };
-  return emojiMap[temperatureLevel] || "🌤️";
+  return labelMap[temperatureLevel] || "";
 }
 
 interface PoolRegistration {
@@ -53,12 +66,15 @@ export default function EventsPage() {
   const markAsRead = useMarkNotificationsAsRead();
   const { subscribe } = useWebSocket();
 
-  // Auto-clear activities notifications when entering the page
+  // 异步清理通知 - 不阻塞UI (100ms后执行)
   useEffect(() => {
-    markAsRead.mutate('activities');
-  }, []);
+    const timer = setTimeout(() => {
+      markAsRead.mutate('activities');
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [markAsRead]);
 
-  // WebSocket实时更新订阅
+  // WebSocket实时更新订阅（毫秒级响应）
   useEffect(() => {
     const unsubscribeMatched = subscribe('EVENT_MATCHED', async (message) => {
       console.log('[User] Event matched:', message);
@@ -70,24 +86,22 @@ export default function EventsPage() {
         description: `你的活动已成功匹配，地点：${matchData.restaurantName || '未知'}`,
       });
       
-      // 自动切换到"已匹配"标签
       setActiveTab("matched");
     });
 
     const unsubscribePoolMatched = subscribe('POOL_MATCHED', async (message) => {
       console.log('[User] Pool matched:', message);
       
-      // 刷新活动池报名记录缓存
       await queryClient.invalidateQueries({ queryKey: ["/api/my-pool-registrations"] });
       
       const poolData = message.data as any;
-      const tempEmoji = getTemperatureEmoji(poolData.temperatureLevel || 'mild');
+      const tempLabel = getTemperatureLabel(poolData.temperatureLevel || 'mild');
+      const tempSuffix = tempLabel ? `（${tempLabel}）` : "";
       toast({
-        title: `${tempEmoji} 活动池匹配成功！`,
-        description: `你已成功匹配到 ${poolData.poolTitle} 的第${poolData.groupNumber}组，共${poolData.memberCount}人，匹配度${poolData.matchScore}分`,
+        title: "活动池匹配成功！",
+        description: `你已成功匹配到 ${poolData.poolTitle} 的第${poolData.groupNumber}组${tempSuffix}，共${poolData.memberCount}人，匹配度${poolData.matchScore}分`,
       });
       
-      // 自动切换到"已匹配"标签
       setActiveTab("matched");
     });
 
@@ -124,18 +138,24 @@ export default function EventsPage() {
     };
   }, [subscribe, toast, queryClient]);
 
+  // 客户端永久缓存 - 毫秒级加载
   const { data: events, isLoading } = useQuery<Array<BlindBoxEvent>>({
     queryKey: ["/api/my-events"],
   });
 
-  // Fetch pool registrations
+  // 客户端永久缓存 - 毫秒级加载
   const { data: poolRegistrations, isLoading: isLoadingPoolRegistrations } = useQuery<Array<PoolRegistration>>({
     queryKey: ["/api/my-pool-registrations"],
   });
 
-  // Fetch feedback data for completed events
+  // 客户端永久缓存 - 毫秒级加载
   const { data: feedbacks } = useQuery<Array<EventFeedback>>({
     queryKey: ["/api/my-feedbacks"],
+  });
+
+  // 待响应的再约邀请
+  const { data: reunionInvites } = useQuery<Array<ReunionInvite>>({
+    queryKey: ["/api/reunions/received"],
   });
 
   const cancelMutation = useMutation({
@@ -196,6 +216,19 @@ export default function EventsPage() {
       <MobileHeader title="活动" />
       
       <div className="py-4 space-y-4">
+        {/* 再约邀请 - 有邀请时显示在最顶部 */}
+        {reunionInvites && reunionInvites.length > 0 && (
+          <div className="px-4 space-y-3">
+            {reunionInvites.map(invite => (
+              <ReunionInviteCard 
+                key={invite.responseId} 
+                invite={invite}
+                onResponded={() => queryClient.invalidateQueries({ queryKey: ['/api/reunions/received'] })}
+              />
+            ))}
+          </div>
+        )}
+
         <p className="text-sm text-muted-foreground px-4">
           展示你已报名的盲盒与已匹配活动
         </p>

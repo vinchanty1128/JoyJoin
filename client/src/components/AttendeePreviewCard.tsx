@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Briefcase, RotateCw, GraduationCap, MapPin } from "lucide-react";
+import { 
+  User, Briefcase, RotateCw, GraduationCap, MapPin, Globe, Sparkles,
+  Zap, Sun, Search, Waves, Users, Heart, Lightbulb, Brain, Anchor, Shield, Eye,
+  Film, Plane, Utensils, Music, Palette, Activity, BookOpen, Gamepad2, Camera, Dumbbell, Monitor,
+  Compass, MessageSquare, Target, Scale, type LucideIcon
+} from "lucide-react";
 import {
   calculateCommonInterestsWithUser,
   archetypeDescriptions,
@@ -9,41 +14,53 @@ import {
   normalizeInterestName,
   type AttendeeData,
 } from "@/lib/attendeeAnalytics";
+import { getOccupationDisplayLabel, getIndustryDisplayLabel } from "@shared/occupations";
 
-// 8个核心社交角色系统
-const archetypeIcons: Record<string, string> = {
-  "火花塞": "🙌",
-  "探索者": "🧭",
-  "故事家": "🗣️",
-  "挑战者": "💪",
-  "连接者": "🤗",
-  "协调者": "🧘",
-  "氛围组": "🕺",
-  "肯定者": "🙏",
+const ARCHETYPE_ICONS: Record<string, LucideIcon> = {
+  "火花塞": Zap,
+  "探索者": Compass,
+  "故事家": MessageSquare,
+  "挑战者": Target,
+  "连接者": Heart,
+  "协调者": Scale,
+  "氛围组": Sparkles,
+  "肯定者": Users,
+  "开心柯基": Zap,
+  "太阳鸡": Sun,
+  "夸夸豚": Sparkles,
+  "机智狐": Search,
+  "淡定海豚": Waves,
+  "织网蛛": Users,
+  "暖心熊": Heart,
+  "灵感章鱼": Lightbulb,
+  "沉思猫头鹰": Brain,
+  "定心大象": Anchor,
+  "稳如龟": Shield,
+  "隐身猫": Eye,
 };
 
-const interestIcons: Record<string, string> = {
-  "Film": "🎬",
-  "Travel": "✈️",
-  "Food": "🍜",
-  "Music": "🎵",
-  "Art": "🎨",
-  "Sports": "⚽",
-  "Reading": "📚",
-  "Gaming": "🎮",
-  "Photography": "📷",
-  "Fitness": "💪",
-  "电影": "🎬",
-  "旅行": "✈️",
-  "美食": "🍜",
-  "音乐": "🎵",
-  "艺术": "🎨",
-  "运动": "⚽",
-  "阅读": "📚",
-  "游戏": "🎮",
-  "摄影": "📷",
-  "健身": "💪",
-  "科技": "💻",
+const INTEREST_ICONS: Record<string, LucideIcon> = {
+  "Film": Film,
+  "Travel": Plane,
+  "Food": Utensils,
+  "Music": Music,
+  "Art": Palette,
+  "Sports": Activity,
+  "Reading": BookOpen,
+  "Gaming": Gamepad2,
+  "Photography": Camera,
+  "Fitness": Dumbbell,
+  "电影": Film,
+  "旅行": Plane,
+  "美食": Utensils,
+  "音乐": Music,
+  "艺术": Palette,
+  "运动": Activity,
+  "阅读": BookOpen,
+  "游戏": Gamepad2,
+  "摄影": Camera,
+  "健身": Dumbbell,
+  "科技": Monitor,
 };
 
 interface AttendeePreviewCardProps {
@@ -92,9 +109,9 @@ export default function AttendeePreviewCard({
   userLanguages,
 }: AttendeePreviewCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
-  const archetypeIcon = attendee.archetype
-    ? archetypeIcons[attendee.archetype] || "✨"
-    : "✨";
+  const ArchetypeIconComponent = attendee.archetype
+    ? ARCHETYPE_ICONS[attendee.archetype] || Sparkles
+    : Sparkles;
 
   const topInterests = (attendee.topInterests || []).slice(0, 3);
   const archetypeDescription = attendee.archetype 
@@ -170,7 +187,9 @@ export default function AttendeePreviewCard({
             </div>
 
             {attendee.archetype && (
-              <div className="text-6xl mb-1">{archetypeIcon}</div>
+              <div className="flex items-center justify-center mb-1">
+                <ArchetypeIconComponent className="h-16 w-16 text-primary" />
+              </div>
             )}
 
             <div className="space-y-1.5">
@@ -266,18 +285,27 @@ export default function AttendeePreviewCard({
                 </div>
               )}
 
-              {(attendee.industry || attendee.seniority) && (
+              {(attendee.occupationId || attendee.industry || attendee.seniority) && (
                 <div className="flex items-start gap-1.5 text-foreground">
                   <Briefcase className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <div className="flex flex-col gap-0.5">
-                    {attendee.industry && <span>{attendee.industry}</span>}
-                    {attendee.seniority && (
-                      <span className="text-xs text-muted-foreground">
-                        {attendee.seniority === "Junior" ? "初级" : 
-                         attendee.seniority === "Mid" ? "中级" : 
-                         attendee.seniority === "Senior" ? "高级" :
-                         attendee.seniority === "Founder" ? "创始人" : attendee.seniority}
-                      </span>
+                    {attendee.occupationId ? (
+                      <>
+                        <span>{getOccupationDisplayLabel(attendee.occupationId, attendee.workMode, { showWorkMode: true })}</span>
+                        <span className="text-xs text-muted-foreground">{getIndustryDisplayLabel(attendee.occupationId)}</span>
+                      </>
+                    ) : (
+                      <>
+                        {attendee.industry && <span>{attendee.industry}</span>}
+                        {attendee.seniority && (
+                          <span className="text-xs text-muted-foreground">
+                            {attendee.seniority === "Junior" ? "初级" : 
+                             attendee.seniority === "Mid" ? "中级" : 
+                             attendee.seniority === "Senior" ? "高级" :
+                             attendee.seniority === "Founder" ? "创始人" : attendee.seniority}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -292,7 +320,7 @@ export default function AttendeePreviewCard({
 
               {attendee.languagesComfort && attendee.languagesComfort.length > 0 && (
                 <div className="flex items-start gap-1.5">
-                  <span className="text-muted-foreground">🌐</span>
+                  <Globe className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                   <span className="text-xs text-muted-foreground leading-relaxed">
                     {attendee.languagesComfort.join(" · ")}
                   </span>
@@ -308,6 +336,7 @@ export default function AttendeePreviewCard({
                 <div className="flex flex-wrap gap-1.5">
                   {topInterests.map((interest, idx) => {
                     const normalizedInterest = normalizeInterestName(interest);
+                    const InterestIcon = INTEREST_ICONS[normalizedInterest] || INTEREST_ICONS[interest] || Sparkles;
                     return (
                       <Badge
                         key={idx}
@@ -315,7 +344,7 @@ export default function AttendeePreviewCard({
                         className="text-xs gap-1 no-default-active-elevate bg-accent/30"
                         data-testid={`badge-interest-${attendee.userId}-${idx}`}
                       >
-                        <span>{interestIcons[normalizedInterest] || interestIcons[interest] || "·"}</span>
+                        <InterestIcon className="h-3 w-3" />
                         <span>{normalizedInterest}</span>
                       </Badge>
                     );
@@ -334,10 +363,11 @@ export default function AttendeePreviewCard({
                     <Badge
                       key={idx}
                       variant="secondary"
-                      className="text-xs no-default-active-elevate bg-primary/10 text-primary border-primary/30"
+                      className="text-xs gap-1 no-default-active-elevate bg-primary/10 text-primary border-primary/30"
                       data-testid={`badge-spark-back-${attendee.userId}-${idx}`}
                     >
-                      ✨ {prediction.text}
+                      <Sparkles className="h-3 w-3" />
+                      <span>{prediction.text}</span>
                     </Badge>
                   ))}
                 </div>

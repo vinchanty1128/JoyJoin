@@ -7,6 +7,7 @@ export interface QuestionOption {
   value: string;
   text: string;
   roleMapping: string; // 映射到12个原型之一
+  tag?: string; // 行为标签，用于增强视觉辨识度
 }
 
 export interface Question {
@@ -26,10 +27,10 @@ export const personalityQuestions: Question[] = [
     questionText: "刚进门，你最自然的反应是？",
     questionType: "single",
     options: [
-      { value: "A", text: "主动自我介绍，用幽默开场让大家笑起来！", roleMapping: "开心柯基" },
-      { value: "B", text: "微笑着环顾四周，等待合适时机加入对话。", roleMapping: "淡定海豚" },
-      { value: "C", text: "找个位子坐下，安静观察大家的互动节奏。", roleMapping: "隐身猫" },
-      { value: "D", text: "主动询问\"大家怎么认识寿星的\"，建立连接。", roleMapping: "织网蛛" },
+      { value: "A", text: "大声说「大家好！」用幽默开场让全场笑起来", roleMapping: "开心柯基", tag: "主动破冰" },
+      { value: "B", text: "找到寿星，让ta来帮你介绍认识大家", roleMapping: "淡定海豚", tag: "借力社交" },
+      { value: "C", text: "先找个角落坐下，用手机掩饰，默默观察", roleMapping: "隐身猫", tag: "隐身观察" },
+      { value: "D", text: "挨个问「你是怎么认识XX的」，建立人际连接", roleMapping: "织网蛛", tag: "主动连接" },
     ],
   },
   
@@ -40,10 +41,10 @@ export const personalityQuestions: Question[] = [
     questionText: "听到这个新鲜事，你的反应是？",
     questionType: "single",
     options: [
-      { value: "A", text: "\"哇！在哪里？我们组团去打卡吧！\" 立马充满行动力", roleMapping: "机智狐" },
-      { value: "B", text: "\"听起来不错呀～\" 微笑回应，给ta鼓励和肯定", roleMapping: "夸夸豚" },
-      { value: "C", text: "\"我之前也去过类似的，那次...\" 分享自己的相关故事", roleMapping: "暖心熊" },
-      { value: "D", text: "\"咖啡馆的设计理念是什么？\" 思考背后的深层逻辑", roleMapping: "沉思猫头鹰" },
+      { value: "A", text: "\"在哪里？我们现在就去！\" 立马拉人组队行动", roleMapping: "机智狐", tag: "即刻行动" },
+      { value: "B", text: "\"哇好棒！你发现的地方都好有品味！\" 热情夸赞", roleMapping: "夸夸豚", tag: "赞美肯定" },
+      { value: "C", text: "\"我之前也去过类似的，那次的故事是...\" 分享经历", roleMapping: "暖心熊", tag: "故事共鸣" },
+      { value: "D", text: "\"这家店的定位是什么？为什么能火？\" 深挖原因", roleMapping: "沉思猫头鹰", tag: "深度分析" },
     ],
   },
   
@@ -54,10 +55,10 @@ export const personalityQuestions: Question[] = [
     questionText: "面对这个情绪低点，你会？",
     questionType: "dual",
     options: [
-      { value: "A", text: "\"我懂你的感受...\" 用共情的方式深度倾听", roleMapping: "暖心熊" },
-      { value: "B", text: "\"没事的，我们都支持你！\" 温暖鼓励ta继续前进", roleMapping: "太阳鸡" },
-      { value: "C", text: "默默递纸巾，用安静的陪伴表达支持", roleMapping: "隐身猫" },
-      { value: "D", text: "适时调整话题节奏，避免氛围过于沉重", roleMapping: "淡定海豚" },
+      { value: "A", text: "握住ta的手，说\"我懂...\"然后安静地深度倾听", roleMapping: "暖心熊", tag: "深度共情" },
+      { value: "B", text: "\"没事！一切都会好的！我们都支持你！\" 积极鼓励", roleMapping: "太阳鸡", tag: "阳光鼓励" },
+      { value: "C", text: "默默递纸巾，全程不说话，用眼神表达理解", roleMapping: "隐身猫", tag: "无声陪伴" },
+      { value: "D", text: "等情绪稳定后，巧妙引入轻松话题转移注意力", roleMapping: "淡定海豚", tag: "氛围调控" },
     ],
   },
   
@@ -68,10 +69,10 @@ export const personalityQuestions: Question[] = [
     questionText: "你的大脑会？",
     questionType: "dual",
     options: [
-      { value: "A", text: "瞬间冒出10个点子：\"猫咖！深夜书店！移动奶茶车！\"", roleMapping: "灵感章鱼" },
-      { value: "B", text: "思考核心原则：\"首先要想清楚目标客户是谁...\"", roleMapping: "沉思猫头鹰" },
-      { value: "C", text: "连接不同人的想法：\"A的想法+B的观点可以结合！\"", roleMapping: "织网蛛" },
-      { value: "D", text: "关注实操：\"租金多少？需要多少启动资金？\"", roleMapping: "定心大象" },
+      { value: "A", text: "\"猫咖！书店！奶茶车！还有...\" 5秒内冒出10个点子", roleMapping: "灵感章鱼", tag: "创意爆发" },
+      { value: "B", text: "\"首先，目标客户是谁？核心竞争力是...\" 框架分析", roleMapping: "沉思猫头鹰", tag: "逻辑拆解" },
+      { value: "C", text: "\"哎！A的想法+B的资源，你俩可以合作！\" 牵线搭桥", roleMapping: "织网蛛", tag: "人脉连接" },
+      { value: "D", text: "\"租金、证照、启动资金...我来算一下\" 落地执行", roleMapping: "定心大象", tag: "务实规划" },
     ],
   },
   
@@ -82,10 +83,10 @@ export const personalityQuestions: Question[] = [
     questionText: "你会如何应对？",
     questionType: "single",
     options: [
-      { value: "A", text: "\"哎呀别争啦～咱们各买各的不就好了！\" 用幽默化解", roleMapping: "开心柯基" },
-      { value: "B", text: "\"两边都有道理，也许可以点半糖试试...\" 寻找平衡点", roleMapping: "淡定海豚" },
-      { value: "C", text: "保持沉默，等待争论自然结束再说话", roleMapping: "稳如龟" },
-      { value: "D", text: "\"换个角度想，其实口味是很主观的...\" 提供第三方视角", roleMapping: "灵感章鱼" },
+      { value: "A", text: "\"哈哈哈！要不猜拳决定？输的请客！\" 搞笑化解", roleMapping: "开心柯基", tag: "幽默破冰" },
+      { value: "B", text: "分别私聊两人，协调出一个双方都能接受的方案", roleMapping: "淡定海豚", tag: "私下调解" },
+      { value: "C", text: "一言不发，低头玩手机，等他们自己聊完", roleMapping: "稳如龟", tag: "沉默等待" },
+      { value: "D", text: "\"说个冷知识：糖的甜度感知其实因人而异...\" 科普转移", roleMapping: "灵感章鱼", tag: "知识引流" },
     ],
   },
   
@@ -96,10 +97,10 @@ export const personalityQuestions: Question[] = [
     questionText: "你倾向于贡献什么？",
     questionType: "dual",
     options: [
-      { value: "A", text: "\"我发现了一个新视角...\" 分享独特的思考洞察", roleMapping: "稳如龟" },
-      { value: "B", text: "\"你们都好棒！我也想...\" 鼓掌并分享正能量", roleMapping: "夸夸豚" },
-      { value: "C", text: "\"说到成长，我想起...\" 讲述一个感人的故事", roleMapping: "暖心熊" },
-      { value: "D", text: "\"我觉得最重要的是保持稳定...\" 提供可靠的建议", roleMapping: "定心大象" },
+      { value: "A", text: "等别人说完，最后总结：\"我觉得核心是...\" 一针见血", roleMapping: "稳如龟", tag: "压轴总结" },
+      { value: "B", text: "\"哇！你们都好厉害！\" 边听边鼓掌，疯狂点赞", roleMapping: "夸夸豚", tag: "热情捧场" },
+      { value: "C", text: "\"说到成长，我想起一个故事...\" 娓娓道来感人经历", roleMapping: "暖心熊", tag: "故事分享" },
+      { value: "D", text: "\"成长最重要的是稳定，比如我这样做...\" 方法论输出", roleMapping: "定心大象", tag: "经验输出" },
     ],
   },
   
@@ -110,10 +111,10 @@ export const personalityQuestions: Question[] = [
     questionText: "以下哪种描述最符合你？",
     questionType: "single",
     options: [
-      { value: "A", text: "成为焦点，带动全场节奏，感觉活力满满！", roleMapping: "开心柯基" },
-      { value: "B", text: "散发温暖能量，让每个人都感到被关注和照顾", roleMapping: "太阳鸡" },
-      { value: "C", text: "发现有趣的人，挖掘新的体验和信息", roleMapping: "机智狐" },
-      { value: "D", text: "做个安静的观察者，享受旁观的自在", roleMapping: "隐身猫" },
+      { value: "A", text: "站在C位带节奏，全场的笑点都是你制造的", roleMapping: "开心柯基", tag: "全场焦点" },
+      { value: "B", text: "像太阳一样照顾每个人，确保没人被冷落", roleMapping: "太阳鸡", tag: "普照全场" },
+      { value: "C", text: "到处串场，和不同的人深聊，挖掘有趣信息", roleMapping: "机智狐", tag: "探索挖掘" },
+      { value: "D", text: "找个舒服的角落，安静听大家聊，享受旁观", roleMapping: "隐身猫", tag: "边缘舒适" },
     ],
   },
   
@@ -124,10 +125,10 @@ export const personalityQuestions: Question[] = [
     questionText: "你的态度是？",
     questionType: "single",
     options: [
-      { value: "A", text: "\"好玩！但问题别太沉重哦～\" 喜欢轻松的深度", roleMapping: "夸夸豚" },
-      { value: "B", text: "\"终于！我就等深度对话呢！\" 渴望哲学讨论", roleMapping: "沉思猫头鹰" },
-      { value: "C", text: "\"可以呀，我来帮大家找到共鸣点～\" 连接不同的答案", roleMapping: "织网蛛" },
-      { value: "D", text: "\"我听大家的，不太想做第一个回答的人...\" 观望为主", roleMapping: "稳如龟" },
+      { value: "A", text: "\"好玩！我先来！但...问题别太沉重哦～\" 积极但设限", roleMapping: "夸夸豚", tag: "轻松参与" },
+      { value: "B", text: "\"太棒了！来聊聊人生意义！\" 眼睛放光，期待已久", roleMapping: "沉思猫头鹰", tag: "深度渴望" },
+      { value: "C", text: "\"我来做主持！帮大家找到答案的共鸣点～\" 串联角色", roleMapping: "织网蛛", tag: "连接共鸣" },
+      { value: "D", text: "\"你们先，我...再想想\" 尽量拖到最后，甚至跳过", roleMapping: "稳如龟", tag: "低调回避" },
     ],
   },
   
@@ -138,10 +139,10 @@ export const personalityQuestions: Question[] = [
     questionText: "回到家，你的感受是？",
     questionType: "single",
     options: [
-      { value: "A", text: "\"好累但好爽！今晚聊得太开心了！\" 能量消耗但满足", roleMapping: "开心柯基" },
-      { value: "B", text: "\"感觉很充实～大家都很温暖～\" 能量平稳，心情愉悦", roleMapping: "太阳鸡" },
-      { value: "C", text: "\"嗯，还不错，但需要独处充电一会儿...\" 轻度疲惫", roleMapping: "定心大象" },
-      { value: "D", text: "\"终于可以安静了...\" 社交电量彻底耗尽", roleMapping: "隐身猫" },
+      { value: "A", text: "\"累爆了但超爽！\" 躺床上还在回味今晚的高光时刻", roleMapping: "开心柯基", tag: "累并快乐" },
+      { value: "B", text: "\"好充实～\" 心满意足，感觉给了很多也收获了很多", roleMapping: "太阳鸡", tag: "温暖充实" },
+      { value: "C", text: "\"还行吧\" 正常消耗，独处一会儿就能恢复", roleMapping: "定心大象", tag: "平稳消耗" },
+      { value: "D", text: "\"终于...\" 瘫在沙发上不想动，社交电量归零", roleMapping: "隐身猫", tag: "彻底耗尽" },
     ],
   },
   
@@ -152,10 +153,38 @@ export const personalityQuestions: Question[] = [
     questionText: "你希望ta怎么说？",
     questionType: "single",
     options: [
-      { value: "A", text: "\"Ta是个人间小太阳，和ta在一起很温暖！\"", roleMapping: "太阳鸡" },
-      { value: "B", text: "\"Ta特别会玩，总能发现有趣的新东西！\"", roleMapping: "机智狐" },
-      { value: "C", text: "\"Ta的脑洞超大，创意无穷无尽！\"", roleMapping: "灵感章鱼" },
-      { value: "D", text: "\"Ta很靠谱，关键时刻特别稳！\"", roleMapping: "定心大象" },
+      { value: "A", text: "\"人间小太阳，和ta在一起心情会变好！\"", roleMapping: "太阳鸡", tag: "温暖治愈" },
+      { value: "B", text: "\"超会玩！总能带你发现新奇好玩的东西！\"", roleMapping: "机智狐", tag: "探索达人" },
+      { value: "C", text: "\"脑洞王！创意源源不断，想法特别多！\"", roleMapping: "灵感章鱼", tag: "创意无限" },
+      { value: "D", text: "\"超靠谱！关键时刻稳得一批！\"", roleMapping: "定心大象", tag: "稳定可靠" },
+    ],
+  },
+  
+  {
+    id: 11,
+    category: "新事物探索",
+    scenarioText: "🗺️ 朋友分享了一个小众旅行目的地，你从没听说过...",
+    questionText: "你的第一反应是？",
+    questionType: "dual",
+    options: [
+      { value: "A", text: "\"太酷了！查攻略，下个月就去！\" 立刻规划行动", roleMapping: "机智狐", tag: "即刻探索" },
+      { value: "B", text: "\"嗯，先看看评价和安全性...\" 谨慎评估风险", roleMapping: "沉思猫头鹰", tag: "理性评估" },
+      { value: "C", text: "\"我们一起去吧！人多热闹！\" 拉人组队同行", roleMapping: "织网蛛", tag: "组队出发" },
+      { value: "D", text: "\"有意思，但我再想想...\" 不急着做决定", roleMapping: "稳如龟", tag: "稳重观望" },
+    ],
+  },
+  
+  {
+    id: 12,
+    category: "未来畅想",
+    scenarioText: "✨ 聊到\"五年后你想成为什么样的人\"...",
+    questionText: "你脑海里浮现的画面是？",
+    questionType: "dual",
+    options: [
+      { value: "A", text: "\"做着热爱的事，每天都充满新鲜感！\" 追求热情与可能性", roleMapping: "灵感章鱼", tag: "热爱驱动" },
+      { value: "B", text: "\"事业稳定，能照顾好身边的人\" 务实且有担当", roleMapping: "定心大象", tag: "稳定担当" },
+      { value: "C", text: "\"身边有懂我的朋友，内心平静满足\" 重视关系与内在", roleMapping: "暖心熊", tag: "关系滋养" },
+      { value: "D", text: "\"健康平安就好，不求大富大贵\" 知足常乐的心态", roleMapping: "淡定海豚", tag: "平和知足" },
     ],
   },
 ];
@@ -175,6 +204,8 @@ export const roleMapping: Record<number, Record<string, string>> = {
   8: { A: "夸夸豚", B: "沉思猫头鹰", C: "织网蛛", D: "稳如龟" },
   9: { A: "开心柯基", B: "太阳鸡", C: "定心大象", D: "隐身猫" },
   10: { A: "太阳鸡", B: "机智狐", C: "灵感章鱼", D: "定心大象" },
+  11: { A: "机智狐", B: "沉思猫头鹰", C: "织网蛛", D: "稳如龟" },
+  12: { A: "灵感章鱼", B: "定心大象", C: "暖心熊", D: "淡定海豚" },
 };
 
 /**

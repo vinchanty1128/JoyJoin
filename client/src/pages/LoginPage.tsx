@@ -1,22 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Brain, Gift, Smile } from "lucide-react";
+import { Users, Brain, Gift, Smile, ChevronDown } from "lucide-react";
 import { SiWechat } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const AREA_CODES = [
+  { code: "+86", country: "中国大陆", flag: "🇨🇳" },
+  { code: "+852", country: "香港", flag: "🇭🇰" },
+  { code: "+853", country: "澳门", flag: "🇲🇴" },
+  { code: "+886", country: "台湾", flag: "🇹🇼" },
+];
+
+function detectDefaultAreaCode(): string {
+  const lang = navigator.language?.toLowerCase() || "";
+  const languages = navigator.languages?.map(l => l.toLowerCase()) || [];
+  
+  if (lang.includes("zh-tw") || languages.some(l => l.includes("zh-tw"))) {
+    return "+886";
+  }
+  
+  if (lang.includes("zh-hk") || languages.some(l => l.includes("zh-hk"))) {
+    return "+852";
+  }
+  
+  if (lang.includes("zh-mo") || languages.some(l => l.includes("zh-mo"))) {
+    return "+853";
+  }
+  
+  return "+86";
+}
 
 export default function LoginPage() {
   const { toast } = useToast();
+  const [areaCode, setAreaCode] = useState("+86");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    const detectedCode = detectDefaultAreaCode();
+    setAreaCode(detectedCode);
+  }, []);
 
   const sendCodeMutation = useMutation({
     mutationFn: async (phone: string) => {
@@ -62,6 +101,19 @@ export default function LoginPage() {
         console.log("Demo events may already exist:", error);
       }
       
+      // Check for pending invitation
+      const pendingInviteCode = localStorage.getItem('pending_invitation_code');
+      if (pendingInviteCode) {
+        toast({
+          title: "登录成功",
+          description: "正在处理邀请...",
+        });
+        // Clear cache and redirect to invitation page
+        await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        window.location.href = `/invite/${pendingInviteCode}`;
+        return;
+      }
+      
       toast({
         title: "登录成功",
         description: "欢迎回来！",
@@ -79,16 +131,25 @@ export default function LoginPage() {
     },
   });
 
+  const getPhoneLength = () => {
+    if (areaCode === "+86") return 11;
+    if (areaCode === "+852" || areaCode === "+853") return 8;
+    if (areaCode === "+886") return 10;
+    return 11;
+  };
+
   const handleSendCode = () => {
-    if (!phoneNumber || phoneNumber.length !== 11) {
+    const expectedLength = getPhoneLength();
+    if (!phoneNumber || phoneNumber.length !== expectedLength) {
       toast({
         title: "手机号格式错误",
-        description: "请输入11位手机号",
+        description: `请输入${expectedLength}位手机号`,
         variant: "destructive",
       });
       return;
     }
-    sendCodeMutation.mutate(phoneNumber);
+    const fullPhone = `${areaCode}${phoneNumber}`;
+    sendCodeMutation.mutate(fullPhone);
   };
 
   const handleLogin = () => {
@@ -100,7 +161,8 @@ export default function LoginPage() {
       });
       return;
     }
-    loginMutation.mutate({ phoneNumber, code: verificationCode });
+    const fullPhone = `${areaCode}${phoneNumber}`;
+    loginMutation.mutate({ phoneNumber: fullPhone, code: verificationCode });
   };
 
   const handleWeChatLogin = () => {
@@ -254,16 +316,36 @@ export default function LoginPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-sm font-medium">手机号</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="请输入11位手机号"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                    maxLength={11}
-                    className="h-11"
-                    data-testid="input-phone"
-                  />
+                  <div className="flex gap-2">
+                    <Select value={areaCode} onValueChange={setAreaCode}>
+                      <SelectTrigger className="w-[110px] h-11" data-testid="select-area-code">
+                        <SelectValue>
+                          {AREA_CODES.find(a => a.code === areaCode)?.flag} {areaCode}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AREA_CODES.map((area) => (
+                          <SelectItem key={area.code} value={area.code}>
+                            <span className="flex items-center gap-2">
+                              <span>{area.flag}</span>
+                              <span>{area.code}</span>
+                              <span className="text-muted-foreground text-xs">{area.country}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder={`请输入${getPhoneLength()}位手机号`}
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, getPhoneLength()))}
+                      maxLength={getPhoneLength()}
+                      className="h-11 flex-1"
+                      data-testid="input-phone"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

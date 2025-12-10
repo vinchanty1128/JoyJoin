@@ -10,6 +10,7 @@ import { calculateUserMatchScore, matchUsersToGroups, validateWeights, DEFAULT_W
 import { broadcastEventStatusChanged, broadcastAdminAction } from "./eventBroadcast";
 import { matchEventPool, saveMatchResults } from "./poolMatchingService";
 import { roleTraits, roleInsights } from "./archetypeConfig";
+import { processTestV2, type AnswerV2 } from "./personalityMatchingV2";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { updateProfileSchema, updateFullProfileSchema, updatePersonalitySchema, insertChatMessageSchema, insertDirectMessageSchema, insertEventFeedbackSchema, registerUserSchema, interestsTopicsSchema, insertChatReportSchema, insertChatLogSchema, events, eventAttendance, chatMessages, users, directMessageThreads, directMessages, eventPools, eventPoolRegistrations, eventPoolGroups, insertEventPoolSchema, insertEventPoolRegistrationSchema, invitations, invitationUses, matchingThresholds, poolMatchingLogs, blindBoxEvents, type User } from "@shared/schema";
@@ -409,7 +410,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate role scores
       const roleScores = calculateRoleScores(responses);
-      
+
       // Determine primary and secondary roles
       // Sort by score DESC, then by role name ASC for stability when scores are equal
       const sortedRoles = Object.entries(roleScores)
@@ -417,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (scoreB !== scoreA) return scoreB - scoreA;  // Higher score first
           return roleA.localeCompare(roleB);  // Stable sort by name when scores equal
         });
-      
+
       const primaryRole = sortedRoles[0][0];
       const primaryRoleScore = sortedRoles[0][1];
       const secondaryRole = sortedRoles[1]?.[0] || null;
@@ -454,6 +455,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error submitting personality test:", error);
       res.status(500).json({ message: "Failed to submit personality test" });
+    }
+  });
+
+  // V2 Personality Test Submit Endpoint (using trait-based matching)
+  app.post('/api/personality-test/v2/submit', isPhoneAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const { responses } = req.body as { responses: Record<number, AnswerV2> };
+
+      // Process V2 test using Euclidean distance matching
+      const matchResult = processTestV2(responses);
+
+      const primaryRole = matchResult.primaryRole;
+      const secondaryRole = matchResult.secondaryRole;
+      const roleSubtype = determineSubtype(primaryRole, responses);
+      const insights = generateInsights(primaryRole, secondaryRole);
+
+      // Save responses and result
+      await storage.saveTestResponses(userId, responses);
+      const roleResult = await storage.saveRoleResult(userId, {
+        userId,
+        primaryRole,
+        primaryRoleScore: matchResult.primaryMatchScore,
+        secondaryRole,
+        secondaryRoleScore: matchResult.secondaryMatchScore,
+        roleSubtype,
+        roleScores: {}, // V2 uses trait vectors instead
+        affinityScore: matchResult.userTraits.A,
+        opennessScore: matchResult.userTraits.O,
+        conscientiousnessScore: matchResult.userTraits.C,
+        emotionalStabilityScore: matchResult.userTraits.E,
+        extraversionScore: matchResult.userTraits.X,
+        positivityScore: matchResult.userTraits.P,
+        ...insights,
+        testVersion: 2,
+      });
+
+      // Mark personality test as complete
+      await storage.markPersonalityTestComplete(userId);
+
+      res.json({
+        ...roleResult,
+        matchDetails: {
+          primaryDistance: matchResult.primaryDistance,
+          secondaryDistance: matchResult.secondaryDistance,
+          userTraits: matchResult.userTraits,
+        },
+      });
+    } catch (error) {
+      console.error("Error submitting V2 personality test:", error);
+      res.status(500).json({ message: "Failed to submit V2 personality test" });
     }
   });
 

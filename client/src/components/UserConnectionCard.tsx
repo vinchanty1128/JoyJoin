@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, GraduationCap, Briefcase, MapPin, RotateCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  User, GraduationCap, Briefcase, MapPin, RotateCw, Globe, Star,
+  Zap, Compass, MessageCircle, Target, Heart, Scale, Music, ThumbsUp,
+  Dog, Sun, Sparkles, Search, Anchor, Network, Bird, Brain, Shell, Shield, PartyPopper, MessageSquare
+} from "lucide-react";
 import EnergyRing from "./EnergyRing";
 import MysteryBadge from "./MysteryBadge";
 import type { AttendeeData } from "@/lib/attendeeAnalytics";
 import { calculateMatchQuality } from "@/lib/attendeeAnalytics";
+import { getInterestLabel, getTopicLabel } from "@/data/interestsTopicsData";
 
 interface ConnectionTag {
   icon: string;
@@ -17,47 +23,108 @@ interface ConnectionTag {
 interface UserConnectionCardProps {
   attendee: AttendeeData;
   connectionTags: ConnectionTag[];
+  topicMatchCount?: number;
 }
 
-// 8个核心社交角色系统 - 图标和颜色配置
-const archetypeConfig: Record<string, { icon: string; color: string; bgColor: string }> = {
+// 12动物原型系统 - Lucide图标和颜色配置
+const archetypeConfig: Record<string, { IconComponent: typeof Zap; color: string; bgColor: string }> = {
+  "开心柯基": {
+    IconComponent: Dog,
+    color: "text-orange-600 dark:text-orange-400",
+    bgColor: "bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/40 dark:to-orange-950/40"
+  },
+  "太阳鸡": {
+    IconComponent: Sun,
+    color: "text-amber-600 dark:text-amber-400",
+    bgColor: "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/40"
+  },
+  "夸夸豚": {
+    IconComponent: ThumbsUp,
+    color: "text-pink-600 dark:text-pink-400",
+    bgColor: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/40 dark:to-rose-950/40"
+  },
+  "机智狐": {
+    IconComponent: Search,
+    color: "text-orange-600 dark:text-orange-400",
+    bgColor: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/40 dark:to-amber-950/40"
+  },
+  "淡定海豚": {
+    IconComponent: Anchor,
+    color: "text-cyan-600 dark:text-cyan-400",
+    bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/40 dark:to-blue-950/40"
+  },
+  "织网蛛": {
+    IconComponent: Network,
+    color: "text-violet-600 dark:text-violet-400",
+    bgColor: "bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/40 dark:to-purple-950/40"
+  },
+  "暖心熊": {
+    IconComponent: Heart,
+    color: "text-rose-600 dark:text-rose-400",
+    bgColor: "bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/40 dark:to-pink-950/40"
+  },
+  "灵感章鱼": {
+    IconComponent: Sparkles,
+    color: "text-purple-600 dark:text-purple-400",
+    bgColor: "bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-950/40 dark:to-fuchsia-950/40"
+  },
+  "沉思猫头鹰": {
+    IconComponent: Brain,
+    color: "text-indigo-600 dark:text-indigo-400",
+    bgColor: "bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40"
+  },
+  "定心大象": {
+    IconComponent: Shield,
+    color: "text-slate-600 dark:text-slate-400",
+    bgColor: "bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-950/40 dark:to-gray-950/40"
+  },
+  "稳如龟": {
+    IconComponent: Shell,
+    color: "text-emerald-600 dark:text-emerald-400",
+    bgColor: "bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/40 dark:to-green-950/40"
+  },
+  "隐身猫": {
+    IconComponent: Bird,
+    color: "text-gray-600 dark:text-gray-400",
+    bgColor: "bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-950/40 dark:to-slate-950/40"
+  },
   "火花塞": {
-    icon: "🙌",
+    IconComponent: Zap,
     color: "text-orange-600 dark:text-orange-400",
     bgColor: "bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/40 dark:to-orange-950/40"
   },
   "探索者": {
-    icon: "🧭",
+    IconComponent: Compass,
     color: "text-cyan-600 dark:text-cyan-400",
     bgColor: "bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/40"
   },
   "故事家": {
-    icon: "🗣️",
+    IconComponent: MessageCircle,
     color: "text-purple-600 dark:text-purple-400",
     bgColor: "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/40 dark:to-pink-950/40"
   },
   "挑战者": {
-    icon: "💪",
+    IconComponent: Target,
     color: "text-red-600 dark:text-red-400",
     bgColor: "bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/40 dark:to-rose-950/40"
   },
   "连接者": {
-    icon: "🤗",
+    IconComponent: Heart,
     color: "text-emerald-600 dark:text-emerald-400",
     bgColor: "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/40 dark:to-emerald-950/40"
   },
   "协调者": {
-    icon: "🧘",
+    IconComponent: Scale,
     color: "text-indigo-600 dark:text-indigo-400",
     bgColor: "bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40"
   },
   "氛围组": {
-    icon: "🕺",
+    IconComponent: Music,
     color: "text-fuchsia-600 dark:text-fuchsia-400",
     bgColor: "bg-gradient-to-br from-pink-50 to-fuchsia-50 dark:from-pink-950/40 dark:to-fuchsia-950/40"
   },
   "肯定者": {
-    icon: "🙏",
+    IconComponent: ThumbsUp,
     color: "text-teal-600 dark:text-teal-400",
     bgColor: "bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-950/40 dark:to-green-950/40"
   },
@@ -66,13 +133,14 @@ const archetypeConfig: Record<string, { icon: string; color: string; bgColor: st
 export default function UserConnectionCard({
   attendee,
   connectionTags,
+  topicMatchCount = 0,
 }: UserConnectionCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [revealedBadges, setRevealedBadges] = useState<Set<number>>(new Set());
 
   const archetypeData = attendee.archetype && archetypeConfig[attendee.archetype]
     ? archetypeConfig[attendee.archetype]
-    : { icon: "✨", color: "text-muted-foreground", bgColor: "bg-muted/20" };
+    : { IconComponent: Sparkles, color: "text-muted-foreground", bgColor: "bg-muted/20" };
 
   // Calculate match quality based on rarity
   const sparkPredictions = connectionTags.map(tag => ({
@@ -143,8 +211,8 @@ export default function UserConnectionCard({
                 <div className="flex gap-3 items-start">
                   {/* Left: Archetype Icon */}
                   <div className="flex-shrink-0 flex flex-col items-center gap-1">
-                    <div className={`w-14 h-14 rounded-xl ${archetypeData.bgColor} flex items-center justify-center text-2xl`}>
-                      {archetypeData.icon}
+                    <div className={`w-14 h-14 rounded-xl ${archetypeData.bgColor} flex items-center justify-center`}>
+                      <archetypeData.IconComponent className={`h-7 w-7 ${archetypeData.color}`} />
                     </div>
                     <div className={`text-xs font-semibold text-center ${archetypeData.color}`}>
                       {attendee.archetype}
@@ -211,13 +279,59 @@ export default function UserConnectionCard({
 
                       {/* Languages */}
                       {attendee.languagesComfort && attendee.languagesComfort.length > 0 && (
-                        <div className="text-muted-foreground leading-relaxed">
-                          🌐 {attendee.languagesComfort.join(" · ")}
+                        <div className="flex items-center gap-1.5 text-muted-foreground leading-relaxed">
+                          <Globe className="h-3 w-3" />
+                          <span>{attendee.languagesComfort.join(" · ")}</span>
+                        </div>
+                      )}
+
+                      {/* Starred Favorite Interest */}
+                      {attendee.interestFavorite && (
+                        <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                          <Star className="h-3 w-3 fill-current" />
+                          <span className="font-medium">{getInterestLabel(attendee.interestFavorite)}</span>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
+
+                {/* Happy Topics Section */}
+                {attendee.topicsHappy && attendee.topicsHappy.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <MessageSquare className="h-3 w-3" />
+                        <span>喜欢聊</span>
+                      </div>
+                      {topicMatchCount > 0 && (
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs px-2 py-0.5 bg-primary/10 text-primary"
+                          data-testid="badge-topic-match"
+                        >
+                          {topicMatchCount}个共同话题
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {attendee.topicsHappy.slice(0, 3).map((topic, idx) => (
+                        <Badge 
+                          key={idx}
+                          variant="secondary" 
+                          className="text-xs px-2 py-0.5"
+                        >
+                          {getTopicLabel(topic)}
+                        </Badge>
+                      ))}
+                      {attendee.topicsHappy.length > 3 && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 text-muted-foreground">
+                          +{attendee.topicsHappy.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Lower Zone: Energy Ring surrounding Connection Count */}
                 <div className="flex-1 flex flex-col justify-center items-center gap-4 border-t pt-6">
@@ -267,8 +381,9 @@ export default function UserConnectionCard({
               <CardContent className="p-4 h-full flex flex-col">
                 {/* Header with title and flip back button */}
                 <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    ✨ 我们的潜在契合点
+                  <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                    <Sparkles className="h-4 w-4" />
+                    我们的潜在契合点
                   </div>
                   <motion.button
                     onClick={() => setIsFlipped(false)}
@@ -307,9 +422,10 @@ export default function UserConnectionCard({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ delay: 0.3 }}
-                      className="text-center text-xs text-primary font-medium pt-3 border-t mt-3"
+                      className="flex items-center justify-center gap-1.5 text-xs text-primary font-medium pt-3 border-t mt-3"
                     >
-                      🎉 全部解锁完成！
+                      <PartyPopper className="h-4 w-4" />
+                      全部解锁完成
                     </motion.div>
                   )}
                 </AnimatePresence>

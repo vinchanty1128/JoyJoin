@@ -1,27 +1,34 @@
+import { getTraitScoresForArchetype, normalizeScoreTo10 } from '@/lib/archetypeTraitScores';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useState } from 'react';
+
 interface PersonalityRadarChartProps {
-  affinityScore: number;
-  opennessScore: number;
-  conscientiousnessScore: number;
-  emotionalStabilityScore: number;
-  extraversionScore: number;
-  positivityScore: number;
+  archetype: string;
 }
 
+// 维度含义说明
+const traitDescriptions: Record<string, string> = {
+  '亲和力': '与他人建立温暖联系的能力，包括友善、共情、关心他人',
+  '开放性': '对新事物的好奇心和接纳度，包括创新思维、探索精神',
+  '责任心': '可靠性和计划性，包括守时、言出必行、稳定可靠',
+  '情绪稳定性': '面对压力时的冷静程度，包括抗压能力、情绪调节',
+  '外向性': '社交能量和主动性，喜欢与人互动的程度',
+  '正能量性': '乐观积极的态度，传递热情和正面能量的能力',
+};
+
 export default function PersonalityRadarChart({
-  affinityScore,
-  opennessScore,
-  conscientiousnessScore,
-  emotionalStabilityScore,
-  extraversionScore,
-  positivityScore,
+  archetype,
 }: PersonalityRadarChartProps) {
+  const rawScores = getTraitScoresForArchetype(archetype);
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  
   const traits = [
-    { name: '亲和力', score: affinityScore, maxScore: 10 },
-    { name: '开放性', score: opennessScore, maxScore: 10 },
-    { name: '责任心', score: conscientiousnessScore, maxScore: 10 },
-    { name: '情绪稳定性', score: emotionalStabilityScore, maxScore: 10 },
-    { name: '外向性', score: extraversionScore, maxScore: 10 },
-    { name: '正能量性', score: positivityScore, maxScore: 10 },
+    { name: '亲和力', score: normalizeScoreTo10(rawScores.affinity), maxScore: 10 },
+    { name: '开放性', score: normalizeScoreTo10(rawScores.openness), maxScore: 10 },
+    { name: '责任心', score: normalizeScoreTo10(rawScores.conscientiousness), maxScore: 10 },
+    { name: '情绪稳定性', score: normalizeScoreTo10(rawScores.emotionalStability), maxScore: 10 },
+    { name: '外向性', score: normalizeScoreTo10(rawScores.extraversion), maxScore: 10 },
+    { name: '正能量性', score: normalizeScoreTo10(rawScores.positivity), maxScore: 10 },
   ];
 
   const centerX = 150;
@@ -145,20 +152,35 @@ export default function PersonalityRadarChart({
           }
 
           return (
-            <text
-              key={index}
-              x={label.x}
-              y={label.y}
-              textAnchor={textAnchor}
-              dy={dy}
-              className="text-[11px] font-medium fill-foreground"
-              style={{ userSelect: 'none' }}
-            >
-              {label.trait.name}
-            </text>
+            <g key={index} className="cursor-help">
+              <text
+                x={label.x}
+                y={label.y}
+                textAnchor={textAnchor}
+                dy={dy}
+                className="text-[11px] font-medium fill-foreground"
+                style={{ userSelect: 'none' }}
+              >
+                {label.trait.name}
+                <title>{traitDescriptions[label.trait.name]}</title>
+              </text>
+            </g>
           );
         })}
       </svg>
+      
+      {/* 维度说明图例 */}
+      <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted-foreground px-2">
+        {traits.map((trait) => (
+          <div key={trait.name} className="flex items-start gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-primary/60 mt-1 flex-shrink-0" />
+            <div>
+              <span className="font-medium text-foreground">{trait.name}</span>
+              <span className="hidden sm:inline">: {traitDescriptions[trait.name]}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

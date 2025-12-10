@@ -55,6 +55,9 @@ const workSchema = z.object({
 const personalSchema = z.object({
   relationshipStatus: z.string().optional(),
   children: z.string().optional(),
+  hasPets: z.boolean().optional(),
+  hasSiblings: z.boolean().optional(),
+  currentCity: z.string().optional(),
 });
 
 const interestsSchema = z.object({
@@ -104,6 +107,9 @@ const getDefaultValues = (section: SectionType, user: any) => {
       return {
         relationshipStatus: user?.relationshipStatus || "",
         children: user?.children || "",
+        hasPets: user?.hasPets,
+        hasSiblings: user?.hasSiblings,
+        currentCity: user?.currentCity || "",
       };
     case "interests":
       return {
@@ -126,6 +132,17 @@ const languageOptions = [
   "普通话",
   "粤语",
   "英语",
+  "四川话",
+  "东北话",
+  "河南话",
+  "山东话",
+  "湖北话",
+  "湖南话",
+  "闽南话",
+  "上海话",
+  "客家话",
+  "潮汕话",
+  "温州话",
   "日语",
   "韩语",
   "法语",
@@ -146,8 +163,14 @@ const overseasRegionOptions = [
 ];
 
 const industryOptions = [
+  "学生",
   "大厂",
-  "金融",
+  "金融-银行",
+  "金融-证券",
+  "金融-保险",
+  "金融-投行",
+  "金融-PE/VC",
+  "金融-其他",
   "科技初创",
   "AI/ML",
   "跨境电商",
@@ -479,7 +502,9 @@ export default function EditProfileDialog({
                           <SelectItem value="Single">单身</SelectItem>
                           <SelectItem value="In a relationship">恋爱中</SelectItem>
                           <SelectItem value="Married/Partnered">已婚/已结伴</SelectItem>
-                          <SelectItem value="It's complicated">复杂</SelectItem>
+                          <SelectItem value="Divorced">离异</SelectItem>
+                          <SelectItem value="Widowed">丧偶</SelectItem>
+                          <SelectItem value="Prefer not to say">不方便透露</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -506,6 +531,77 @@ export default function EditProfileDialog({
                           <SelectItem value="6-12">6-12岁</SelectItem>
                           <SelectItem value="13-18">13-18岁</SelectItem>
                           <SelectItem value="Adult">成年</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div>
+                  <Label className="mb-2 block">有毛孩子吗</Label>
+                  <div className="flex gap-2">
+                    <Badge
+                      variant={form.watch("hasPets") === true ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => form.setValue("hasPets" as any, true)}
+                      data-testid="badge-pets-yes"
+                    >
+                      有
+                    </Badge>
+                    <Badge
+                      variant={form.watch("hasPets") === false ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => form.setValue("hasPets" as any, false)}
+                      data-testid="badge-pets-no"
+                    >
+                      没有
+                    </Badge>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block">有亲兄弟姐妹吗</Label>
+                  <div className="flex gap-2">
+                    <Badge
+                      variant={form.watch("hasSiblings") === true ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => form.setValue("hasSiblings" as any, true)}
+                      data-testid="badge-siblings-yes"
+                    >
+                      有
+                    </Badge>
+                    <Badge
+                      variant={form.watch("hasSiblings") === false ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => form.setValue("hasSiblings" as any, false)}
+                      data-testid="badge-siblings-no"
+                    >
+                      独生子女
+                    </Badge>
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="currentCity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>现居城市</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-current-city">
+                            <SelectValue placeholder="选择现居城市" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="香港">香港</SelectItem>
+                          <SelectItem value="深圳">深圳</SelectItem>
+                          <SelectItem value="广州">广州</SelectItem>
+                          <SelectItem value="东莞">东莞</SelectItem>
+                          <SelectItem value="珠海">珠海</SelectItem>
+                          <SelectItem value="澳门">澳门</SelectItem>
+                          <SelectItem value="其他">其他</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

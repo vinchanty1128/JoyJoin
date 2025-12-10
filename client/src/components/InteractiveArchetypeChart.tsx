@@ -1,13 +1,13 @@
 import { useState } from "react";
-import type { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import { Users, X, type LucideIcon } from "lucide-react";
 
 interface ArchetypeData {
   name: string;
   percentage: number;
   color: string;
-  emoji: ReactNode;
+  IconComponent: LucideIcon;
   description: string;
 }
 
@@ -82,8 +82,13 @@ export default function InteractiveArchetypeChart({ data }: InteractiveArchetype
 
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <div className="text-3xl mb-1">
-              {hoveredIndex !== null ? data[hoveredIndex].emoji : "👥"}
+            <div className="flex items-center justify-center mb-1">
+              {hoveredIndex !== null ? (() => {
+                const HoveredIcon = data[hoveredIndex].IconComponent;
+                return <HoveredIcon className="h-8 w-8" style={{ color: data[hoveredIndex].color }} />;
+              })() : (
+                <Users className="h-8 w-8 text-muted-foreground" />
+              )}
             </div>
             <div className="text-xs text-muted-foreground">
               {hoveredIndex !== null ? `${data[hoveredIndex].percentage}%` : "人群"}
@@ -126,17 +131,19 @@ export default function InteractiveArchetypeChart({ data }: InteractiveArchetype
             <Card className="border-2" style={{ borderColor: selectedArchetype.color }}>
               <CardContent className="p-3">
                 <div className="flex items-start gap-2">
-                  <div className="text-2xl">{selectedArchetype.emoji}</div>
+                  <div className="flex items-center justify-center">
+                    <selectedArchetype.IconComponent className="h-6 w-6" style={{ color: selectedArchetype.color }} />
+                  </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-base mb-0.5">{selectedArchetype.name}</h3>
                     <p className="text-xs text-muted-foreground">{selectedArchetype.description}</p>
                   </div>
                   <button
                     onClick={() => setSelectedArchetype(null)}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground p-1 hover-elevate active-elevate-2 rounded"
                     data-testid="button-close-archetype"
                   >
-                    ✕
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
               </CardContent>

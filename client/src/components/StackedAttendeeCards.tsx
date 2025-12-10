@@ -2,7 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { 
+  X, User, Compass, BookOpen, Brain, Sun, ChevronLeft, ChevronRight,
+  Zap, Sparkles, Search, Waves, Users, Heart, Lightbulb, Anchor, Shield, Eye,
+  type LucideIcon
+} from "lucide-react";
 
 interface Attendee {
   userId: string;
@@ -24,6 +28,25 @@ interface StackedAttendeeCardsProps {
   connectionPoints: Record<string, ConnectionPoint[]>;
 }
 
+const ARCHETYPE_ICONS: Record<string, LucideIcon> = {
+  "探索者": Compass,
+  "讲故事的人": BookOpen,
+  "智者": Brain,
+  "发光体": Sun,
+  "开心柯基": Zap,
+  "太阳鸡": Sun,
+  "夸夸豚": Sparkles,
+  "机智狐": Search,
+  "淡定海豚": Waves,
+  "织网蛛": Users,
+  "暖心熊": Heart,
+  "灵感章鱼": Lightbulb,
+  "沉思猫头鹰": Brain,
+  "定心大象": Anchor,
+  "稳如龟": Shield,
+  "隐身猫": Eye,
+};
+
 export default function StackedAttendeeCards({ attendees, connectionPoints }: StackedAttendeeCardsProps) {
   const [selectedAttendee, setSelectedAttendee] = useState<Attendee | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -36,14 +59,8 @@ export default function StackedAttendeeCards({ attendees, connectionPoints }: St
     setCurrentIndex((prev) => (prev - 1 + attendees.length) % attendees.length);
   };
 
-  const getArchetypeEmoji = (archetype?: string) => {
-    const emojiMap: Record<string, string> = {
-      "探索者": "🧭",
-      "讲故事的人": "📖",
-      "智者": "🦉",
-      "发光体": "⭐",
-    };
-    return emojiMap[archetype || ""] || "👤";
+  const getArchetypeIcon = (archetype?: string): LucideIcon => {
+    return ARCHETYPE_ICONS[archetype || ""] || User;
   };
 
   return (
@@ -77,7 +94,14 @@ export default function StackedAttendeeCards({ attendees, connectionPoints }: St
                 >
                   <CardContent className="p-6">
                     <div className="text-center space-y-3">
-                      <div className="text-5xl">{getArchetypeEmoji(attendee.archetype)}</div>
+                      {(() => {
+                        const ArchetypeIcon = getArchetypeIcon(attendee.archetype);
+                        return (
+                          <div className="flex items-center justify-center">
+                            <ArchetypeIcon className="h-12 w-12 text-primary" />
+                          </div>
+                        );
+                      })()}
                       <h3 className="text-xl font-bold">{attendee.displayName}</h3>
                       {attendee.archetype && (
                         <Badge variant="secondary" className="bg-primary/10 text-primary">
@@ -110,7 +134,7 @@ export default function StackedAttendeeCards({ attendees, connectionPoints }: St
               className="w-10 h-10 rounded-full bg-card border hover-elevate active-elevate-2 flex items-center justify-center"
               data-testid="button-prev-attendee"
             >
-              ←
+              <ChevronLeft className="h-5 w-5" />
             </button>
             <div className="flex gap-1.5">
               {attendees.map((_, index) => (
@@ -129,7 +153,7 @@ export default function StackedAttendeeCards({ attendees, connectionPoints }: St
               className="w-10 h-10 rounded-full bg-card border hover-elevate active-elevate-2 flex items-center justify-center"
               data-testid="button-next-attendee"
             >
-              →
+              <ChevronRight className="h-5 w-5" />
             </button>
           </div>
         )}
@@ -176,7 +200,14 @@ export default function StackedAttendeeCards({ attendees, connectionPoints }: St
                     transition={{ delay: 0.1 }}
                     className="text-center space-y-3"
                   >
-                    <div className="text-6xl">{getArchetypeEmoji(selectedAttendee.archetype)}</div>
+                    {(() => {
+                      const SelectedArchetypeIcon = getArchetypeIcon(selectedAttendee.archetype);
+                      return (
+                        <div className="flex items-center justify-center">
+                          <SelectedArchetypeIcon className="h-16 w-16 text-primary" />
+                        </div>
+                      );
+                    })()}
                     <h2 className="text-2xl font-bold">{selectedAttendee.displayName}</h2>
                     {selectedAttendee.archetype && (
                       <Badge variant="secondary" className="bg-primary/10 text-primary">

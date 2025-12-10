@@ -5,23 +5,36 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, Check } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { RELATIONSHIP_STATUS_OPTIONS, CHILDREN_OPTIONS } from "@shared/constants";
 
 type PersonalData = {
   relationshipStatus?: string;
   children?: string;
+  hasPets?: boolean;
+  hasSiblings?: boolean;
+  currentCity?: string;
 };
 
 const relationshipOptions = [
-  { value: "Single", label: "单身" },
-  { value: "In a relationship", label: "恋爱中" },
-  { value: "Married/Partnered", label: "已婚/已结伴" },
+  { value: "单身", label: "单身" },
+  { value: "恋爱中", label: "恋爱中" },
+  { value: "已婚/伴侣", label: "已婚/伴侣" },
+  { value: "离异", label: "离异" },
+  { value: "丧偶", label: "丧偶" },
+  { value: "不透露", label: "不透露" },
 ];
 
 const childrenOptions = [
-  { value: "No kids", label: "无孩子" },
-  { value: "Expecting", label: "期待中" },
-  { value: "Has kids", label: "有孩子" },
+  { value: "无孩子", label: "无孩子" },
+  { value: "期待中", label: "期待中" },
+  { value: "0-5岁", label: "0-5岁" },
+  { value: "6-12岁", label: "6-12岁" },
+  { value: "13-18岁", label: "13-18岁" },
+  { value: "成年", label: "成年" },
+  { value: "不透露", label: "不透露" },
 ];
+
+const currentCityOptions = ["香港", "深圳", "广州", "东莞", "珠海", "澳门", "其他"];
 
 export default function EditPersonalPage() {
   const [, setLocation] = useLocation();
@@ -31,6 +44,9 @@ export default function EditPersonalPage() {
   
   const [relationshipStatus, setRelationshipStatus] = useState<string | undefined>(user?.relationshipStatus);
   const [children, setChildren] = useState<string | undefined>(user?.children);
+  const [hasPets, setHasPets] = useState<boolean | undefined>(user?.hasPets);
+  const [hasSiblings, setHasSiblings] = useState<boolean | undefined>(user?.hasSiblings);
+  const [currentCity, setCurrentCity] = useState<string | undefined>(user?.currentCity);
 
   const updateMutation = useMutation({
     mutationFn: async (data: PersonalData) => {
@@ -57,6 +73,9 @@ export default function EditPersonalPage() {
     updateMutation.mutate({
       relationshipStatus,
       children,
+      hasPets,
+      hasSiblings,
+      currentCity,
     });
   };
 
@@ -136,9 +155,93 @@ export default function EditPersonalPage() {
           </div>
         </div>
 
+        {/* Has Pets */}
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">有毛孩子吗</h2>
+            <p className="text-sm text-muted-foreground">帮你找到同为铲屎官的朋友</p>
+          </div>
+          <div className="flex gap-3">
+            {[
+              { value: true, label: "有" },
+              { value: false, label: "没有" },
+            ].map((option) => (
+              <button
+                key={String(option.value)}
+                onClick={() => setHasPets(option.value)}
+                className={`
+                  flex-1 py-4 px-4 rounded-lg border text-center transition-all
+                  ${hasPets === option.value
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-pets-${option.value}`}
+              >
+                <span className="text-base">{option.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Has Siblings */}
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">有亲兄弟姐妹吗</h2>
+            <p className="text-sm text-muted-foreground">独生子女的默契懂的都懂</p>
+          </div>
+          <div className="flex gap-3">
+            {[
+              { value: true, label: "有" },
+              { value: false, label: "独生子女" },
+            ].map((option) => (
+              <button
+                key={String(option.value)}
+                onClick={() => setHasSiblings(option.value)}
+                className={`
+                  flex-1 py-4 px-4 rounded-lg border text-center transition-all
+                  ${hasSiblings === option.value
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-siblings-${option.value}`}
+              >
+                <span className="text-base">{option.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Current City */}
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">现居城市</h2>
+            <p className="text-sm text-muted-foreground">帮你找到同城小伙伴</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {currentCityOptions.map((city) => (
+              <button
+                key={city}
+                onClick={() => setCurrentCity(city)}
+                className={`
+                  px-4 py-3 rounded-lg border text-sm transition-all
+                  ${currentCity === city
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover-elevate active-elevate-2'
+                  }
+                `}
+                data-testid={`button-current-city-${city}`}
+              >
+                {city}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Privacy Notice */}
         <div className="text-center text-sm text-muted-foreground">
-          💡 提示：此信息仅自己可见
+          提示：此信息仅自己可见
         </div>
 
         {/* Save Button */}

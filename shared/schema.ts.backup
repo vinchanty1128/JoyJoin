@@ -1,3 +1,4 @@
+//my path:/Users/felixg/projects/JoyJoin3/shared/schema.ts
 import { sql } from 'drizzle-orm';
 import {
   index,
@@ -12,17 +13,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import {
-  GENDER_OPTIONS,
-  EDUCATION_LEVEL_OPTIONS,
-  SENIORITY_OPTIONS,
-  WORK_MODE_OPTIONS,
-  RELATIONSHIP_STATUS_OPTIONS,
-  CHILDREN_OPTIONS,
-  STUDY_LOCALE_OPTIONS,
-  PRONOUNS_OPTIONS,
-  LANGUAGES_COMFORT_OPTIONS,
-} from "./constants";
 
 // Session storage table (required for Replit Auth)
 export const sessions = pgTable(
@@ -52,39 +42,32 @@ export const users = pgTable("users", {
   birthdate: date("birthdate"), // Used to calculate age
   age: integer("age"), // Deprecated - calculated from birthdate
   ageVisibility: varchar("age_visibility").default("hide_all"), // hide_all, show_exact_age
-  gender: varchar("gender"), // 女性, 男性, 不透露
-  pronouns: varchar("pronouns"), // 她/She, 他/He, 它们/They, 自定义, 不透露
+  gender: varchar("gender"), // Woman, Man, Nonbinary, Self-describe, Prefer not to say
+  pronouns: varchar("pronouns"), // She/Her, He/Him, They/Them, Self-describe, Prefer not to say
   
   // Registration fields - Background
-  relationshipStatus: varchar("relationship_status"), // 单身, 恋爱中, 已婚/伴侣, 离异, 丧偶, 不透露
-  children: varchar("children"), // 无孩子, 期待中, 0-5岁, 6-12岁, 13-18岁, 成年, 不透露
-  hasPets: boolean("has_pets"), // 是否有毛孩子
-  hasSiblings: boolean("has_siblings"), // 是否有亲兄弟姐妹 (false = 独生子女)
+  relationshipStatus: varchar("relationship_status"), // Single, In a relationship, Married/Partnered, It's complicated, Prefer not to say
+  children: varchar("children"), // No kids, Expecting, 0-5, 6-12, 13-18, Adult, Prefer not to say
   hasKids: boolean("has_kids"), // Deprecated in favor of children
   
   // Registration fields - Education
-  educationLevel: varchar("education_level"), // 高中及以下, 大专, 本科, 硕士, 博士, 职业培训
-  studyLocale: varchar("study_locale"), // 本地, 海外, 都有
+  educationLevel: varchar("education_level"), // High school/below, Some college/Associate, Bachelor's, Master's, Doctorate, Trade/Vocational, Prefer not to say
+  studyLocale: varchar("study_locale"), // Local, Overseas, Both, Prefer not to say
   overseasRegions: text("overseas_regions").array(), // NA, Europe, East Asia, SE Asia, etc.
   fieldOfStudy: varchar("field_of_study"), // Business, Engineering, CS, Arts/Design, etc.
   educationVisibility: varchar("education_visibility").default("hide_all"), // hide_all, show_level_only, show_level_and_field
   
-  // Registration fields - Work (New standardized occupation system)
-  occupationId: varchar("occupation_id"), // Standardized occupation ID from occupations.ts
-  workMode: varchar("work_mode"), // founder, self_employed, employed, student
-  
-  // Legacy work fields (kept for backward compatibility)
-  industry: varchar("industry"), // 学生, 大厂, 金融等中文行业 - now auto-derived from occupationId
-  roleTitleShort: varchar("role_title_short"), // Optional short text - deprecated, use occupationId
-  seniority: varchar("seniority"), // 实习生, 初级, 中级, 高级, 资深, 创始人, 高管 - deprecated, use workMode
+  // Registration fields - Work
+  industry: varchar("industry"), // Coarse taxonomy
+  roleTitleShort: varchar("role_title_short"), // Optional short text
+  seniority: varchar("seniority"), // Intern, Junior, Mid, Senior, Founder, Executive
   workVisibility: varchar("work_visibility").default("show_industry_only"), // hide_all, show_industry_only
   
   // Registration fields - Culture & Language
   hometownCountry: varchar("hometown_country"),
   hometownRegionCity: varchar("hometown_region_city"),
   hometownAffinityOptin: boolean("hometown_affinity_optin").default(true),
-  currentCity: varchar("current_city"), // 现居城市: 香港, 深圳, 广州, 其他
-  languagesComfort: text("languages_comfort").array(), // 普通话, 粤语, 英语等中文语言
+  languagesComfort: text("languages_comfort").array(), // English, Mandarin, Cantonese, etc.
   
   // Registration fields - Deprecated/Legacy
   placeOfOrigin: varchar("place_of_origin"), // Deprecated in favor of hometown fields
@@ -107,10 +90,9 @@ export const users = pgTable("users", {
   
   // Interests & Topics (Step 2)
   interestsTop: text("interests_top").array(), // 3-7 selected interests
-  interestFavorite: text("interest_favorite"), // Single favorite interest (starred)
-  interestsRankedTop3: text("interests_ranked_top3").array(), // Deprecated: Top 3 ranked interests
+  interestsRankedTop3: text("interests_ranked_top3").array(), // Top 3 ranked interests
   topicsHappy: text("topics_happy").array(), // Topics user enjoys discussing
-  topicsAvoid: text("topics_avoid").array(), // Topics to avoid (optional, max 2)
+  topicsAvoid: text("topics_avoid").array(), // Topics to avoid
   
   // Personality data (Step 3 - Vibe Vector)
   vibeVector: jsonb("vibe_vector"), // {energy, conversation_style, initiative, novelty, humor} scored 0-1
@@ -133,16 +115,9 @@ export const users = pgTable("users", {
   eventsAttended: integer("events_attended").default(0),
   matchesMade: integer("matches_made").default(0),
   
-  // Event Pack Credits
-  eventCredits: integer("event_credits").default(0),
-  eventCreditsExpiry: timestamp("event_credits_expiry"),
-  
   // Admin & Moderation
   isAdmin: boolean("is_admin").default(false),
   isBanned: boolean("is_banned").default(false),
-  
-  // Match Reveal Animation tracking
-  viewedEventAnimations: text("viewed_event_animations").array(), // Event IDs where animation was already viewed
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -194,20 +169,12 @@ export const eventPools = pgTable("event_pools", {
   registrationDeadline: timestamp("registration_deadline").notNull(), // 报名截止时间
   
   // 活动限制（硬约束 - 关联用户表字段）
-  genderRestriction: varchar("gender_restriction"), // null=不限 | 女性 | 男性
+  genderRestriction: varchar("gender_restriction"), // null=不限 | Woman | Man | Nonbinary
   industryRestrictions: text("industry_restrictions").array(), // 行业限制列表（空=不限）
   seniorityRestrictions: text("seniority_restrictions").array(), // 职级限制
   educationLevelRestrictions: text("education_level_restrictions").array(), // 学历限制
   ageRangeMin: integer("age_range_min"), // 最小年龄
   ageRangeMax: integer("age_range_max"), // 最大年龄
-  
-  // 性别平衡配置（软约束）
-  genderBalanceMode: varchar("gender_balance_mode").default("soft"), // none=不考虑 | soft=软约束加分 | hard=硬约束必须平衡
-  genderBalanceBonusPoints: integer("gender_balance_bonus_points").default(15), // 软约束模式下，完美比例的加分值（默认15分）
-  
-  // 性别最低人数限制（硬约束）
-  minFemaleCount: integer("min_female_count").default(0), // 每组最少女性人数，0=不限制
-  minMaleCount: integer("min_male_count").default(0), // 每组最少男性人数，0=不限制
   
   // 组局配置
   minGroupSize: integer("min_group_size").default(4), // 最小成局人数
@@ -247,6 +214,8 @@ export const eventPoolRegistrations = pgTable("event_pool_registrations", {
   assignedGroupId: varchar("assigned_group_id"), // 分配到的组ID（如果匹配成功）
   matchScore: integer("match_score"), // 匹配分数
   
+  // 一旦被分配到具体盲盒局（桌子），就填这里
+  eventId: varchar("event_id").references(() => blindBoxEvents.id),
   // 元数据
   registeredAt: timestamp("registered_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -264,7 +233,6 @@ export const eventPoolGroups = pgTable("event_pool_groups", {
   avgChemistryScore: integer("avg_chemistry_score"), // 平均化学反应分数
   diversityScore: integer("diversity_score"), // 多样性分数
   energyBalance: integer("energy_balance"), // 能量平衡分数
-  genderBalanceScore: integer("gender_balance_score"), // 性别平衡分数（0-100）
   overallScore: integer("overall_score"), // 综合分数
   temperatureLevel: varchar("temperature_level"), // 化学反应温度等级: fire | warm | mild | cold
   matchExplanation: text("match_explanation"), // AI生成的匹配解释
@@ -512,6 +480,7 @@ export const insertEventPoolRegistrationSchema = createInsertSchema(eventPoolReg
   assignedGroupId: true,
   matchScore: true,
   registeredAt: true,
+  eventId: true,
   updatedAt: true,
 }).extend({
   poolId: z.string().min(1),
@@ -582,6 +551,9 @@ export const blindBoxEvents = pgTable("blind_box_events", {
   city: varchar("city").notNull(), // 深圳/香港
   district: varchar("district").notNull(), // 南山区
   dateTime: timestamp("date_time").notNull(),
+  
+  // Pool association (for admin-created events)
+  poolId: varchar("pool_id").references(() => eventPools.id),
   
   // Budget and preferences
   budgetTier: varchar("budget_tier").notNull(), // "100-200"
@@ -695,49 +667,39 @@ export const registerUserSchema = z.object({
   // Identity
   displayName: z.string().min(1, "请输入昵称"),
   birthdate: z.string().min(1, "请选择生日"), // ISO date string - now required
-  ageVisibility: z.enum(["hide_all", "show_generation", "show_age_range", "show_exact_age"]).default("hide_all"),
-  gender: z.enum(GENDER_OPTIONS, {
+  ageVisibility: z.enum(["hide_all", "show_exact_age"]).default("hide_all"),
+  gender: z.enum(["Woman", "Man", "Nonbinary", "Self-describe", "Prefer not to say"], {
     errorMap: () => ({ message: "请选择性别" }),
   }),
-  pronouns: z.enum(PRONOUNS_OPTIONS).optional(),
+  pronouns: z.enum(["She/Her", "He/Him", "They/Them", "Self-describe", "Prefer not to say"]).optional(),
   
   // Background
-  relationshipStatus: z.enum(RELATIONSHIP_STATUS_OPTIONS, {
+  relationshipStatus: z.enum(["Single", "In a relationship", "Married/Partnered", "It's complicated", "Prefer not to say"], {
     errorMap: () => ({ message: "请选择关系状态" }),
   }),
-  children: z.enum(CHILDREN_OPTIONS).optional(),
-  hasPets: z.boolean().optional(), // 是否有毛孩子
-  hasSiblings: z.boolean().optional(), // 是否有亲兄弟姐妹
+  children: z.enum(["No kids", "Expecting", "0-5", "6-12", "13-18", "Adult", "Prefer not to say"]).optional(),
   
-  // Education - All required for matching algorithm
-  educationLevel: z.enum(EDUCATION_LEVEL_OPTIONS, {
-    errorMap: () => ({ message: "请选择教育水平" }),
-  }),
-  studyLocale: z.enum(STUDY_LOCALE_OPTIONS, {
-    errorMap: () => ({ message: "请选择学习地点" }),
-  }),
+  // Education
+  educationLevel: z.enum(["High school/below", "Some college/Associate", "Bachelor's", "Master's", "Doctorate", "Trade/Vocational", "Prefer not to say"]).optional(),
+  studyLocale: z.enum(["Local", "Overseas", "Both", "Prefer not to say"]).optional(),
   overseasRegions: z.array(z.string()).optional(),
-  fieldOfStudy: z.string().min(1, "请输入专业领域"),
+  fieldOfStudy: z.string().optional(),
+  educationVisibility: z.enum(["hide_all", "show_level_only", "show_level_and_field"]).default("hide_all"),
   
-  // Work - New standardized occupation system
-  occupationId: z.string().min(1, "请选择职业"),
-  workMode: z.enum(WORK_MODE_OPTIONS, {
-    errorMap: () => ({ message: "请选择身份" }),
-  }),
-  
-  // Legacy fields (optional, for backward compatibility)
-  industry: z.string().optional(), // Auto-derived from occupationId
-  roleTitleShort: z.string().optional(), // Deprecated
-  seniority: z.enum(SENIORITY_OPTIONS).optional(), // Deprecated
+  // Work
+  industry: z.string().min(1, "请选择行业"),
+  roleTitleShort: z.string().optional(),
+  seniority: z.enum(["Intern", "Junior", "Mid", "Senior", "Founder", "Executive"]).optional(),
+  workVisibility: z.enum(["hide_all", "show_industry_only"]).default("show_industry_only"),
   
   // Event intent (default, can be overridden per event) - multiple selections allowed
   intent: z.array(z.enum(["networking", "friends", "discussion", "fun", "romance", "flexible"])).min(1, "请至少选择一个活动意图"),
   
-  // Culture & Language - Required for matching algorithm
-  hometownCountry: z.string().optional(), // Auto-set based on province selection
-  hometownRegionCity: z.string().min(1, "请选择家乡"),
-  currentCity: z.string().min(1, "请选择现居城市"),
-  languagesComfort: z.array(z.string()).min(1, "请至少选择一种语言"),
+  // Culture & Language
+  hometownCountry: z.string().optional(),
+  hometownRegionCity: z.string().optional(),
+  hometownAffinityOptin: z.boolean().default(false),
+  languagesComfort: z.array(z.string()).optional(),
   
   // Access & Safety
   accessibilityNeeds: z.string().optional(),
@@ -750,9 +712,9 @@ export const registerUserSchema = z.object({
 // Interests & Topics schema (Step 2)
 export const interestsTopicsSchema = z.object({
   interestsTop: z.array(z.string()).min(3, "请至少选择3个兴趣").max(7, "最多选择7个兴趣"),
-  interestFavorite: z.string().min(1, "请选择你最喜欢的1个兴趣"),
-  topicsHappy: z.array(z.string()).min(3, "请至少选择3个喜欢的话题").max(5, "最多选择5个话题"),
-  topicsAvoid: z.array(z.string()).max(2, "最多选择2个不想聊的话题").optional(),
+  interestsRankedTop3: z.array(z.string()).length(3, "请将你最喜欢的3个兴趣排序"),
+  topicsHappy: z.array(z.string()).min(1, "请至少选择一个你喜欢的话题"),
+  topicsAvoid: z.array(z.string()).optional(),
 });
 
 // Test response schema
@@ -828,19 +790,18 @@ export const subscriptions = pgTable("subscriptions", {
   userId: varchar("user_id").notNull().references(() => users.id),
   
   // Subscription period
-  planType: varchar("plan_type").notNull(), // "monthly", "quarterly"
+  subscriptionType: varchar("subscription_type").notNull(), // "1_month", "3_months"
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   
   // Payment
-  amount: integer("amount").notNull(), // ¥199 or ¥499
+  amount: integer("amount").notNull(), // ¥98 or ¥294
   paymentId: varchar("payment_id").references(() => payments.id), // References payments table
   
   // Status
-  status: varchar("status").notNull().default("pending"), // pending, active, expired, cancelled
-  isActive: boolean("is_active").default(true), // Track active status separately
+  status: varchar("status").notNull().default("active"), // active, expired, cancelled
   autoRenew: boolean("auto_renew").default(false),
-  
+  isActive: boolean("is_active").notNull().default(true), // whether this subscription is currently active (for queries using s.is_active)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -1368,193 +1329,3 @@ export type Invitation = typeof invitations.$inferSelect;
 export type InvitationUse = typeof invitationUses.$inferSelect;
 export type InsertInvitation = z.infer<typeof insertInvitationSchema>;
 export type InsertInvitationUse = z.infer<typeof insertInvitationUseSchema>;
-
-// ============ 定价管理系统 - Pricing Management ============
-
-// Pricing Settings table - 动态价格配置
-export const pricingSettings = pgTable("pricing_settings", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
-  // 套餐类型标识
-  planType: varchar("plan_type").notNull().unique(), // "monthly", "quarterly", "event_single"
-  
-  // 显示信息
-  displayName: varchar("display_name").notNull(), // "月度会员", "季度会员", "单次活动"
-  displayNameEn: varchar("display_name_en"), // "Monthly", "Quarterly", "Single Event"
-  description: text("description"), // 套餐描述
-  
-  // 价格（单位：分）
-  priceInCents: integer("price_in_cents").notNull(), // ¥199 = 19900
-  originalPriceInCents: integer("original_price_in_cents"), // 原价，用于显示划线价
-  
-  // 有效期（天数，仅订阅套餐）
-  durationDays: integer("duration_days"), // 30, 90, null for single events
-  
-  // 排序和状态
-  sortOrder: integer("sort_order").default(0), // 排序顺序
-  isActive: boolean("is_active").notNull().default(true), // whether this subscription is currently active (for queries using s.is_active)
-  isFeatured: boolean("is_featured").default(false), // 是否推荐（高亮显示）
-  
-  // 生效时间（支持预约调价）
-  effectiveFrom: timestamp("effective_from").defaultNow(),
-  effectiveUntil: timestamp("effective_until"), // null = 永久有效
-  
-  // 审计字段
-  createdBy: varchar("created_by").references(() => users.id),
-  updatedBy: varchar("updated_by").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Pricing History table - 价格变更记录（审计）
-export const pricingHistory = pgTable("pricing_history", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
-  pricingId: varchar("pricing_id").notNull().references(() => pricingSettings.id),
-  
-  // 变更前后价格
-  oldPriceInCents: integer("old_price_in_cents"),
-  newPriceInCents: integer("new_price_in_cents").notNull(),
-  
-  // 变更原因
-  changeReason: text("change_reason"),
-  
-  // 操作人
-  changedBy: varchar("changed_by").notNull().references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertPricingSettingSchema = createInsertSchema(pricingSettings).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const updatePricingSettingSchema = createInsertSchema(pricingSettings).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  createdBy: true,
-}).partial();
-
-export type PricingSetting = typeof pricingSettings.$inferSelect;
-export type InsertPricingSetting = z.infer<typeof insertPricingSettingSchema>;
-export type UpdatePricingSetting = z.infer<typeof updatePricingSettingSchema>;
-
-// ============ 一键再约系统 - VIP Reunion System ============
-
-// Reunion Requests table - VIP发起的再约请求（意向局）
-export const reunionRequests = pgTable("reunion_requests", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
-  // 关联原活动（触发再约的已完成活动）
-  originalEventId: varchar("original_event_id").notNull().references(() => blindBoxEvents.id),
-  
-  // 发起人信息
-  initiatorId: varchar("initiator_id").notNull().references(() => users.id),
-  
-  // 状态管理
-  status: varchar("status").notNull().default("pending"), // pending (招募中) | fulfilled (已成局) | expired (已过期) | cancelled (已取消)
-  
-  // 成局配置
-  minParticipants: integer("min_participants").default(4), // 最小成局人数
-  maxParticipants: integer("max_participants").default(6), // 最大人数（含发起人）
-  currentAccepted: integer("current_accepted").default(1), // 当前已接受人数（发起人算1）
-  
-  // 时间限制
-  expiresAt: timestamp("expires_at").notNull(), // 24小时后过期
-  
-  // 成局后信息
-  resultEventId: varchar("result_event_id").references(() => blindBoxEvents.id), // 成局后创建的新活动
-  
-  // 匿名通知模板信息
-  eventDescription: text("event_description"), // e.g., "上周六咖啡局"
-  
-  createdAt: timestamp("created_at").defaultNow(),
-  fulfilledAt: timestamp("fulfilled_at"), // 成局时间
-});
-
-// Reunion Responses table - 用户对再约邀请的响应
-export const reunionResponses = pgTable("reunion_responses", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
-  // 关联再约请求
-  reunionRequestId: varchar("reunion_request_id").notNull().references(() => reunionRequests.id),
-  
-  // 被邀请用户
-  userId: varchar("user_id").notNull().references(() => users.id),
-  
-  // 响应状态
-  status: varchar("status").notNull().default("pending"), // pending (待响应) | accepted (已接受) | declined (已拒绝) | expired (已过期)
-  
-  // 通知状态
-  notificationSent: boolean("notification_sent").default(false),
-  notificationSentAt: timestamp("notification_sent_at"),
-  
-  // 元数据
-  createdAt: timestamp("created_at").defaultNow(),
-  respondedAt: timestamp("responded_at"), // 响应时间
-});
-
-// Insert schemas for reunion system
-export const insertReunionRequestSchema = createInsertSchema(reunionRequests).omit({
-  id: true,
-  createdAt: true,
-  fulfilledAt: true,
-  currentAccepted: true,
-  resultEventId: true,
-});
-
-export const insertReunionResponseSchema = createInsertSchema(reunionResponses).omit({
-  id: true,
-  createdAt: true,
-  respondedAt: true,
-  notificationSent: true,
-  notificationSentAt: true,
-});
-
-export type ReunionRequest = typeof reunionRequests.$inferSelect;
-export type ReunionResponse = typeof reunionResponses.$inferSelect;
-export type InsertReunionRequest = z.infer<typeof insertReunionRequestSchema>;
-export type InsertReunionResponse = z.infer<typeof insertReunionResponseSchema>;
-
-// Promotion Banners table - 推广横幅管理（发现页轮播+Landing Page素材）
-export const promotionBanners = pgTable("promotion_banners", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
-  // 基本信息
-  imageUrl: varchar("image_url").notNull(), // 图片URL
-  title: varchar("title"), // 标题（可选，用于SEO和管理）
-  subtitle: varchar("subtitle"), // 副标题（可选，覆盖在图片上）
-  
-  // 链接配置
-  linkUrl: varchar("link_url"), // 点击跳转链接
-  linkType: varchar("link_type").default("internal"), // internal(站内) | external(外链) | none(无链接)
-  
-  // 展示位置和范围
-  placement: varchar("placement").default("discover"), // discover(发现页) | landing(落地页) | both(两处都显示)
-  city: varchar("city"), // 香港 | 深圳 | null(全部城市)
-  
-  // 排序和状态
-  sortOrder: integer("sort_order").default(0), // 数字越小越靠前
-  isActive: boolean("is_active").default(true),
-  
-  // 有效期
-  effectiveFrom: timestamp("effective_from").defaultNow(),
-  effectiveUntil: timestamp("effective_until"), // null表示永久有效
-  
-  // 元数据
-  createdBy: varchar("created_by").references(() => users.id), // 创建者（Admin）
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Insert schema for promotion banners
-export const insertPromotionBannerSchema = createInsertSchema(promotionBanners).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export type PromotionBanner = typeof promotionBanners.$inferSelect;
-export type InsertPromotionBanner = z.infer<typeof insertPromotionBannerSchema>;

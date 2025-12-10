@@ -7,58 +7,85 @@ import { interestsTopicsSchema, type InterestsTopics } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Check, ChevronUp, ChevronDown, Info, Sparkles } from "lucide-react";
+import { Check, Star, Info, Flame, Sparkles } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 import RegistrationProgress from "@/components/RegistrationProgress";
+import CelebrationConfetti from "@/components/CelebrationConfetti";
 
-// Interest categories with emojis
+// Interest categories with emojis - displayed in two tiers (hot first, then more)
+// Heat values based on platform big data (基于平台大数据)
 const INTERESTS_OPTIONS = [
-  { id: "outdoor_adventure", label: "户外冒险", emoji: "🏔️" },
-  { id: "sports_fitness", label: "运动健身", emoji: "⚽" },
-  { id: "food_dining", label: "美食探店", emoji: "🍜" },
-  { id: "arts_culture", label: "艺术文化", emoji: "🎨" },
-  { id: "music_concerts", label: "音乐现场", emoji: "🎵" },
-  { id: "reading_books", label: "阅读书籍", emoji: "📚" },
-  { id: "tech_gadgets", label: "科技数码", emoji: "💻" },
-  { id: "games_board", label: "桌游卡牌", emoji: "🎲" },
-  { id: "games_video", label: "电子游戏", emoji: "🎮" },
-  { id: "photography", label: "摄影拍照", emoji: "📷" },
-  { id: "travel", label: "旅行探索", emoji: "✈️" },
-  { id: "diy_crafts", label: "手工DIY", emoji: "✂️" },
-  { id: "pets_animals", label: "宠物动物", emoji: "🐶" },
-  { id: "volunteering", label: "志愿公益", emoji: "🤝" },
-  { id: "entrepreneurship", label: "创业商业", emoji: "💡" },
-  { id: "investing", label: "投资理财", emoji: "💰" },
-  { id: "meditation", label: "冥想正念", emoji: "🧘" },
-  { id: "languages", label: "语言学习", emoji: "🗣️" },
+  // Top 10 热门兴趣 (shown first) - 用词基于100用户调研结果
+  { id: "food_dining", label: "美食探店", emoji: "🍜", heat: 82 },
+  { id: "travel", label: "说走就走", emoji: "✈️", heat: 75 },
+  { id: "city_walk", label: "City Walk", emoji: "🚶", heat: 68 },
+  { id: "drinks_bar", label: "喝酒小酌", emoji: "🍷", heat: 62 },
+  { id: "music_live", label: "音乐Live", emoji: "🎵", heat: 58 },
+  { id: "photography", label: "拍拍拍", emoji: "📷", heat: 52 },
+  { id: "sports_fitness", label: "撸铁运动", emoji: "💪", heat: 48 },
+  { id: "arts_culture", label: "看展看剧", emoji: "🎨", heat: 45 },
+  { id: "games_video", label: "打游戏", emoji: "🎮", heat: 42 },
+  { id: "pets_animals", label: "吸猫撸狗", emoji: "🐱", heat: 38 },
+  // More options (expandable) - 用词基于100用户调研结果
+  { id: "reading_books", label: "看书充电", emoji: "📚", heat: 35 },
+  { id: "tech_gadgets", label: "数码控", emoji: "💻", heat: 32 },
+  { id: "outdoor_adventure", label: "徒步露营", emoji: "🏕️", heat: 28 },
+  { id: "games_board", label: "桌游卡牌", emoji: "🎲", heat: 25 },
+  { id: "entrepreneurship", label: "创业商业", emoji: "💡", heat: 22 },
+  { id: "investing", label: "投资理财", emoji: "💰", heat: 20 },
+  { id: "diy_crafts", label: "手工DIY", emoji: "✂️", heat: 18 },
+  { id: "volunteering", label: "志愿公益", emoji: "🤝", heat: 15 },
+  { id: "meditation", label: "冥想正念", emoji: "🧘", heat: 12 },
+  { id: "languages", label: "语言学习", emoji: "🗣️", heat: 10 },
 ];
 
-// Conversation topics
-const TOPICS_OPTIONS = [
-  { id: "career_growth", label: "职业发展", category: "work" },
-  { id: "startup_ideas", label: "创业想法", category: "work" },
-  { id: "tech_trends", label: "科技趋势", category: "tech" },
-  { id: "ai_future", label: "AI与未来", category: "tech" },
-  { id: "relationships", label: "人际关系", category: "personal" },
-  { id: "dating_love", label: "恋爱情感", category: "personal" },
-  { id: "mental_health", label: "心理健康", category: "personal" },
-  { id: "life_philosophy", label: "人生哲学", category: "personal" },
-  { id: "movies_shows", label: "影视剧集", category: "entertainment" },
-  { id: "music_taste", label: "音乐品味", category: "entertainment" },
-  { id: "travel_stories", label: "旅行故事", category: "lifestyle" },
-  { id: "food_culture", label: "美食文化", category: "lifestyle" },
-  { id: "fashion_style", label: "时尚穿搭", category: "lifestyle" },
-  { id: "current_events", label: "时事新闻", category: "society" },
-  { id: "politics", label: "政治话题", category: "society" },
-  { id: "social_issues", label: "社会议题", category: "society" },
-  { id: "parenting", label: "育儿经验", category: "family" },
-  { id: "hobbies_deep", label: "小众爱好", category: "other" },
-];
+// Topic groups with mood icons - reorganized into three categories
+const TOPICS_GROUPS = {
+  casual: {
+    name: "聊着玩",
+    description: "轻松日常，怎么开心怎么聊",
+    topics: [
+      { id: "movies_shows", label: "追剧躺平", mood: "😄", heat: 68 },
+      { id: "music_taste", label: "听歌演唱会", mood: "🎶", heat: 55 },
+      { id: "food_culture", label: "美食安利", mood: "😋", heat: 65 },
+      { id: "travel_stories", label: "旅行故事", mood: "🌍", heat: 62 },
+      { id: "fashion_trends", label: "潮流时尚", mood: "👗", heat: 60 },
+      { id: "gossip_entertainment", label: "八卦娱乐", mood: "🤭", heat: 58 },
+      { id: "zodiac_mbti", label: "星座MBTI", mood: "✨", heat: 72 },
+      { id: "work_rants", label: "职场吐槽", mood: "😤", heat: 65 },
+      { id: "hobbies_niche", label: "小众爱好", mood: "🤓", heat: 35 },
+    ]
+  },
+  deep: {
+    name: "走心聊",
+    description: "认真交流，聊点有深度的",
+    topics: [
+      { id: "life_philosophy", label: "人生三观", mood: "🤔", heat: 45 },
+      { id: "career_growth", label: "职业发展", mood: "📈", heat: 48 },
+      { id: "relationships", label: "人际社交", mood: "🤝", heat: 42 },
+      { id: "dating_love", label: "恋爱情感", mood: "💕", heat: 52 },
+      { id: "mental_health", label: "情绪心理", mood: "🧠", heat: 38 },
+      { id: "startup_ideas", label: "创业想法", mood: "💡", heat: 32 },
+      { id: "tech_ai", label: "科技AI", mood: "🤖", heat: 40 },
+      { id: "self_growth", label: "自我成长", mood: "🌱", heat: 44 },
+    ]
+  },
+  sensitive: {
+    name: "看情况",
+    description: "因人而异，适合熟了再聊",
+    topics: [
+      { id: "current_events", label: "时事新闻", mood: "📰", heat: 28 },
+      { id: "politics", label: "政治话题", mood: "🏛️", heat: 15 },
+      { id: "social_issues", label: "社会议题", mood: "📢", heat: 22 },
+      { id: "parenting", label: "育儿经验", mood: "👶", heat: 18 },
+      { id: "religion", label: "宗教信仰", mood: "🙏", heat: 12 },
+      { id: "money_finance", label: "收入理财", mood: "💰", heat: 25 },
+    ]
+  }
+};
 
 export default function InterestsTopicsPage() {
   const [, setLocation] = useLocation();
@@ -66,9 +93,11 @@ export default function InterestsTopicsPage() {
   const [step, setStep] = useState(1);
   const totalSteps = 2;
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showMajorCelebration, setShowMajorCelebration] = useState(false);
+  const [showMoreInterests, setShowMoreInterests] = useState(false);
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [rankedTop3, setRankedTop3] = useState<string[]>([]);
+  const [favoriteInterest, setFavoriteInterest] = useState<string | null>(null);
   const [selectedTopicsHappy, setSelectedTopicsHappy] = useState<string[]>([]);
   const [selectedTopicsAvoid, setSelectedTopicsAvoid] = useState<string[]>([]);
 
@@ -84,7 +113,7 @@ export default function InterestsTopicsPage() {
     resolver: zodResolver(interestsTopicsSchema),
     defaultValues: {
       interestsTop: [],
-      interestsRankedTop3: [],
+      interestFavorite: "",
       topicsHappy: [],
       topicsAvoid: [],
     },
@@ -97,12 +126,16 @@ export default function InterestsTopicsPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       
+      setShowMajorCelebration(true);
+      
       toast({
-        title: "保存成功！",
-        description: "现在让我们了解你的社交风格",
+        title: "太棒了！兴趣设置完成",
+        description: "接下来是趣味性格测试",
       });
       
-      setLocation("/personality-test");
+      setTimeout(() => {
+        setLocation("/personality-test");
+      }, 1500);
     },
     onError: (error: Error) => {
       toast({
@@ -118,8 +151,14 @@ export default function InterestsTopicsPage() {
       if (prev.includes(interestId)) {
         // Remove from selected
         const newSelected = prev.filter(id => id !== interestId);
-        // Also remove from ranked if it was there
-        setRankedTop3(ranked => ranked.filter(id => id !== interestId));
+        // Also remove from favorite if it was the favorite
+        if (favoriteInterest === interestId) {
+          setFavoriteInterest(null);
+          toast({
+            title: "已取消最爱标记",
+            description: "请重新选择一个最爱的兴趣",
+          });
+        }
         return newSelected;
       } else {
         // Add to selected (max 7)
@@ -135,11 +174,34 @@ export default function InterestsTopicsPage() {
     });
   };
 
+  const setAsFavorite = (interestId: string) => {
+    if (selectedInterests.includes(interestId)) {
+      if (favoriteInterest === interestId) {
+        // Un-favoriting - show toast
+        setFavoriteInterest(null);
+        toast({
+          title: "已取消最爱标记",
+          description: "请重新选择一个最爱的兴趣",
+        });
+      } else {
+        // Setting as favorite
+        setFavoriteInterest(interestId);
+      }
+    }
+  };
+
   const toggleTopicHappy = (topicId: string) => {
     setSelectedTopicsHappy(prev => {
       if (prev.includes(topicId)) {
         return prev.filter(id => id !== topicId);
       } else {
+        if (prev.length >= 5) {
+          toast({
+            title: "最多选择5个喜欢的话题",
+            variant: "destructive",
+          });
+          return prev;
+        }
         // Remove from avoid list if it was there
         setSelectedTopicsAvoid(avoid => avoid.filter(id => id !== topicId));
         return [...prev, topicId];
@@ -152,42 +214,18 @@ export default function InterestsTopicsPage() {
       if (prev.includes(topicId)) {
         return prev.filter(id => id !== topicId);
       } else {
+        if (prev.length >= 2) {
+          toast({
+            title: "最多选择2个不想聊的话题",
+            variant: "destructive",
+          });
+          return prev;
+        }
         // Remove from happy list if it was there
         setSelectedTopicsHappy(happy => happy.filter(id => id !== topicId));
         return [...prev, topicId];
       }
     });
-  };
-
-  const addToRanking = (interestId: string) => {
-    if (rankedTop3.length >= 3) {
-      toast({
-        title: "最多排序3个兴趣",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!rankedTop3.includes(interestId)) {
-      setRankedTop3([...rankedTop3, interestId]);
-    }
-  };
-
-  const removeFromRanking = (interestId: string) => {
-    setRankedTop3(rankedTop3.filter(id => id !== interestId));
-  };
-
-  const moveUpInRanking = (index: number) => {
-    if (index === 0) return;
-    const newRanked = [...rankedTop3];
-    [newRanked[index - 1], newRanked[index]] = [newRanked[index], newRanked[index - 1]];
-    setRankedTop3(newRanked);
-  };
-
-  const moveDownInRanking = (index: number) => {
-    if (index === rankedTop3.length - 1) return;
-    const newRanked = [...rankedTop3];
-    [newRanked[index], newRanked[index + 1]] = [newRanked[index + 1], newRanked[index]];
-    setRankedTop3(newRanked);
   };
 
   const handleNext = () => {
@@ -200,9 +238,9 @@ export default function InterestsTopicsPage() {
         });
         return;
       }
-      if (rankedTop3.length < 3) {
+      if (!favoriteInterest) {
         toast({
-          title: "请从你选择的兴趣中排序出最喜欢的3个",
+          title: "请点击星标选出你最喜欢的1个兴趣",
           variant: "destructive",
         });
         return;
@@ -211,20 +249,20 @@ export default function InterestsTopicsPage() {
       setTimeout(() => setStep(2), 400);
     } else {
       // Validate topics step
-      if (selectedTopicsHappy.length < 1) {
+      if (selectedTopicsHappy.length < 3) {
         toast({
-          title: "请至少选择1个你喜欢讨论的话题",
+          title: "请至少选择3个喜欢的话题",
           variant: "destructive",
         });
         return;
       }
       
-      // Submit the form
+      // Submit the form (favoriteInterest is guaranteed to be set from step 1 validation)
       saveMutation.mutate({
         interestsTop: selectedInterests,
-        interestsRankedTop3: rankedTop3,
+        interestFavorite: favoriteInterest!,
         topicsHappy: selectedTopicsHappy,
-        topicsAvoid: selectedTopicsAvoid,
+        topicsAvoid: selectedTopicsAvoid.length > 0 ? selectedTopicsAvoid : undefined,
       });
     }
   };
@@ -242,10 +280,12 @@ export default function InterestsTopicsPage() {
     return interest ? `${interest.emoji} ${interest.label}` : id;
   };
 
-  const getTopicLabel = (id: string) => {
-    const topic = TOPICS_OPTIONS.find(t => t.id === id);
-    return topic ? topic.label : id;
-  };
+  // Split interests into visible (first 10) and hidden (rest)
+  const visibleInterests = INTERESTS_OPTIONS.slice(0, 10);
+  const hiddenInterests = INTERESTS_OPTIONS.slice(10);
+
+  // Calculate similar users count (simulated for now)
+  const similarUsersCount = Math.floor(150 + selectedInterests.length * 30 + (favoriteInterest ? 50 : 0));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -256,33 +296,8 @@ export default function InterestsTopicsPage() {
       />
       
       {/* Celebration overlay */}
-      <AnimatePresence>
-        {showCelebration && (
-          <motion.div
-            className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="text-6xl"
-              initial={{ scale: 0 }}
-              animate={{ scale: [0, 1.2, 1] }}
-              transition={{ duration: 0.6 }}
-            >
-              ✨
-            </motion.div>
-            <motion.div
-              className="absolute text-xl font-bold text-purple-600 dark:text-purple-400"
-              initial={{ y: 40, opacity: 0 }}
-              animate={{ y: -40, opacity: 0 }}
-              transition={{ duration: 1.2 }}
-            >
-              完美
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CelebrationConfetti show={showCelebration} type="step" />
+      <CelebrationConfetti show={showMajorCelebration} type="major" />
 
       {/* Form content */}
       <div className="flex-1 p-4 overflow-y-auto">
@@ -294,143 +309,206 @@ export default function InterestsTopicsPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-          {/* Step 1: Interests Selection & Ranking */}
+          {/* Step 1: Interests Selection */}
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in-50 duration-300">
               <div>
-                <h2 className="text-xl font-bold mb-2">你的兴趣</h2>
+                <h2 className="text-xl font-bold mb-2">你的兴趣爱好</h2>
                 <p className="text-sm text-muted-foreground">
-                  选择3-7个你感兴趣的活动类型，然后排序出最喜欢的3个
+                  兴趣 = 你喜欢做什么（周末活动）
+                </p>
+              </div>
+
+              <div className="flex items-start gap-2 bg-primary/5 p-3 rounded-md border border-primary/20">
+                <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  选择你感兴趣的3-7个，然后点击 <Star className="h-3 w-3 inline text-amber-500" /> 标记你最爱的1个，小悦会优先匹配同频的人。
+                  <span className="text-muted-foreground/70">（热度基于平台大数据）</span>
                 </p>
               </div>
 
               {/* Interest Selection */}
               <div>
-                <Label>选择兴趣（3-7个）</Label>
-                <motion.p 
-                  className="text-xs text-muted-foreground mb-3"
-                  animate={{ scale: selectedInterests.length > 0 ? [1, 1.05, 1] : 1 }}
-                >
-                  已选择 <span className="font-semibold text-purple-600 dark:text-purple-400">{selectedInterests.length}</span>/7 个
-                </motion.p>
+                <div className="flex items-center justify-between mb-3">
+                  <Label>选择兴趣（3-7个）</Label>
+                  <motion.span 
+                    className="text-xs text-muted-foreground"
+                    animate={{ scale: selectedInterests.length > 0 ? [1, 1.05, 1] : 1 }}
+                  >
+                    已选 <span className="font-semibold text-primary">{selectedInterests.length}</span>/7
+                  </motion.span>
+                </div>
+                
                 <div className="grid grid-cols-2 gap-3">
-                  {INTERESTS_OPTIONS.map((interest) => {
+                  {visibleInterests.map((interest) => {
                     const isSelected = selectedInterests.includes(interest.id);
+                    const isFavorite = favoriteInterest === interest.id;
                     return (
-                      <button
+                      <div
                         key={interest.id}
-                        type="button"
-                        onClick={() => toggleInterest(interest.id)}
-                        data-testid={`button-interest-${interest.id}`}
                         className={`
-                          px-4 py-2.5 rounded-lg border-2 transition-all text-left
+                          relative px-4 py-2.5 rounded-lg border-2 transition-all
                           ${isSelected 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border hover-elevate active-elevate-2'
+                            ? isFavorite 
+                              ? 'border-amber-500 bg-amber-500/10' 
+                              : 'border-primary bg-primary/5' 
+                            : 'border-border hover-elevate'
                           }
                         `}
                       >
-                        <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => toggleInterest(interest.id)}
+                          data-testid={`button-interest-${interest.id}`}
+                          className="w-full text-left"
+                        >
                           <div className="flex items-center gap-2">
                             <span className="text-xl">{interest.emoji}</span>
-                            <span className="text-base font-medium">{interest.label}</span>
+                            <span className="text-sm font-medium flex-1">{interest.label}</span>
+                            {interest.heat >= 50 && (
+                              <span className="text-xs text-orange-500 flex items-center gap-0.5">
+                                <Flame className="h-3 w-3" />
+                                {interest.heat}%
+                              </span>
+                            )}
                           </div>
-                          {isSelected && (
-                            <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                          )}
-                        </div>
-                      </button>
+                        </button>
+                        {isSelected && (
+                          <motion.button
+                            type="button"
+                            onClick={() => setAsFavorite(interest.id)}
+                            data-testid={`button-star-${interest.id}`}
+                            className="absolute top-1 right-1 p-1"
+                            animate={!favoriteInterest && !isFavorite ? {
+                              scale: [1, 1.2, 1],
+                              opacity: [0.6, 1, 0.6],
+                            } : {}}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                          >
+                            <Star 
+                              className={`h-4 w-4 transition-colors ${
+                                isFavorite 
+                                  ? 'text-amber-500 fill-amber-500' 
+                                  : 'text-muted-foreground hover:text-amber-400'
+                              }`} 
+                            />
+                          </motion.button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
+
+                {/* Expand more button */}
+                {!showMoreInterests && hiddenInterests.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMoreInterests(true)}
+                    className="w-full mt-3 py-2 text-sm text-primary hover:underline"
+                    data-testid="button-show-more-interests"
+                  >
+                    查看更多兴趣 ({hiddenInterests.length}个)
+                  </button>
+                )}
+
+                {/* Hidden interests */}
+                <AnimatePresence>
+                  {showMoreInterests && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        {hiddenInterests.map((interest) => {
+                          const isSelected = selectedInterests.includes(interest.id);
+                          const isFavorite = favoriteInterest === interest.id;
+                          return (
+                            <div
+                              key={interest.id}
+                              className={`
+                                relative px-4 py-2.5 rounded-lg border-2 transition-all
+                                ${isSelected 
+                                  ? isFavorite 
+                                    ? 'border-amber-500 bg-amber-500/10' 
+                                    : 'border-primary bg-primary/5' 
+                                  : 'border-border hover-elevate'
+                                }
+                              `}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => toggleInterest(interest.id)}
+                                data-testid={`button-interest-${interest.id}`}
+                                className="w-full text-left"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xl">{interest.emoji}</span>
+                                  <span className="text-sm font-medium">{interest.label}</span>
+                                </div>
+                              </button>
+                              {isSelected && (
+                                <motion.button
+                                  type="button"
+                                  onClick={() => setAsFavorite(interest.id)}
+                                  data-testid={`button-star-${interest.id}`}
+                                  className="absolute top-1 right-1 p-1"
+                                  animate={!favoriteInterest && !isFavorite ? {
+                                    scale: [1, 1.2, 1],
+                                    opacity: [0.6, 1, 0.6],
+                                  } : {}}
+                                  transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                  }}
+                                >
+                                  <Star 
+                                    className={`h-4 w-4 transition-colors ${
+                                      isFavorite 
+                                        ? 'text-amber-500 fill-amber-500' 
+                                        : 'text-muted-foreground hover:text-amber-400'
+                                    }`} 
+                                  />
+                                </motion.button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              {/* Ranking Section */}
+              {/* Favorite indicator */}
+              {favoriteInterest && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg"
+                >
+                  <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                  <span className="text-sm">
+                    你的最爱：<span className="font-semibold">{getInterestLabel(favoriteInterest)}</span>
+                  </span>
+                </motion.div>
+              )}
+
+              {/* Similar users count */}
               {selectedInterests.length >= 3 && (
-                <>
-                  <Separator />
-                  <div>
-                    <Label>排序最喜欢的3个</Label>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      从上面选择的兴趣中，点击添加并排序你最喜欢的3个
-                    </p>
-
-                    {/* Ranked list */}
-                    {rankedTop3.length > 0 && (
-                      <Card className="mb-3">
-                        <CardContent className="p-3 space-y-2">
-                          {rankedTop3.map((interestId, index) => (
-                            <div
-                              key={interestId}
-                              className="flex items-center gap-2 p-2 bg-muted/50 rounded-md"
-                              data-testid={`ranked-interest-${index}`}
-                            >
-                              <Badge variant="outline" className="w-6 h-6 flex items-center justify-center p-0">
-                                {index + 1}
-                              </Badge>
-                              <span className="flex-1 text-sm">
-                                {getInterestLabel(interestId)}
-                              </span>
-                              <div className="flex gap-1">
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => moveUpInRanking(index)}
-                                  disabled={index === 0}
-                                  className="h-7 w-7"
-                                  data-testid={`button-move-up-${index}`}
-                                >
-                                  <ChevronUp className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => moveDownInRanking(index)}
-                                  disabled={index === rankedTop3.length - 1}
-                                  className="h-7 w-7"
-                                  data-testid={`button-move-down-${index}`}
-                                >
-                                  <ChevronDown className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => removeFromRanking(interestId)}
-                                  className="h-7 px-2 text-xs"
-                                  data-testid={`button-remove-${index}`}
-                                >
-                                  移除
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* Available to rank */}
-                    {rankedTop3.length < 3 && (
-                      <div className="grid grid-cols-2 gap-3">
-                        {selectedInterests
-                          .filter(id => !rankedTop3.includes(id))
-                          .map((interestId) => (
-                            <button
-                              key={interestId}
-                              type="button"
-                              onClick={() => addToRanking(interestId)}
-                              data-testid={`button-add-to-rank-${interestId}`}
-                              className="px-4 py-2.5 text-base rounded-md border border-border hover-elevate active-elevate-2 text-left"
-                            >
-                              {getInterestLabel(interestId)}
-                            </button>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                </>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center text-sm text-muted-foreground"
+                >
+                  ✨ 平台上有 <span className="font-semibold text-primary">{similarUsersCount}</span> 人和你兴趣相似
+                </motion.div>
               )}
             </div>
           )}
@@ -439,91 +517,97 @@ export default function InterestsTopicsPage() {
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in-50 duration-300">
               <div>
-                <h2 className="text-xl font-bold mb-2">对话话题</h2>
+                <h2 className="text-xl font-bold mb-2">聊天话题偏好</h2>
                 <p className="text-sm text-muted-foreground">
-                  告诉我们你喜欢和回避的话题，帮助我们更好地匹配活动
+                  话题 = 你喜欢聊什么（吃饭时）
                 </p>
               </div>
 
-              <div className="flex items-start space-x-2 bg-primary/5 p-3 rounded-md border border-primary/20">
+              <div className="flex items-start gap-2 bg-primary/5 p-3 rounded-md border border-primary/20">
                 <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-muted-foreground">
-                  选择话题时，绿色按钮表示喜欢讨论，红色表示想要回避。同一个话题不能同时选择两种状态。
+                  选择3-5个喜欢聊的话题，小悦会匹配聊得来的人。「不想聊」是可选的，最多2个。
                 </p>
               </div>
 
-              {/* Topics Happy */}
-              <div>
-                <Label>喜欢讨论的话题 *</Label>
-                <motion.p 
-                  className="text-xs text-muted-foreground mb-3"
-                  animate={{ scale: selectedTopicsHappy.length > 0 ? [1, 1.05, 1] : 1 }}
-                >
-                  已选择 <span className="font-semibold text-green-600 dark:text-green-400">{selectedTopicsHappy.length}</span> 个（至少选1个）
-                </motion.p>
-                <div className="grid grid-cols-2 gap-3">
-                  {TOPICS_OPTIONS.map((topic) => {
-                    const isHappy = selectedTopicsHappy.includes(topic.id);
-                    const isAvoid = selectedTopicsAvoid.includes(topic.id);
-                    return (
-                      <button
-                        key={topic.id}
-                        type="button"
-                        onClick={() => toggleTopicHappy(topic.id)}
-                        data-testid={`button-topic-happy-${topic.id}`}
-                        className={`
-                          px-4 py-2.5 text-base rounded-md border-2 transition-all text-left
-                          ${isHappy 
-                            ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400' 
-                            : isAvoid
-                            ? 'border-border/50 opacity-50'
-                            : 'border-border hover-elevate active-elevate-2'
-                          }
-                        `}
-                      >
-                        {topic.label}
-                      </button>
-                    );
-                  })}
+              {/* Topics by group */}
+              {Object.entries(TOPICS_GROUPS).map(([groupKey, group]) => (
+                <div key={groupKey}>
+                  <div className="mb-3">
+                    <h3 className="font-semibold text-base">{group.name}</h3>
+                    <p className="text-xs text-muted-foreground">{group.description}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {group.topics.map((topic) => {
+                      const isHappy = selectedTopicsHappy.includes(topic.id);
+                      const isAvoid = selectedTopicsAvoid.includes(topic.id);
+                      return (
+                        <div
+                          key={topic.id}
+                          className={`
+                            relative px-3 py-2 rounded-lg border transition-all text-sm
+                            ${isHappy 
+                              ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400' 
+                              : isAvoid
+                              ? 'border-red-400 bg-red-400/10 text-red-600 dark:text-red-400'
+                              : 'border-border hover-elevate'
+                            }
+                          `}
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleTopicHappy(topic.id)}
+                              data-testid={`button-topic-happy-${topic.id}`}
+                              className="flex items-center gap-1.5 flex-1 text-left"
+                            >
+                              <span>{topic.mood}</span>
+                              <span>{topic.label}</span>
+                              {topic.heat >= 50 && (
+                                <span className="text-xs text-orange-500 flex items-center">
+                                  <Flame className="h-2.5 w-2.5" />
+                                  {topic.heat}%
+                                </span>
+                              )}
+                            </button>
+                            {/* Only show avoid button for sensitive topics or if already selected */}
+                            {(groupKey === 'sensitive' || isAvoid) && !isHappy && (
+                              <button
+                                type="button"
+                                onClick={() => toggleTopicAvoid(topic.id)}
+                                data-testid={`button-topic-avoid-${topic.id}`}
+                                className={`text-xs px-1.5 py-0.5 rounded ${
+                                  isAvoid 
+                                    ? 'bg-red-500 text-white' 
+                                    : 'bg-muted text-muted-foreground hover:bg-red-100 dark:hover:bg-red-900'
+                                }`}
+                              >
+                                {isAvoid ? '已避' : '避'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {groupKey !== 'sensitive' && <Separator className="my-4" />}
                 </div>
-              </div>
+              ))}
 
-              <Separator />
-
-              {/* Topics Avoid */}
-              <div>
-                <Label>想要回避的话题（可选）</Label>
-                <motion.p 
-                  className="text-xs text-muted-foreground mb-3"
-                  animate={{ scale: selectedTopicsAvoid.length > 0 ? [1, 1.05, 1] : 1 }}
-                >
-                  已选择 <span className="font-semibold text-red-600 dark:text-red-400">{selectedTopicsAvoid.length}</span> 个
-                </motion.p>
-                <div className="grid grid-cols-2 gap-3">
-                  {TOPICS_OPTIONS.map((topic) => {
-                    const isHappy = selectedTopicsHappy.includes(topic.id);
-                    const isAvoid = selectedTopicsAvoid.includes(topic.id);
-                    return (
-                      <button
-                        key={topic.id}
-                        type="button"
-                        onClick={() => toggleTopicAvoid(topic.id)}
-                        data-testid={`button-topic-avoid-${topic.id}`}
-                        className={`
-                          px-4 py-2.5 text-base rounded-md border-2 transition-all text-left
-                          ${isAvoid 
-                            ? 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-400' 
-                            : isHappy
-                            ? 'border-border/50 opacity-50'
-                            : 'border-border hover-elevate active-elevate-2'
-                          }
-                        `}
-                      >
-                        {topic.label}
-                      </button>
-                    );
-                  })}
+              {/* Selection summary */}
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">喜欢聊的话题</span>
+                  <span className={selectedTopicsHappy.length >= 3 ? 'text-green-600' : 'text-muted-foreground'}>
+                    {selectedTopicsHappy.length}/5 {selectedTopicsHappy.length >= 3 && <Check className="h-3 w-3 inline" />}
+                  </span>
                 </div>
+                {selectedTopicsAvoid.length > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">不想聊的话题</span>
+                    <span className="text-red-500">{selectedTopicsAvoid.length}/2</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
